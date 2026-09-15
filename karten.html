@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DETAR — Kartendesigns</title>
+  <!-- Übersicht der Kartendesigns (2026-09-15): liest targets/8thwall/karten.json
+       und zeigt je Design Name, Link und QR-Code auf index.html?karte=<id>, damit
+       man am Handy zwischen Varianten springen kann. Die Links zeigen auf DIESEN
+       Host (GitHub-Pages-Spiegel oder cloudflared-Tunnel) — so stimmen die
+       QR-Codes auch beim lokalen Test. QR-Erzeugung liegt im Repo
+       (vendor/qrcode/qrcode.js, MIT), kein CDN, kein Build-Schritt. Diese Seite
+       ist ein Werkzeug, nicht Teil der App: klassisches Skript, ES5. -->
+  <style>
+    body { margin: 0; padding: 20px; font: 15px/1.45 -apple-system, "Helvetica Neue", Arial, sans-serif; color: #171717; background: #f4f4f4; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .sub { color: #555; margin: 0 0 16px; font-size: 13px; }
+    .flags { margin: 0 0 20px; font-size: 14px; }
+    .flags label { margin-right: 16px; white-space: nowrap; }
+    .flags code, .card code { background: #e6e6e6; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+    .grid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; margin: -8px; }
+    .card { background: #fff; border-radius: 10px; padding: 16px; margin: 8px; width: 260px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+    .card h2 { font-size: 17px; margin: 0 0 2px; }
+    .card .id { color: #0b95d0; font-size: 13px; margin: 0 0 10px; }
+    .card canvas { display: block; width: 228px; height: 228px; image-rendering: pixelated; image-rendering: crisp-edges; }
+    .card .meta { font-size: 12px; color: #555; margin: 10px 0 0; }
+    .card a { display: block; margin-top: 8px; font-size: 13px; word-break: break-all; color: #0b95d0; }
+    .card a.start { display: inline-block; margin-top: 10px; padding: 8px 14px; background: #171717; color: #fced62; border-radius: 6px; text-decoration: none; font-weight: bold; }
+    #error { color: #b00020; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>DETAR — Kartendesigns</h1>
+  <p class="sub">Quelle: <code>targets/8thwall/karten.json</code> · QR-Code scannen oder „Starten" tippen → App mit <code>?karte=&lt;id&gt;</code>. Neues Design: <code>docs/kartendesigns.md</code>.</p>
+  <p class="flags">
+    Zusatz-Flags im Link:
+    <label><input type="checkbox" id="fStats" checked /> <code>stats</code> (Diagnose)</label>
+    <label><input type="checkbox" id="fPublic" /> <code>public</code> (Public-Edition)</label>
+    <label><input type="checkbox" id="fNosimd" /> <code>nosimd</code></label>
+  </p>
+  <div id="error"></div>
+  <div class="grid" id="grid"></div>
+
+  <script src="./vendor/qrcode/qrcode.js"></script>
+  <script>
+    (function () {
+      var grid = document.getElementById("grid");
+      var errEl = document.getElementById("error");
+      var karten = [];
+      // Basis = index.html neben dieser Datei, auf dem aktuellen Host (Pages-
+      // Spiegel oder Tunnel). location.href ohne Query/Hash und ohne karten.html.
+      var base = location.href.replace(/[?#].*$/, "").replace(/karten\.html$/, "");
+
+      function flags() {
+        var f = ["fStats", "fPublic", "fNosimd"];
+        var out = [];
+        for (var i = 0; i < f.length; i++) {
+          var box = document.getElementById(f[i]);
+          if (box.checked) out.push(box.parentNode.querySelector("code").textContent);
+        }
+        return out;
+      }
+
+      function linkFor(k) {
+        var q = ["karte=" + encodeURIComponent(k.id)].concat(flags());
+        return base + "?" + q.join("&");
+      }
+
+      function drawQr(canvas, text) {
+        // Typ 0 = kleinste passende Version, Fehlerkorrektur M (Handykamera
+        // aus 20–30 cm reicht das). 4 Module Ruhezone wie in der QR-Norm.
+        var qr = qrcode(0, "M");
+        qr.addData(text);
+        qr.make();
+        var n = qr.getModuleCount(), quiet = 4, cell = 6;
+        var size = (n + 2 * quiet) * cell;
+        canvas.width = size; canvas.height = size;
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = "#000";
+        for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) {
+          if (qr.isDark(r, c)) ctx.fillRect((c + quiet) * cell, (r + quiet) * cell, cell, cell);
+        }
+      }
+
+      function render() {
+        grid.innerHTML = "";
+        for (var i = 0; i < karten.length; i++) (function (k) {
+          var link = linkFor(k);
+          var el = document.createElement("div");
+          el.className = "card";
+          el.innerHTML =
+            "<h2></h2><p class='id'></p><canvas></canvas>" +
+            "<p class='meta'></p><a class='start'>Starten</a><a class='url'></a>";
+          el.querySelector("h2").textContent = k.name || k.id;
+          el.querySelector(".id").textContent = "?karte=" + k.id + " · " + (k.target || k.id) + ".json · " + (k.breiteMm || "?") + " mm";
+          el.querySelector(".meta").textContent = k.notiz || "";
+          var a = el.querySelector("a.start"); a.href = link;
+          var u = el.querySelector("a.url"); u.href = link; u.textContent = link;
+          try { drawQr(el.querySelector("canvas"), link); }
+          catch (e) { el.querySelector("canvas").style.display = "none"; el.querySelector(".meta").textContent = "QR-Fehler: " + e; }
+          grid.appendChild(el);
+        })(karten[i]);
+      }
+
+      var boxes = document.querySelectorAll(".flags input");
+      for (var b = 0; b < boxes.length; b++) boxes[b].onchange = render;
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "./targets/8thwall/karten.json?t=" + Date.now(), true);
+      xhr.onload = function () {
+        try {
+          if (xhr.status !== 200) throw new Error("HTTP " + xhr.status);
+          var data = JSON.parse(xhr.responseText);
+          karten = data.karten || [];
+          if (!karten.length) throw new Error("karten.json enthält keine Einträge");
+          render();
+        } catch (e) { errEl.textContent = "karten.json nicht lesbar: " + e; }
+      };
+      xhr.onerror = function () { errEl.textContent = "karten.json nicht ladbar (Server läuft? Pfad targets/8thwall/karten.json)"; };
+      xhr.send();
+    })();
+  </script>
+</body>
+</html>

@@ -82,7 +82,9 @@ dann `http://localhost:8080` öffnen.
   komplett aus. **`?nosimd`** — Nicht-SIMD-Engine erzwingen.
   **`?preflight=inapp|nocam|insecure|nowasm|nowebp`** — Hinweis-Bildschirme
   der Vorabprüfung ansehen (nur Test). **`?public`** — Public-Edition (kein
-  Test-Flag, steht im QR-Code der neutralen Karte).
+  Test-Flag, steht im QR-Code der neutralen Karte). **`?karte=<id>`** —
+  Kartendesign aus `targets/8thwall/karten.json` (ohne Parameter: `card`);
+  Übersicht mit QR-Codes zum Umschalten am Handy: `karten.html`.
 
 Flags sind frei kombinierbar (z. B. `?dev&stats` am Handy fürs Tracking-Tuning).
 
@@ -137,6 +139,11 @@ Live-Werte in `js/config.js` — EINE Quelle. Für Tuning-Sessions: Dev-Panel
 
 ## Tracking-Target (8th Wall) neu erzeugen
 
+Ein **weiteres Design** neben dem bestehenden (statt es zu ersetzen): eigene
+Dateibasis + Zeile in `targets/8thwall/karten.json`, Aufruf per `?karte=<id>`
+— Schritt für Schritt inkl. lokalem Test über cloudflared-Tunnel in
+`docs/kartendesigns.md`. Das Standard-Target `card` ersetzen:
+
 Das Target ist aus dem beschnittenen Kartenbild erzeugt
 (`Assets/September/demo_skat_070926_mind_cropped.png`, 1346×2156; Druckdatei
 `demo_skat_070926.jpg`). Bei neuem Karten-Layout:
@@ -187,12 +194,16 @@ js/questionMenu.js    Onboarding + Dialog-Menü: Themenkarten, Fragen mit Marken
 js/debugOverlay.js    pinke Hilfslinien (?debug)
 cards/                ein .js pro Beruf (Inhalte, hartkodiert)
 assets/               Character-WebPs, Logos, Fonts (Subset), Kartenbild
-targets/8thwall/      Image-Target (card.json + card_luminance.png) aus image-target-cli
+targets/8thwall/      Image-Targets (card.json + card_luminance.png, weitere Designs) aus image-target-cli
+                      + karten.json (Designliste für ?karte)
+karten.html           Übersicht der Designs mit QR-Codes (Umschalten am Handy)
+vendor/qrcode/        qrcode-generator (MIT) für karten.html
 vendor/8thwall/       Open-Source-8th-Wall-Engine, zugeschnitten (xr.js + xr-tracking.js, MIT, WASM-SIMD)
 vendor/8thwall-nosimd/ dieselbe Engine ohne WASM-SIMD (Fallback, main.js wählt automatisch)
 tools/build-fonts.sh  Font-Subset (pyftsubset) aus den Original-TTFs
 vendor/three/         three.js 0.160, tree-shaken (tools/build-three.sh)
 docs/8thwall-migration.md  Umstieg MindAR → 8th Wall: Target-Erzeugung, Änderungen, Events
+docs/kartendesigns.md      Kartendesigns per ?karte: neues Design anlegen, lokal testen
 ```
 
 ## Technik-Notizen (für spätere Änderungen wichtig)

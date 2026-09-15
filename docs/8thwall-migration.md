@@ -98,6 +98,12 @@ für sich stimmt. Zusätzlich setzt `main.js` zur Laufzeit `moveable: true`
 
 ### Neue Karte / neues Layout
 
+Seit Build 57 (2026-09-15) können mehrere Designs nebeneinander liegen und
+per `?karte=<id>` gewählt werden (`targets/8thwall/karten.json`,
+`docs/kartendesigns.md`); `physicalWidthInMeters` kommt seitdem aus dem
+`breiteMm` des Eintrags (Standard 63 mm), nicht mehr aus `SCENE.cardWidth`.
+Das Standard-Target `card` ersetzen:
+
 1. Kartenbild wie oben durch die CLI schicken (Name `card`, Ordner
    `targets/8thwall`, Dateien überschreiben).
 2. `SCENE.cardAspect` in `js/config.js` auf Höhe/Breite der **ganzen Karte**

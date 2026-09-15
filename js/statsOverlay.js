@@ -124,6 +124,10 @@ export class StatsOverlay {
       // tatsächlich geladen hat — Safari cached jede Datei einzeln (Pages:
       // max-age 600), ein frischer Build kann eine alte Karte mitschleppen.
       `Karte: ${this.env?.card?.id ?? "—"} · ${this.env?.card?.edition === "public" ? "PUBLIC" : "Firma"} · ${this.env?.card?.questions?.length ?? "?"} Fragen` +
-      `${this.env?.card?.questions?.some((q) => q.link) ? " · Link-Frage" : ""}`;
+      `${this.env?.card?.questions?.some((q) => q.link) ? " · Link-Frage" : ""}\n` +
+      // Kartendesign (2026-09-15): aktive id aus ?karte (targets/8thwall/
+      // karten.json), Target-Dateibasis und die physische Breite, die als
+      // physicalWidthInMeters an die Engine ging.
+      `Design: ${this.env?.karte?.id ?? "—"} · ${this.env?.karte?.target ?? "—"}.json · ${this.env?.karte?.breiteMm ?? "—"} mm`;
   }
 }

@@ -102,8 +102,49 @@ const ENGINE_SIMD = !params.has("nosimd") && hasWasmSimd();
 const ENGINE_VARIANT = ENGINE_SIMD ? "SIMD" : (params.has("nosimd") ? "nicht-SIMD (?nosimd)" : "nicht-SIMD (Fallback)");
 const XR_ENGINE_URL = ENGINE_SIMD ? "./vendor/8thwall/xr.js" : "./vendor/8thwall-nosimd/xr.js";
 // Image-Target-Daten (image-target-cli, s. docs/8thwall-migration.md). Eine
-// Seite = eine Karte = ein Target.
-const TARGET_URL = "./targets/8thwall/card.json";
+// Seite = eine Karte = ein Target (bzw. ein Design aus karten.json, s. u.).
+//
+// KARTENDESIGNS (Michael 2026-09-15): Mehrere Designs liegen als eigene
+// Targets in targets/8thwall/ und stehen in targets/8thwall/karten.json
+// (id, name, target = Dateibasis, breiteMm, notiz). ?karte=<id> wählt das
+// Design; ohne Parameter gilt KARTE_STANDARD (= der bisherige Stand card.json,
+// nichts ändert sich). Unbekannte id → Hinweis im Splash, Button bleibt aus.
+// Die Kartenbreite des Eintrags wird zu physicalWidthInMeters (Standard 63 mm
+// laut Druckspezifikation; vorher SCENE.cardWidth = 59 mm). SCENE.cardWidth
+// bleibt die SZENEN-Einheit (worldRoot-Skalierung, Eck-Marker) und ist davon
+// unabhängig. Übersicht mit QR-Codes zum Umschalten: karten.html.
+const TARGET_DIR = "./targets/8thwall/";
+const KARTEN_URL = TARGET_DIR + "karten.json";
+const KARTE_STANDARD = "card";
+const KARTE_BREITE_MM = 63;
+const KARTE_ID = params.get("karte") || KARTE_STANDARD;
+// Eintrag aus karten.json (in boot() aufgelöst); Fallback = der bisherige Stand,
+// falls die Liste nicht ladbar ist und kein ?karte gesetzt wurde.
+let karte = { id: KARTE_STANDARD, name: KARTE_STANDARD, target: KARTE_STANDARD, breiteMm: KARTE_BREITE_MM };
+
+/* karten.json laden und den Eintrag zu KARTE_ID wählen. Liefert {karte} oder
+   {error, ids}, wenn der Eintrag fehlt (boot() zeigt dann den Hinweis). Ohne ?karte und ohne ladbare
+   Liste bleibt der eingebaute Standard — die App startet wie bisher. */
+async function resolveKarte() {
+  let list = null;
+  try {
+    const res = await fetch(KARTEN_URL, { cache: "no-store" });
+    if (res.ok) list = (await res.json()).karten;
+  } catch (e) { /* offline/Fehler → unten behandelt */ }
+  if (!Array.isArray(list)) {
+    if (params.has("karte")) return { error: "Kartenliste nicht ladbar: " + KARTEN_URL, ids: [] };
+    console.warn("DETAR karten.json nicht ladbar — Standard-Target", KARTE_STANDARD);
+    return { karte };
+  }
+  const ids = list.map((k) => k.id);
+  const hit = list.find((k) => k.id === KARTE_ID);
+  if (!hit) return { error: "Unbekannte Karte „" + KARTE_ID + "“", ids };
+  const breite = Number(hit.breiteMm);
+  return { karte: {
+    id: hit.id, name: hit.name || hit.id, target: hit.target || hit.id,
+    breiteMm: Number.isFinite(breite) && breite > 0 ? breite : KARTE_BREITE_MM, notiz: hit.notiz || "",
+  } };
+}
 
 const el = (id) => document.getElementById(id);
 let gyro = null; // GyroFusion — wird in der START-Geste angelegt (iOS-Permission)
@@ -121,6 +162,21 @@ async function boot() {
     showPreflightScreen(blocked);
     return;
   }
+  // Kartendesign auflösen (?karte=<id> gegen targets/8thwall/karten.json).
+  // Unbekannte id: Hinweis in der Fehlerzeile des Splash, Button bleibt aus —
+  // statt einer leeren Seite nach dem Klick (Target-404).
+  const resolved = await resolveKarte();
+  if (resolved.error) {
+    el("cardName").textContent = card.profession;
+    const box = el("errorBox");
+    box.textContent = resolved.error + (resolved.ids.length ? " — bekannt: " + resolved.ids.join(", ") : "") +
+      " (Parameter ?karte, Liste: targets/8thwall/karten.json)";
+    box.style.display = "block";
+    console.warn("DETAR", resolved.error, resolved.ids);
+    return;
+  }
+  karte = resolved.karte;
+  console.log("DETAR Karte:", karte.id, "·", karte.name, "·", karte.breiteMm, "mm →", TARGET_DIR + karte.target + ".json");
   // Engine-Kern VORLADEN (Netzwerk, nicht ausgeführt) — erst hier per JS statt
   // als <link> in index.html, weil die Variante (SIMD / nicht-SIMD) vom Gerät
   // abhängt; so lädt jedes Gerät nur die eine xr.js, die es auch nutzt. Der
@@ -406,18 +462,20 @@ function loadEngine() {
    generierter CLI-Ordner 1:1 nach targets/8thwall/ kopiert werden, ohne den
    von der CLI fest eingetragenen Pfad „image-targets/…" anzupassen. */
 async function loadTargetData() {
-  const res = await fetch(TARGET_URL, { cache: "no-store" });
-  if (!res.ok) throw new Error("Target-Datei fehlt: " + TARGET_URL);
+  const targetUrl = TARGET_DIR + karte.target + ".json";
+  const res = await fetch(targetUrl, { cache: "no-store" });
+  if (!res.ok) throw new Error("Target-Datei fehlt: " + targetUrl + " (Karte „" + karte.id + "“ in karten.json)");
   const data = await res.json();
-  const base = new URL(TARGET_URL, location.href);
+  const base = new URL(targetUrl, location.href);
   const lum = data.resources?.luminanceImage;
   data.imagePath = lum ? new URL(lum, base).href : new URL(data.imagePath, location.href).href;
   // Karte liegt in der Hand → beweglich (kein „static target"). Physische
-  // Breite = Kartenbreite (SCENE.cardWidth, 0.059 m): damit ist
-  // detail.scale metrisch und die mm-Angaben in ?stats stimmen; die Figur
-  // hängt davon nicht ab (Anchor-Einheit = Kartenbreite, s. Kopfkommentar).
+  // Breite = Kartenbreite des Eintrags in karten.json (breiteMm, Standard
+  // 63 mm laut Druckspezifikation; bis Build 56 SCENE.cardWidth = 59 mm):
+  // damit ist detail.scale metrisch; die Figur hängt davon nicht ab
+  // (Anchor-Einheit = Kartenbreite, s. Kopfkommentar).
   data.moveable = true;
-  data.physicalWidthInMeters = SCENE.cardWidth;
+  data.physicalWidthInMeters = karte.breiteMm / 1000;
   return data;
 }
 
@@ -593,7 +651,7 @@ function detarPipelineModule(XR8, { resolve, reject }) {
 
       // ?stats — Live-Diagnose am Gerät (Tracking/Gyro/Jitter in Zahlen)
       stats = StatsOverlay
-        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, card, engine: ENGINE_VARIANT })
+        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, card, engine: ENGINE_VARIANT, karte })
         : null;
 
       exp = buildExperience({

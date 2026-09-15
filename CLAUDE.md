@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-09-09 · Build 56 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-09-15 · Build 57 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -72,6 +72,18 @@ in der Karten-Zeile „PUBLIC"/„Firma". Keine zweite Kartendatei, kein zweites
 HTML. Der Parameter überlebt „Neu laden" und „Link kopieren" (preflight.js
 arbeitet am rohen Query-String, damit `?public` nicht zu `public=` wird).
 
+## Kartendesigns (seit Build 57, 2026-09-15)
+
+Mehrere Designs als eigene Targets in `targets/8thwall/`, Liste
+`targets/8thwall/karten.json` (`id`, `name`, `target` = Dateibasis,
+`breiteMm`, `notiz`). `?karte=<id>` wählt das Design, ohne Parameter gilt
+`card` (bisheriger Stand). Unbekannte id → Hinweis in `#errorBox`, Button
+bleibt aus. `physicalWidthInMeters` = `breiteMm/1000` des Eintrags (Standard
+63 mm, Druckspezifikation) — NICHT mehr `SCENE.cardWidth` (bleibt Szenen-
+Einheit 0.059). `?stats` zeigt „Design: id · target.json · mm". Übersicht mit
+QR-Codes: `karten.html` (QR aus `vendor/qrcode/`, MIT, kein CDN). Neues
+Design + lokaler Test mit cloudflared: `docs/kartendesigns.md`.
+
 ## Dialogsystem (seit Build 17, 2026-09-03)
 
 Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Prototyp
@@ -141,7 +153,8 @@ kein API-Key. Engine wird erst in der Start-Geste geladen; `js/preflight.js`
 prüft vorher In-App-Browser/HTTPS/Kamera-API/WASM/WebP und zeigt sonst
 `#preflightScreen`. Production-Härtung + Gate-Tabelle:
 `docs/8thwall-migration.md` Abschnitt 7. Target: `targets/8thwall/card.json` + `card_luminance.png` aus
-`@8thwall/image-target-cli`. Alles dazu: `docs/8thwall-migration.md`.
+`@8thwall/image-target-cli`; weitere Designs daneben, gewählt per `?karte`
+(`karten.json`, `docs/kartendesigns.md`). Alles dazu: `docs/8thwall-migration.md`.
 `main` läuft weiter auf `mind-ar@1.2.5` (dort: mind-ar ist gegen three 0.160
 gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
 
@@ -258,7 +271,8 @@ Delta vor) als Prediction + Verlust-Brücke.
 ## URL-Parameter
 
 `?stats` (Jitter roh/stab, Vision-Hz, BEWEGT/ruhig, Cam+PR, Build-Check,
-Engine-Variante) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
+Engine-Variante, Design) · `?karte=<id>` (Kartendesign aus
+`targets/8thwall/karten.json`, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
 kein Test-Flag — steht im QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
