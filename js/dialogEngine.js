@@ -10,7 +10,7 @@
    Was gesprochen und gezeigt wird, entscheidet der CardController; hier
    liegen nur Zustand und Abfragen. Grundform ist der Hub (kein Baum): alle
    freigeschalteten Fragen liegen gleichzeitig vor, gestellte rutschen ans
-   Ende und tragen „nochmal", Freischaltungen tragen „neu".
+   Ende und tragen ✅ (schon gefragt), Freischaltungen tragen „neu".
    ============================================================================= */
 export class DialogEngine {
   constructor(card) {
@@ -35,7 +35,7 @@ export class DialogEngine {
     return Object.entries(q.requires).every(([k, allowed]) => allowed.includes(this.vars[k]));
   }
   /* Fragen eines Themas: alles Freigeschaltete, dessen Bedingung erfüllt ist —
-     auch schon gestellte (die bleiben wählbar, mit Marke „nochmal"). */
+     auch schon gestellte (die bleiben wählbar, mit Marke ✅). */
   questionsOf(themaId) {
     return this.card.questions.filter((q) => q.thema === themaId
       && this.unlocked.has(q.id) && this.meetsRequirement(q));
@@ -61,24 +61,11 @@ export class DialogEngine {
   freshElsewhere(themaId) {
     return this.card.questions.some((q) => this.fresh.has(q.id) && q.thema && q.thema !== themaId);
   }
-  /* Dauerhafte Fußzeile: Ausstieg + Link, auf beiden Ebenen erreichbar. */
-  permaQuestions() {
-    // Ausstieg an vorletzter Stelle, Link ganz unten (UI-Inventar, Abschnitt 3)
-    return this.card.questions.filter((q) => (q.end || q.link) && this.unlocked.has(q.id))
-      .sort((a, b) => (a.link ? 1 : 0) - (b.link ? 1 : 0));
-  }
   /* Ausstieg („Ich muss weiter") — seit dem UI-Update 2026-09-03 eine normale
-     Kachel im Themenraster und in jedem Thema (keine Fußzeile mehr). */
+     Kachel im Themenraster (keine Fußzeile mehr). Reiter NEU/LINK/✅ leitet
+     questionMenu.js direkt aus fresh/asked/q.link ab. */
   exitQuestion() {
     return this.card.questions.find((q) => q.end && this.unlocked.has(q.id)) ?? null;
-  }
-  /* Marken einer Frage: neu freigeschaltet, schon gefragt, führt nach außen. */
-  badgesFor(q) {
-    const out = [];
-    if (this.fresh.has(q.id)) out.push("neu");
-    if (this.asked.has(q.id)) out.push("nochmal");
-    if (q.link) out.push("link");
-    return out;
   }
   questionById(id) { return this.card.questions.find((q) => q.id === id) ?? null; }
 
@@ -139,15 +126,5 @@ export class DialogEngine {
       (!r.ifNotAsked || r.ifNotAsked.every((id) => !this.asked.has(id))) &&
       (!r.ifVisit || this.visits >= r.ifVisit)
     ) ?? rules[rules.length - 1] ?? null;
-  }
-
-  /* Kurzfassung des Zustands (Konsole / Dev). */
-  summary() {
-    const open = this.card.questions.filter((q) => this.unlocked.has(q.id)
-      && this.meetsRequirement(q) && !this.asked.has(q.id)).map((q) => q.id);
-    return {
-      vars: { ...this.vars }, asked: [...this.asked], open,
-      visits: this.visits, view: { ...this.view },
-    };
   }
 }

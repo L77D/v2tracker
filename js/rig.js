@@ -11,7 +11,7 @@ import { SCENE } from "./config.js";
 const texLoader = new THREE.TextureLoader();
 
 function loadTex(url) {
-  const t = texLoader.load(url);
+  const t = texLoader.load(url); // (Patch-Anker build-lokal-prototyp.py — Wortlaut halten)
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
   return t;
@@ -40,6 +40,10 @@ function makeSprite(url, aspectW, aspectH, renderOrder) {
 // Alpha: Safari ab iOS 14, Chrome ab 32 — unter der Modul-Grenze (iOS 11) liegt
 // nur iOS 11–13, dort bliebe die Figur unsichtbar (bewusst hingenommen).
 const A = "./assets/character/";
+// Kopf-/Gesichts-Lage relativ zur Nick-Achse (Mattercraft-Export, 1:1 übernommen)
+const HEAD_Y0 = -0.1157760907793379;
+const FACE_Y0 = -0.11886690574041192;
+const FACE_Z0 = 0.002275570500326991;
 
 /* Baut das komplette Rig unter `parent` und liefert alle Knoten zurück. */
 export function buildRig(parent) {
@@ -75,9 +79,6 @@ export function buildRig(parent) {
   const HeadNod = new THREE.Group();
   HeadPivot.add(HeadNod);
 
-  const HEAD_Y0 = -0.1157760907793379;
-  const FACE_Y0 = -0.11886690574041192;
-
   const Head = makeSprite(A + "head.webp", 1024, 1536, 1);
   HeadNod.add(Head);
 
@@ -111,8 +112,8 @@ export function buildRig(parent) {
 export function applyNodAxis(nodes) {
   const a = SCENE.headNodAxis;
   nodes.HeadNod.position.set(0, a, 0);
-  nodes.Head.position.set(0, -0.1157760907793379 - a, 0);
+  nodes.Head.position.set(0, HEAD_Y0 - a, 0);
   for (const f of [nodes.FaceNeutral, nodes.FaceBlink, nodes.FaceTalk]) {
-    f.position.set(0, -0.11886690574041192 - a, 0.002275570500326991);
+    f.position.set(0, FACE_Y0 - a, FACE_Z0);
   }
 }

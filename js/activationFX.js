@@ -14,6 +14,7 @@
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { ACTFX, SCENE } from "./config.js";
+import { progress } from "./util.js";
 
 // L-Form aus dem Figma-Export (viewBox 32,59): Quadrat ohne die Ecke oben rechts
 const VB = 32.5934;
@@ -127,23 +128,23 @@ export class ActivationFX {
     const w = SCENE.cardWidth;
     this.hopT += dt;
     if (this.state === "burst") { // mit den Markern verschwinden
-      const k = Math.min(1, this.burstT / Math.max(0.05, ACTFX.burstSec));
+      const k = progress(this.burstT, ACTFX.burstSec);
       this.hopIcon.material.opacity = 1 - k; this.hopShadow.material.opacity = 0.5 * (1 - k);
       return;
     }
     if (this.hopState === "drop") {
-      const t = Math.min(1, this.hopT / Math.max(0.05, ACTFX.dropSec));
+      const t = progress(this.hopT, ACTFX.dropSec);
       this.placeHopper(w * ACTFX.dropHeight * (1 - t * t), 1);
       if (t >= 1) { this.hopState = "squash"; this.hopT = 0; }
     } else if (this.hopState === "squash") {
-      const t = Math.min(1, this.hopT / 0.14);
+      const t = progress(this.hopT, ACTFX.squashSec);
       this.placeHopper(0, 1 - 0.22 * Math.sin(Math.PI * t));
       if (t >= 1) { this.hopState = "pause"; this.hopT = 0; }
     } else if (this.hopState === "pause") {
       this.placeHopper(0, 1);
       if (this.hopT >= ACTFX.hopPauseSec) { this.hopState = "hop"; this.hopT = 0; }
     } else if (this.hopState === "hop") {
-      const t = Math.min(1, this.hopT / Math.max(0.05, ACTFX.hopSec));
+      const t = progress(this.hopT, ACTFX.hopSec);
       this.placeHopper(w * ACTFX.hopHeight * Math.sin(Math.PI * t), 1 + 0.08 * Math.sin(Math.PI * t));
       if (t >= 1) { this.hopState = "squash"; this.hopT = 0; }
     }
@@ -226,7 +227,7 @@ export class ActivationFX {
     let k = 0;
     if (this.state === "burst") {
       this.burstT += dt;
-      k = Math.min(1, this.burstT / Math.max(0.05, ACTFX.burstSec));
+      k = progress(this.burstT, ACTFX.burstSec);
     }
     for (const m of this.markers) {
       const lift = 0.5 + 0.5 * Math.sin(this.clock * omega + m.phase);

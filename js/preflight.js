@@ -23,6 +23,7 @@
    den jeweiligen Fall (Screens am Rechner ansehen), ?preflight=aus überspringt
    die Prüfung.
    ============================================================================= */
+import { el } from "./util.js";
 
 // In-App-Browser am User-Agent. FBAN/FBAV/FB_IAB = Facebook/Messenger (iOS +
 // Android), musical_ly = TikTok (ältere Kennung), Line/ mit Schrägstrich, damit
@@ -86,7 +87,6 @@ export async function preflight(force) {
    zeigen. Der Start-Button bleibt deaktiviert (boot() bricht ab). */
 export function showPreflightScreen(kind) {
   const t = TEXT[kind] || TEXT.nocam;
-  const el = (id) => document.getElementById(id);
   el("pfTitle").textContent = t.title;
   el("pfText").textContent = t.text;
   // Link ohne den Test-Parameter — das ist die Adresse, die der Nutzer im

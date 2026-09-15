@@ -13,11 +13,14 @@ import { BUILD } from "./version.js";
 const _p = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _s = new THREE.Vector3();
-const MM = 150;
 const N = 90;
 
+/* Jitter-Fenster: RMS der Frame-zu-Frame-Differenz in Kartenbreiten; rms()
+   liefert Millimeter über die physische Kartenbreite (karten.json → breiteMm;
+   bis Build 60 fest 150 mm → alle mm-Werte ≈ 2,4× zu groß, Richtwerte in
+   CLAUDE.md seit Build 61 umgerechnet). */
 class Ring {
-  constructor() { this.buf = []; this.prev = null; }
+  constructor(mm) { this.mm = mm; this.buf = []; this.prev = null; }
   push(x, y, z) {
     if (this.prev) {
       const dx = x - this.prev[0], dy = y - this.prev[1], dz = z - this.prev[2];
@@ -29,7 +32,7 @@ class Ring {
   reset() { this.prev = null; }
   rms() {
     if (!this.buf.length) return null;
-    return Math.sqrt(this.buf.reduce((a, v) => a + v, 0) / this.buf.length) * MM;
+    return Math.sqrt(this.buf.reduce((a, v) => a + v, 0) / this.buf.length) * this.mm;
   }
 }
 
@@ -50,8 +53,9 @@ export class StatsOverlay {
         if (m) this.liveBuild = +m[1];
       })
       .catch(() => {}); // offline/Fehler → nur die eigene Nummer anzeigen
-    this.raw = new Ring();
-    this.smooth = new Ring();
+    const mm = Number(env?.karte?.breiteMm) || 63;
+    this.raw = new Ring(mm);
+    this.smooth = new Ring(mm);
     this.lastDom = 0;
     // LAYOUT (2026-09-15, Michael: iPhone 12 mini, Panel nahm das ganze Bild ein):
     // oben links unter der Safe-Area, links/rechts 8 px Rand, rechts Platz für den

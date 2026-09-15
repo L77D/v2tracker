@@ -54,9 +54,10 @@ export async function startDesktop({ buildExperience, attachDevTools }) {
   // Karte als Boden (nur Optik im Testmodus)
   const tex = new THREE.TextureLoader().load("./assets/card/detar_demokarte_070926.jpg");
   tex.colorSpace = THREE.SRGBColorSpace;
-  const cardAspect = 2048 / 1500;
+  // Seitenverhältnis wie die Eck-Marker (SCENE.cardAspect) — bis Build 60 stand
+  // hier 2048/1500 (PENNY-Demokarte), Bild und Marker passten nicht zusammen.
   const cardMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, cardAspect),
+    new THREE.PlaneGeometry(1, SCENE.cardAspect),
     new THREE.MeshBasicMaterial({ map: tex })
   );
   cardMesh.rotation.x = -Math.PI / 2;

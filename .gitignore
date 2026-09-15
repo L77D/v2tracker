@@ -1,0 +1,13 @@
+# Tuning-Werkzeuge: nie einchecken (Masking-Falle, s. CLAUDE.md „Konventionen")
+tuning.json
+beats.theatre.json
+# Ausgabe von tools/build-lokal-prototyp.py (Standardziel im Repo-Root)
+DETAR_Lokal_Prototyp.html
+# Zwischenprodukte von @8thwall/image-target-cli (docs/kartendesigns.md)
+targets/8thwall/*_cropped.png
+targets/8thwall/*_original.png
+# System
+.DS_Store
+Thumbs.db
+node_modules/
+__pycache__/

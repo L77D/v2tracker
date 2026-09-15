@@ -15,11 +15,12 @@ const PRESETS = {
   "Groß (430×932)": [430, 932],
 };
 const LS_KEY = "detar-phone-preset";
-const MOVE_IDS = ["ar-container", "detLogo", "trackingHint", "question-root", "splash"];
+const MOVE_IDS = ["ar-container", "question-root", "splash"];
 
 export class PhoneFrame {
-  constructor(onResize) {
-    this.onResize = onResize;
+  /* onResize(w, h) setzt desktopMode.js nach dem Aufbau (Renderer-Größe). */
+  constructor() {
+    this.onResize = null;
     const style = document.createElement("style");
     style.textContent = `
       body.phone-framed { background: #1c1c1e; }
@@ -53,10 +54,12 @@ export class PhoneFrame {
     this.sel = document.createElement("select");
     this.sel.id = "pfSel";
     for (const name of Object.keys(PRESETS)) this.sel.add(new Option(name, name));
-    this.sel.value = localStorage.getItem(LS_KEY) || Object.keys(PRESETS)[0];
+    let saved = null;
+    try { saved = localStorage.getItem(LS_KEY); } catch (e) { /* kein Speicher (Private Mode) */ }
+    this.sel.value = saved || Object.keys(PRESETS)[0];
     if (!PRESETS[this.sel.value]) this.sel.value = Object.keys(PRESETS)[0];
     this.sel.onchange = () => {
-      localStorage.setItem(LS_KEY, this.sel.value);
+      try { localStorage.setItem(LS_KEY, this.sel.value); } catch (e) { /* egal */ }
       this.fit(true);
     };
     document.body.appendChild(this.sel);

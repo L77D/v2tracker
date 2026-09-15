@@ -23,11 +23,9 @@ export const card = {
   // Public-Edition (?public, 2026-09-09): neutrale Form für {firma} in Texten;
   // Splash zeigt keine Firma, Fragen mit `branded: true` entfallen (js/edition.js)
   companyNeutral: "der Betrieb",
-  npc: "Jonas · 2. Lehrjahr",
-  // Ausbildungsseite (seit Build 18 kein DET-Label mehr; der Link läuft über die
-  // Frage „link" im Thema „Wie man reinkommt", siehe unten)
-  jobUrl: "https://www.ausbildung.siemens.com/offer/elektroniker-w-m-d-fur-betriebstech/21edd4e8-bc72-47bd-8846-689054d2832e?showApplicationForm=false",
-  idleReturnMs: 8000,
+  // (Ausbildungsseite: seit Build 18 kein DET-Label mehr; die URL steht nur
+  //  noch an der Frage „link" im Thema „Wie man reinkommt", siehe unten.)
+  idleReturnMs: 8000, // Lesezeit nach dem Typewriter (ms); hat Vorrang vor CHOREO.idleReturnMs
 
   /* Themen sind über ALLE Karten identisch — dadurch kostet die Ebene inhaltlich
      fast nichts und der Schüler erkennt sie von Karte zu Karte wieder.

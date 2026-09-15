@@ -33,13 +33,15 @@ function loadScript(src) {
 }
 
 export async function initTimeline({ nodes, withStudio }) {
-  // Gespeicherten Stand laden (Produktiv-Pfad braucht ihn zwingend)
+  // Nur mit ?timeline (2026-09-15): vorher holte jeder ?dev-Start
+  // beats.theatre.json (404, die Datei gibt es nicht) und stieg dann aus.
+  if (!withStudio) return null;
+  // Gespeicherten Stand laden (falls vorhanden)
   let state;
   try {
     const r = await fetch("./beats.theatre.json", { cache: "no-store" });
     if (r.ok) state = await r.json();
   } catch (e) { /* keine Datei = ok */ }
-  if (!state && !withStudio) return null; // nichts zu tun, nichts laden
 
   // Shim: das Bundle erwartet Node-`process` (checkForUpdates) — sonst
   // wirft es einen (harmlosen, aber lauten) ReferenceError.

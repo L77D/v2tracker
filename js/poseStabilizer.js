@@ -2,19 +2,20 @@
    DETAR — PoseStabilizer: entzittert die Marker-Pose, BEVOR die Figur sie
    erbt. Port des in Zapworks verifizierten Stabilizers (Stand 2026-07-02).
 
-   MindAR-Vereinfachung: MindAR läuft im Kamera-Origin-Modus — die Kamera
-   steht im Ursprung, `anchor.group.matrix` IST bereits die kamera-relative
-   Karten-Pose. Das ist genau das Signal, das der Zapworks-Stabilizer erst
-   per camWorld⁻¹ × trackerWorld rekonstruieren musste → hier direkt filtern.
+   Eingang (seit 8th Wall, 2026-09-09): `source.matrix` ist die KAMERA-RELATIVE
+   Karten-Pose (main.js → updateAnchor: Kamera⁻¹ × Bildpose, Scale = Karten-
+   breite in Szenen-Einheiten). Unter MindAR (Branch main) war das direkt
+   anchor.group.matrix — Kamera-Origin-Modus, Anchor-Scale in Target-Pixeln.
 
-   Architektur: die Figur hängt NICHT unter anchor.group (das MindAR roh
-   bewegt + togglet), sondern unter einem eigenen `stabRoot` auf Szenen-Ebene.
-   Pro Frame: anchor.group.matrix lesen → One-Euro (Position) + SLERP
+   Architektur: die Figur hängt NICHT am rohen Anchor, sondern unter `stabRoot`
+   = KIND DER KAMERA (kamera-relative Pose; unter MindAR lag stabRoot auf
+   Szenen-Ebene). Pro Frame: source.matrix lesen → One-Euro (Position) + SLERP
    (Rotation), framerate-korrekt, Dead-Zone (Snap-to-still), Lost-Hold →
    in stabRoot.matrix schreiben. Sichtbarkeit steuert der Stabilizer selbst.
+   Stufen-Nummern (#1–#10) = Toggles im Dev-Panel (js/devPanel.js).
 
-   NaN-SCHUTZ (Fix 2026-07-08): In den Frames um Tracking-Verlust kann MindAR
-   degenerierte Matrizen liefern. Ein einziges NaN vergiftet über lerp/atan2
+   NaN-SCHUTZ (Fix 2026-07-08): In den Frames um Tracking-Verlust kann der
+   Tracker degenerierte Matrizen liefern. Ein einziges NaN vergiftet über lerp/atan2
    dauerhaft alle Folgewerte — Symptom: Kopf/Bubble/Figur verschwinden bis
    zum Neuladen. Deshalb wird JEDE gelesene Pose auf Endlichkeit geprüft und
    ein kaputter Frame komplett verworfen.
@@ -22,6 +23,7 @@
 import * as THREE from "../vendor/three/three.module.js";
 import { STAB, GYRO } from "./config.js";
 import { arbitrateUpright } from "./poseArbiter.js";
+import { finiteVec, finiteQuat } from "./util.js";
 
 const _pos = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
@@ -31,13 +33,10 @@ const _dq = new THREE.Quaternion();
 const _axis = new THREE.Vector3();
 const _predQ = new THREE.Quaternion();
 
-function finiteVec(v) { return Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z); }
-function finiteQuat(q) { return Number.isFinite(q.x) && Number.isFinite(q.y) && Number.isFinite(q.z) && Number.isFinite(q.w); }
-
 export class PoseStabilizer {
   /**
-   * @param source anchor.group (MindAR schreibt hier die rohe Pose rein)
-   * @param target stabRoot (eigene Group auf Szenen-Ebene, trägt die Figur)
+   * @param source Rohpose-Träger (main.js schreibt pro Frame source.matrix)
+   * @param target stabRoot (Kind der Kamera, trägt die Figur)
    * @param gyro   optionale GyroFusion (Prediction + Lost-Brücke)
    */
   constructor(source, target, gyro = null) {
@@ -131,10 +130,12 @@ export class PoseStabilizer {
     this.tracking = false;
   }
 
-  /* NEU AUFSETZEN auf Nutzer-Tap (2026-09-07): main.js stößt parallel MindARs
-     Neu-Erkennung an. Die im Moment anstehende Rohpose ist noch die ALTE
-     (Erkennung braucht ein paar Frames) — sie zählt nicht als Messung
-     (skipCurrent); bis die erste frische Messung da ist, steht die alte Pose. */
+  /* NEU AUFSETZEN auf Nutzer-Tap (2026-09-07): Median über die nächsten
+     Messungen, während der Nutzer stillhält. Die im Moment anstehende Rohpose
+     stammt noch von VOR dem Tap — sie zählt nicht als Messung (skipCurrent);
+     bis die erste frische Messung da ist, steht die alte Pose. (Unter MindAR
+     stieß main.js hier zusätzlich die Neu-Erkennung des Trackers an; 8th Wall
+     erkennt kontinuierlich neu.) */
   reacquire() {
     this.initialised = false;
     this.hasScaleLock = false;
@@ -149,7 +150,6 @@ export class PoseStabilizer {
     this.lastClockMs = now;
     if (dtMs <= 0) dtMs = 1000 / STAB.refHz;
     const dt = dtMs / 1000;
-    const frameRatio = (STAB.refHz * dtMs) / 1000;
 
     // Gyro-Delta JEDEN Frame abholen (hält den internen Zustand frisch).
     // null = KEIN frisches Signal (keine Permission / kein Sensor / stale).
@@ -217,17 +217,15 @@ export class PoseStabilizer {
       this.arb.flipped = false;
     }
 
-    // SCALE-LOCK (#9, 2026-07-14): Die Anchor-Scale ist strukturell KONSTANT
-    // (postMatrix = Markerbreite in px; die ModelView-Transformation ist starr —
-    // Entfernung steckt in der Translation, nie in der Scale). Jede Abweichung
-    // ist also ein ARTEFAKT: MindARs elementweiser Matrix-Filter erzeugt nicht-
-    // starre Zwischenmatrizen (decompose → wackelnde Scale + schiefe Rotation),
-    // Fehl-Homographien unter Unschärfe erzeugen große Sprünge („Figur schräg/
-    // zu groß"). Vorher lief die Scale ROH durch UND normierte die Position —
-    // doppelte Jitter-Quelle. Jetzt: kleine Abweichung → mit eingefrorener
-    // Scale überschreiben (Rest der Pipeline unverändert); große Abweichung →
-    // ganzen Frame verwerfen, denn die Rotation DESSELBEN Frames ist ebenso
-    // unbrauchbar.
+    // SCALE-LOCK (#9, MindAR-Stand 2026-07-14): Die Anchor-Scale ist strukturell
+    // KONSTANT (Entfernung steckt in der Translation, nie in der Scale). Jede
+    // Abweichung war unter MindAR ein ARTEFAKT (elementweiser Matrix-Filter →
+    // nicht-starre Zwischenmatrizen; Fehl-Homographien → „Figur schräg/zu
+    // groß"): kleine Abweichung → eingefrorene Scale, große → Frame verwerfen.
+    // UNTER 8TH WALL (2026-09-15): main.js setzt die Scale aus detail.scale ×
+    // scaledWidth, und detail.scale ist pro Track konstant — die Stufe löst
+    // strukturell nie aus (Re-Lock-Zähler in ?stats bleibt 0). Bleibt als
+    // Sicherung; Ausbau ist ein Stufe-3-Punkt nach Prüfung am Gerät.
     if (STAB.scaleLock !== "nein" && this.hasScaleLock) {
       if (Math.abs(_scale.x - this.scaleLock) / this.scaleLock > STAB.scaleOutlier) {
         // RE-LOCK (2026-09-07): hält die Abweichung scaleRelockMs am Stück an, war
@@ -247,18 +245,15 @@ export class PoseStabilizer {
       _scale.setScalar(this.scaleLock);
     }
 
-    // EINHEITEN-NORMIERUNG (#2, Prüfstand-Befund 2026-07-08): MindARs Kamera-
-    // Raum ist PIXEL-skaliert (Anchor-Scale ≈ Target-Pixelbreite, Position
-    // z. B. z≈-4500). Gefiltert wird deshalb in KARTENBREITEN (pos / scale) —
-    // damit sind posDeadZone/beta einheitenfest, egal wie groß das Target ist.
+    // EINHEITEN-NORMIERUNG (#2, Prüfstand-Befund 2026-07-08): gefiltert wird
+    // in KARTENBREITEN (pos / scale) — damit sind posDeadZone/beta einheiten-
+    // fest, egal in welcher Einheit der Tracker liefert (8th Wall: Anchor-Scale
+    // = Kartenbreite in Szenen-Einheiten ≈ 0,06; MindAR: Target-Pixelbreite,
+    // Position z. B. z ≈ −4500).
     if (STAB.normalize !== "nein") _pos.divideScalar(_scale.x);
 
-    // Snap-Logik (#6) ist 2026-07-13 in updateMotionEstimate gewandert:
-    // sie wird nur noch auf NEUE Messungen angewandt und braucht ZWEI
-    // aufeinanderfolgende ferne Messungen (Ausreißer-Debounce) — eine einzelne
-    // Fehl-Messung unter Bewegungsunschärfe teleportierte sonst die Figur
-    // („mal schräg, mal doppelt so groß").
-
+    // (Snap #6 lebt in updateMotionEstimate: nur auf NEUE Messungen, zwei
+    //  ferne Messungen in Folge = Ausreißer-Debounce.)
     if (!this.initialised) {
       // AUFSETZEN PER MEDIAN (2026-09-07): erst Messungen sammeln; solange wird
       // der laufende Median angezeigt. Liefert false, sobald der Median steht —
@@ -414,7 +409,7 @@ export class PoseStabilizer {
     const far = this.smoothPos.distanceTo(_pos) > STAB.snapDist ||
                 this.smoothQuat.angleTo(_quat) > STAB.snapAngle;
     if (far) {
-      this.farCount = (this.farCount ?? 0) + 1;
+      this.farCount++;
       if (this.farCount >= 2 && STAB.snap !== "nein") {
         this.initialised = false; // nächster Tick setzt hart neu auf
         this.snapCount++;

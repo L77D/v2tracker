@@ -11,8 +11,8 @@
                „Ich muss weiter" als vierte Kachel
      thema     Kopfzeile [←] Thema + Seitenpunkte; Karussell mit 2×2 Kacheln
                je Seite (Scroll-Snap, nächste Seite lugt rechts an); Reiter
-               NEU / LINK / ✅ (schon gefragt); „Ich muss weiter" als letzte
-               Kachel jedes Themas
+               NEU / LINK / ✅ (schon gefragt); „Ich muss weiter" NUR im
+               Themenraster (Michael 2026-09-07), nicht in den Themen
      options   Kopfzeile „Deine Antwort" + Raster mit den Antwortoptionen
      next      genau eine Kachel „Weiter" / „Seite öffnen"
      leer      während die Figur spricht
@@ -21,6 +21,22 @@
    ============================================================================= */
 import { sound } from "./sound.js";
 import { buildSupport } from "./supportUI.js";
+
+// Kompatibilität (2026-09-15): Modul-Konstanten statt `static`-Klassenfeldern —
+// öffentliche statische Felder sind ES2022 (Safari 14.1 / iOS 14.5) und liegen
+// über der Grenze iOS 13.4 / Chrome 80 (nur `?.`/`??`), s. CLAUDE.md.
+const TITLES = {
+  themen: "Was interessiert dich?",
+  options: "Deine Antwort",
+};
+const LINES = {
+  suchen:   [{ text: "Halte auf die Karte", wave: true }], // Laola-Welle (css/app.css)
+  gefunden: [{ text: "Karte gefunden", kind: "gelb" }, { text: "→ Tipp sie an!", einzug: true }],
+  ruhe:     [{ text: "Tipp auf die Karte", pulse: true }],
+  verloren: [{ text: "Halte auf die Karte" }], // Ruhezustand + Karte verloren
+};
+const TILT_DEG = 2.34;      // Kachel-Neigung ± (Figma, 402-px-Frame)
+const TILES_PER_PAGE = 4;   // 2×2 je Karussell-Seite (css: .detar-page)
 
 export class QuestionMenu {
   /* hooks: { onQuestion(q), onTheme(id), onBack(), onOption(o), onNext(), onReentry() } */
@@ -34,22 +50,16 @@ export class QuestionMenu {
     this.support = null;   // aktive Support-Zeile (Icon-Timer stoppen beim Wechsel)
     this.renderOnboarding();
   }
-  static TITLES = {
-    themen: "Was interessiert dich?",
-    options: "Deine Antwort",
-  };
-  static LINES = {
-    suchen:   [{ text: "Halte auf die Karte", wave: true }], // Laola-Welle (css/app.css)
-    gefunden: [{ text: "Karte gefunden", kind: "gelb" }, { text: "→ Tipp sie an!", einzug: true }],
-    ruhe:     [{ text: "Tipp auf die Karte", pulse: true }],
-    verloren: [{ text: "Halte auf die Karte" }], // Ruhezustand + Karte verloren
-  };
 
   /* ---- Grundgerüst ------------------------------------------------------ */
-  panel(extraClass = "") {
+  /* Wurzel leeren; Icon-Timer der aktiven Support-Zeile stoppen. */
+  resetRoot() {
     this.support?.icon.destroy();
     this.support = null;
     this.root.innerHTML = "";
+  }
+  panel(extraClass = "") {
+    this.resetRoot();
     const panel = document.createElement("div");
     panel.className = "detar-panel d-dots " + extraClass;
     if (this.frozen) panel.classList.add("detar-panel--frozen");
@@ -64,13 +74,13 @@ export class QuestionMenu {
   }
   renderOnboarding() {
     this.phase = "onboarding";
-    this.supportPanel("suchen", QuestionMenu.LINES.suchen);
+    this.supportPanel("suchen", LINES.suchen);
   }
   /* Aktivier-Phase: Karte gefunden, Tap startet die Figur. */
   showAttract() {
     if (this.revealed) return;
     this.phase = "attract";
-    this.supportPanel("gefunden", QuestionMenu.LINES.gefunden);
+    this.supportPanel("gefunden", LINES.gefunden);
   }
   /* Lokal-Prototyp: Icon der aktuellen Support-Zeile springt aus dem Bild. */
   jumpIconOut(onDone) {
@@ -91,9 +101,7 @@ export class QuestionMenu {
   /* Leer: während die Figur spricht. */
   clear() {
     this.phase = "speaking";
-    this.support?.icon.destroy();
-    this.support = null;
-    this.root.innerHTML = "";
+    this.resetRoot();
   }
   /* Tracking verloren: Menü bleibt stehen, reagiert aber nicht. */
   setFrozen(value) {
@@ -133,7 +141,7 @@ export class QuestionMenu {
     panel.appendChild(h);
     return dotEls;
   }
-  /* Reiter über der Kachel: {kind: "thema"|"neu"|"link"|"check"|"neutral", text} */
+  /* Reiter über der Kachel: {kind: "thema"|"neu"|"link"|"check", text} */
   reiter(items) {
     const row = document.createElement("span");
     row.className = "detar-reiter";
@@ -145,8 +153,10 @@ export class QuestionMenu {
     }
     return row;
   }
-  /* Kachel (Auswahl-Komponente): Reiter-Zeile + Textkasten. */
-  tile({ label, cls = "", reiter = [], tilt = 0, onTap }) {
+  /* Kachel (Auswahl-Komponente): Reiter-Zeile + Textkasten.
+     uiSound = true: UI-Tick statt Fragen-Tap, keine „selected"-Markierung
+     (Weiter-Kachel). */
+  tile({ label, cls = "", reiter = [], tilt = 0, onTap, uiSound = false }) {
     const btn = document.createElement("button");
     btn.className = "detar-tile " + cls;
     btn.style.setProperty("--tilt", tilt.toFixed(2) + "deg");
@@ -157,8 +167,9 @@ export class QuestionMenu {
     btn.appendChild(k);
     btn.onclick = () => {
       if (this.frozen) return;
+      if (uiSound) { sound.uiTap(); onTap(); return; }
       sound.questionTap();
-      this.root.querySelectorAll(".detar-tile.selected").forEach((el) => el.classList.remove("selected"));
+      this.clearSelection();
       btn.classList.add("selected");
       onTap();
     };
@@ -183,10 +194,10 @@ export class QuestionMenu {
     const wrap = document.createElement("div");
     wrap.className = "detar-pages";
     const pages = [];
-    for (let i = 0; i < tiles.length; i += 4) {
+    for (let i = 0; i < tiles.length; i += TILES_PER_PAGE) {
       const pg = document.createElement("div");
       pg.className = "detar-page";
-      tiles.slice(i, i + 4).forEach((t) => pg.appendChild(this.cell(t)));
+      tiles.slice(i, i + TILES_PER_PAGE).forEach((t) => pg.appendChild(this.cell(t)));
       wrap.appendChild(pg);
       pages.push(pg);
     }
@@ -194,14 +205,14 @@ export class QuestionMenu {
     wrap.scrollLeft = 0;
     if (dotEls.length > 1) {
       wrap.addEventListener("scroll", () => {
-        const w = pages[0].getBoundingClientRect().width + 4;
-        const idx = Math.max(0, Math.min(dotEls.length - 1, Math.round(wrap.scrollLeft / w)));
+        const w = pages[0].getBoundingClientRect().width + 4; // + --q-cell-gap (css)
+        const idx = Math.max(0, Math.min(pages.length - 1, Math.round(wrap.scrollLeft / w)));
         dotEls.forEach((d, i) => d.classList.toggle("active", i === idx));
       }, { passive: true });
     }
     return wrap;
   }
-  /* „Ich muss weiter" — als Kachel im Themenraster und in jedem Thema. */
+  /* „Ich muss weiter" — als vierte Kachel im Themenraster (nur dort). */
   exitTile(tilt = 0) {
     const q = this.engine.exitQuestion();
     if (!q) return null;
@@ -217,7 +228,7 @@ export class QuestionMenu {
       label: q.label,
       cls: asked ? "detar-tile--asked" : "",
       reiter,
-      tilt: (i % 2 === 0 ? -1 : 1) * 2.34,
+      tilt: (i % 2 === 0 ? -1 : 1) * TILT_DEG,
       onTap: () => this.hooks.onQuestion?.(q),
     });
   }
@@ -230,7 +241,7 @@ export class QuestionMenu {
   showThemen(reveal = false) {
     this.phase = "themen";
     const panel = this.panel(reveal ? "detar-panel--reveal" : "");
-    this.head(panel, { title: QuestionMenu.TITLES.themen });
+    this.head(panel, { title: TITLES.themen });
     const tiles = this.engine.themes().map((t) => this.tile({
       label: t.label,
       cls: "detar-tile--theme",
@@ -247,13 +258,12 @@ export class QuestionMenu {
     const t = (this.engine.card.themen ?? []).find((x) => x.id === themaId);
     const panel = this.panel(reveal ? "detar-panel--reveal" : "");
     const qs = this.engine.sortedQuestionsOf(themaId);
-    const tiles = qs.map((q, i) => this.questionTile(q, i));
-    // „Ich muss weiter" nur im Hauptmenü (Michael 2026-09-07), nicht in den Themen
+    const tiles = qs.map((q, i) => this.questionTile(q, i)); // ohne Ausstieg-Kachel: nur im Hauptmenü (Michael 2026-09-07)
     const dotEls = this.head(panel, {
       title: t?.label ?? "",
       back: () => this.hooks.onBack?.(),
       backNew: this.engine.freshElsewhere(themaId),
-      dots: Math.ceil(tiles.length / 4),
+      dots: Math.ceil(tiles.length / TILES_PER_PAGE),
     });
     this.pages(panel, tiles, dotEls);
     if (reveal) this.animateReveal(panel);
@@ -262,9 +272,9 @@ export class QuestionMenu {
   showOptions(options) {
     this.phase = "options";
     const panel = this.panel();
-    this.head(panel, { title: QuestionMenu.TITLES.options });
+    this.head(panel, { title: TITLES.options });
     this.grid(panel, options.map((o, i) => this.tile({
-      label: o.label, tilt: (i % 2 === 0 ? -1 : 1) * 2.34, onTap: () => this.hooks.onOption?.(o),
+      label: o.label, tilt: (i % 2 === 0 ? -1 : 1) * TILT_DEG, onTap: () => this.hooks.onOption?.(o),
     })));
   }
   /* Weiter-Schritt: genau eine Kachel. Der Handler läuft synchron im Tap —
@@ -272,9 +282,7 @@ export class QuestionMenu {
   showNext(label = "Weiter") {
     this.phase = "next";
     const panel = this.panel();
-    const btn = this.tile({ label, tilt: -2.34, onTap: () => this.hooks.onNext?.() });
-    btn.onclick = () => { if (this.frozen) return; sound.uiTap(); this.hooks.onNext?.(); };
-    this.grid(panel, [btn]);
+    this.grid(panel, [this.tile({ label, tilt: -TILT_DEG, uiSound: true, onTap: () => this.hooks.onNext?.() })]);
   }
   /* Ruhezustand nach der Verabschiedung: Figur ist eingeklappt.
      lost = Karte gerade nicht im Bild: dann steht „Halte auf die Karte" HIER
@@ -282,7 +290,7 @@ export class QuestionMenu {
      gehört in die UI-Fläche, Michael 2026-09-07). */
   showIdle(lost = false) {
     this.phase = lost ? "idle-lost" : "idle";
-    const s = this.supportPanel(lost ? "suchen" : "ruhe", lost ? QuestionMenu.LINES.verloren : QuestionMenu.LINES.ruhe);
+    const s = this.supportPanel(lost ? "suchen" : "ruhe", lost ? LINES.verloren : LINES.ruhe);
     if (lost) return;
     s.style.pointerEvents = "auto";
     s.style.cursor = "pointer";

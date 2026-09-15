@@ -37,7 +37,7 @@ export class DevPanel {
         { o: ACT, k: "durationSec", l: "Pop-In Dauer (s)", min: 0.1, max: 3, step: 0.05 },
         { o: ACT, k: "spins", l: "Spins (0/1)", min: 0, max: 2, step: 1 },
         { o: ACT, k: "overshoot", l: "Overshoot", min: 0, max: 4, step: 0.05 },
-        { o: CHOREO, k: "idleReturnMs", l: "Haltezeit n. Text (ms)", min: 500, max: 15000, step: 250 },
+        { o: CHOREO, k: "idleReturnMs", l: "Haltezeit n. Text (ms; Karte überschreibt)", min: 500, max: 15000, step: 250 },
         { o: CHOREO, k: "greetingPose", l: "Begrüßungs-Pose", options: ["idle", "affirm", "think"] },
         { o: CHOREO, k: "jumpDurationSec", l: "Figur-Tap: Dauer", min: 0.1, max: 1.5, step: 0.05 },
         { o: CHOREO, k: "jumpHeight", l: "Figur-Tap: Höhe", min: 0, max: 0.15, step: 0.005 },
@@ -295,7 +295,9 @@ export class DevPanel {
     sound.applyTheme();  // deckt localStorage-Load, Preset-Load, Import, Reset ab
     sound.applyVolume();
   }
-  saveLocal() { localStorage.setItem(LS_KEY, JSON.stringify(snapshot())); }
+  saveLocal() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(snapshot())); } catch (e) { /* Private Mode / Quota: Regler wirkt trotzdem */ }
+  }
   loadLocal() {
     try {
       const s = JSON.parse(localStorage.getItem(LS_KEY));
@@ -311,4 +313,6 @@ function applySnapshot(s) {
 function getPresets() {
   try { return JSON.parse(localStorage.getItem(PRESET_KEY)) || {}; } catch (e) { return {}; }
 }
-function setPresets(p) { localStorage.setItem(PRESET_KEY, JSON.stringify(p)); }
+function setPresets(p) {
+  try { localStorage.setItem(PRESET_KEY, JSON.stringify(p)); } catch (e) { console.warn("Presets nicht speicherbar:", e); }
+}

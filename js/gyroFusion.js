@@ -121,8 +121,4 @@ export class GyroFusion {
     if (performance.now() - this.lastEventMs > 250) return null;
     return this.qCur;
   }
-
-  dispose() {
-    window.removeEventListener("deviceorientation", this._onEvent, true);
-  }
 }

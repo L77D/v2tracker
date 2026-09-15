@@ -51,8 +51,10 @@ import { GyroFusion } from "./gyroFusion.js";
 import { sound } from "./sound.js";
 import { buildSupport } from "./supportUI.js";
 import { preflight, showPreflightScreen } from "./preflight.js";
+import { el, finiteVec } from "./util.js";
 
 const params = new URLSearchParams(location.search);
+// (tools/build-lokal-prototyp.py patcht die Zeilen DESKTOP_MODE / DEV_MODE — Wortlaut halten)
 const DESKTOP_MODE = params.has("desktop");
 // Edition (Michael 2026-09-09): ?public = neutrale Fassung ohne Firmenlogo/
 // -name im Splash und ohne Link-Frage im Dialog (js/edition.js). Standard =
@@ -61,11 +63,15 @@ const DESKTOP_MODE = params.has("desktop");
 // behält die Query).
 const PUBLIC_MODE = params.has("public");
 const card = prepareCard(cardData, { publicMode: PUBLIC_MODE });
-// Debug NUR per URL (?debug) — SCENE.debug aus einem Preset wird bewusst
-// ignoriert (Leftover aus Tuning-Sessions soll nie live erscheinen).
+// Debug NUR per URL (?debug) — bewusst kein Config-Key dafür (ein Leftover
+// aus Tuning-Sessions soll nie live erscheinen; SCENE.debug seit Build 61 weg).
 const DEBUG_MODE = params.has("debug");
 const DEV_MODE = params.has("dev");           // Tuning-Panel (Regler)
 const TIMELINE_MODE = params.has("timeline"); // Theatre.js-Studio (Keyframe-Editor)
+// Konsolen-Ausgaben + window.__detar nur in Entwickler-Sessions (2026-09-15;
+// vorher landeten Firmenname/Fragenzahl in jeder Nutzer-Konsole).
+const DEV_LOG = DEV_MODE || DEBUG_MODE || TIMELINE_MODE || params.has("stats");
+const log = (...a) => { if (DEV_LOG) console.log(...a); };
 // NEU-AUFSETZEN auf Tap (2026-09-07): wird im AR-Modus gesetzt (startAR) —
 // PoseStabilizer per Median neu aufsetzen. Aufrufer: Figur-Tap (Hüpfer
 // kaschiert den Sprung) und Karten-Tap in der „Karte gefunden"-Phase. Im
@@ -146,7 +152,6 @@ async function resolveKarte() {
   } };
 }
 
-const el = (id) => document.getElementById(id);
 let gyro = null; // GyroFusion — wird in der START-Geste angelegt (iOS-Permission)
 
 /* --------------------------------------------------------------------------
@@ -176,7 +181,7 @@ async function boot() {
     return;
   }
   karte = resolved.karte;
-  console.log("DETAR Karte:", karte.id, "·", karte.name, "·", karte.breiteMm, "mm →", TARGET_DIR + karte.target + ".json");
+  log("DETAR Karte:", karte.id, "·", karte.name, "·", karte.breiteMm, "mm →", TARGET_DIR + karte.target + ".json");
   // Engine-Kern VORLADEN (Netzwerk, nicht ausgeführt) — erst hier per JS statt
   // als <link> in index.html, weil die Variante (SIMD / nicht-SIMD) vom Gerät
   // abhängt; so lädt jedes Gerät nur die eine xr.js, die es auch nutzt. Der
@@ -186,7 +191,7 @@ async function boot() {
     const pre = document.createElement("link");
     pre.rel = "preload"; pre.as = "script"; pre.href = XR_ENGINE_URL;
     document.head.appendChild(pre);
-    console.log("DETAR Engine-Variante:", ENGINE_VARIANT, "→", XR_ENGINE_URL);
+    log("DETAR Engine-Variante:", ENGINE_VARIANT, "→", XR_ENGINE_URL);
   }
   // tuning.json nur in Tuning-Sessions holen (?dev oder ?tuning) — im Normalfall
   // gibt es die Datei nicht, alle Werte sind Defaults in config.js (2026-09-09).
@@ -210,7 +215,7 @@ async function boot() {
   if (PUBLIC_MODE) { document.body.classList.add("public"); logoImg.hidden = true; companyText.hidden = true; }
   else if (card.companyLogo) { logoImg.src = card.companyLogo; logoImg.alt = card.company; companyText.hidden = true; }
   else { logoImg.hidden = true; companyText.textContent = card.company ?? ""; }
-  console.log("DETAR Edition:", card.edition, "· Fragen:", card.questions.length);
+  log("DETAR Edition:", card.edition, "· Fragen:", card.questions.length);
   // (DET-Logo mit Job-Link nach dem Splash: seit dem UI-Update 2026-09-03 raus)
 
   // Font muss VOR dem ersten Bubble-measureText geladen sein.
@@ -252,7 +257,8 @@ function showStartError(err) {
   const isCam = /permission|notallowed|denied/i.test(String(err?.name) + String(err?.message));
   if (isCam) {
     document.body.classList.add("camera-denied");
-    el("permReload").onclick = () => location.reload();
+    const reload = el("permReload");
+    if (reload) reload.onclick = () => location.reload();
     return;
   }
   const box = el("errorBox");
@@ -279,8 +285,7 @@ function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTic
       camera.getWorldPosition(out);
       worldRoot.updateWorldMatrix(true, false);
       worldRoot.worldToLocal(out);
-      if (STAB.nanGuard !== "nein" &&
-          (!Number.isFinite(out.x) || !Number.isFinite(out.y) || !Number.isFinite(out.z))) return null;
+      if (STAB.nanGuard !== "nein" && !finiteVec(out)) return null;
       return out;
     },
     /* Welt → Karten-Frame (matrixWorld muss aktuell sein — getCamLocal wird
@@ -308,7 +313,7 @@ function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTic
   });
   controller = new CardController({ card, nodes, bubble, face: faceAnim, wander, activation, menu, fx });
   menu.engine = controller.engine;
-  window.__detar = { controller, engine: controller.engine, fx, nodes, camera, renderer, sound }; // Debug-Zugriff (Konsole)
+  if (DEV_LOG) window.__detar = { controller, engine: controller.engine, fx, nodes, camera, renderer, sound }; // Debug-Zugriff (Konsole, nur ?dev/?debug/?stats)
   const debug = DebugOverlay ? new DebugOverlay(worldRoot, nodes, frame) : null;
   if (debug) debug.setVisible(true);
 
@@ -342,7 +347,7 @@ function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTic
     }
   }
 
-  // Tap-Erkennung (Tap ≠ Wackeln/Drag: max 6px Bewegung, max 400ms)
+  // Tap-Erkennung (Tap ≠ Wackeln/Drag: CHOREO.tapMaxPx Bewegung, CHOREO.tapMaxMs Dauer)
   const _ray = new THREE.Raycaster();
   const _tapNdc = new THREE.Vector2();
   let _downX = 0, _downY = 0, _downT = 0;
@@ -354,9 +359,10 @@ function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTic
   function doTap(clientX, clientY) {
     // Entprellen: pointerup UND der native click-Fallback (iOS) rufen doTap —
     // seit dem Dialogsystem ist Doppel-Auslösung NICHT mehr harmlos (Blase
-    // überspringen + Weiter in einem Tap). Zweiter Aufruf binnen 120 ms fällt weg.
+    // überspringen + Weiter in einem Tap). Zweiter Aufruf binnen
+    // CHOREO.tapDebounceMs fällt weg.
     const nowT = performance.now();
-    if (nowT - _lastTapT < 120) return;
+    if (nowT - _lastTapT < CHOREO.tapDebounceMs) return;
     _lastTapT = nowT;
     const rect = renderer.domElement.getBoundingClientRect();
     _tapNdc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -384,8 +390,8 @@ function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTic
     _downX = e.clientX; _downY = e.clientY; _downT = performance.now();
   });
   renderer.domElement.addEventListener("pointerup", (e) => {
-    if (Math.hypot(e.clientX - _downX, e.clientY - _downY) > 6) return;
-    if (performance.now() - _downT > 400) return;
+    if (Math.hypot(e.clientX - _downX, e.clientY - _downY) > CHOREO.tapMaxPx) return;
+    if (performance.now() - _downT > CHOREO.tapMaxMs) return;
     doTap(e.clientX, e.clientY);
   });
   // FALLBACK (iOS): bricht der Browser die Pointer-Sequenz mit pointercancel
@@ -443,6 +449,7 @@ async function attachDevTools(exp) {
    über data-preload-chunks="slam" den Tracking-Chunk nach (Open-Source-Engine:
    xr-tracking.js = Bildtracker ohne SLAM) und feuert danach `xrloaded`.
    -------------------------------------------------------------------------- */
+const ENGINE_LOAD_TIMEOUT_MS = 30000; // großzügig für langsame Netze (xr-tracking.js ≈ 3,8 MB)
 function loadEngine() {
   if (window.XR8) return Promise.resolve(window.XR8);
   return new Promise((resolve, reject) => {
@@ -450,9 +457,16 @@ function loadEngine() {
     s.src = XR_ENGINE_URL;
     s.async = true;
     s.setAttribute("data-preload-chunks", "slam");
-    s.onerror = () => reject(new Error("8th-Wall-Engine nicht ladbar: " + XR_ENGINE_URL +
-      " (Build nach vendor/8thwall/ legen, s. vendor/8thwall/README.md)"));
-    window.addEventListener("xrloaded", () => resolve(window.XR8), { once: true });
+    // Timeout (2026-09-15): lädt xr.js, feuert aber nie `xrloaded` (z. B. WASM-
+    // Instanziierung schlägt fehl), hing das Promise vorher für immer — Button
+    // blieb ausgegraut, kein Fehlertext.
+    const onLoaded = () => { clearTimeout(timer); resolve(window.XR8); };
+    const fail = (msg) => { window.removeEventListener("xrloaded", onLoaded); reject(new Error(msg)); };
+    const timer = setTimeout(() => fail("8th-Wall-Engine antwortet nicht (Timeout " + ENGINE_LOAD_TIMEOUT_MS / 1000 + " s): " + XR_ENGINE_URL),
+      ENGINE_LOAD_TIMEOUT_MS);
+    s.onerror = () => { clearTimeout(timer); fail("8th-Wall-Engine nicht ladbar: " + XR_ENGINE_URL +
+      " (Build nach vendor/8thwall/ legen, s. vendor/8thwall/README.md)"); };
+    window.addEventListener("xrloaded", onLoaded, { once: true });
     document.head.appendChild(s);
   });
 }
@@ -498,7 +512,8 @@ async function startAR() {
   const [XR8, targetData] = await Promise.all([loadEngine(), loadTargetData()]);
 
   // XR8.Threejs verlangt das globale THREE (>= r125) — dieselbe Instanz wie
-  // unsere Module (Importmap three@0.160), sonst passen Klassen nicht zusammen.
+  // unsere Module (vendor/three/three.module.js, relativer Import), sonst
+  // passen Klassen nicht zusammen.
   window.THREE = THREE;
 
   // Canvas für Kamerabild + Szene. Die Engine liest canvas.width/height jeden
@@ -608,7 +623,16 @@ function detarPipelineModule(XR8, { resolve, reject }) {
   }
 
   let settled = false;
-  const fail = (err) => { if (!settled) { settled = true; reject(err); } };
+  // Vor onStart: Promise verwerfen (Splash zeigt den Fehler). Nach onStart
+  // (2026-09-15): Kamera-Ausfall in der Session (Anruf, Tab-Wechsel, Hitze) —
+  // vorher stumm; jetzt Support-Zeile mittig „Kamera unterbrochen".
+  const fail = (err) => {
+    if (!settled) { settled = true; reject(err); return; }
+    console.error("DETAR Kamera/Engine nach dem Start:", err);
+    hint.innerHTML = "";
+    hint.appendChild(buildSupport("suchen", [{ text: "Kamera unterbrochen", kind: "gelb" }, { text: "→ Seite neu laden", einzug: true }]));
+    hint.classList.add("show");
+  };
 
   return {
     name: "detar",
@@ -663,18 +687,18 @@ function detarPipelineModule(XR8, { resolve, reject }) {
         render: false, // rendert XR8.Threejs in onRender
       });
       exp.camera = camera;
-      console.log(`DETAR Kamera: ${videoWidth}×${videoHeight}, Canvas ${renderer.domElement.width}×${renderer.domElement.height}`);
+      log(`DETAR Kamera: ${videoWidth}×${videoHeight}, Canvas ${renderer.domElement.width}×${renderer.domElement.height}`);
       // Erst auflösen (Splash weg, body.scanning an), DANN die Dev-Werkzeuge
       // nachladen — der Tracker läuft ab hier schon; würde ein Fund vor dem
       // Auflösen kommen, setzte boot() den Suchrahmen danach wieder an.
       if (!settled) { settled = true; resolve(); }
-      attachDevTools(exp);
+      attachDevTools(exp).catch((e) => console.warn("Dev-Werkzeuge nicht geladen:", e));
     },
 
     onUpdate: () => { exp?.loop(); },
 
     listeners: [
-      { event: "reality.imagescanning", process: () => console.log("DETAR Target geladen, suche Karte …") },
+      { event: "reality.imagescanning", process: () => log("DETAR Target geladen, suche Karte …") },
       { event: "reality.imagefound",   process: ({ detail }) => { if (exp) onFound(detail); } },
       { event: "reality.imageupdated", process: ({ detail }) => { latest = detail; } },
       { event: "reality.imagelost",    process: () => { if (exp) onLost(); } },
@@ -682,4 +706,6 @@ function detarPipelineModule(XR8, { resolve, reject }) {
   };
 }
 
-boot();
+// Fehler im Boot (außerhalb des Start-Klicks) sichtbar machen — vorher eine
+// stille Unhandled Rejection, Splash mit ausgegrautem Knopf (2026-09-15).
+boot().catch((err) => { console.error("DETAR boot failed:", err); showStartError(err); });

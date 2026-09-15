@@ -45,10 +45,6 @@ for dp, _, files in os.walk(os.path.join(ROOT, "assets")):
 
 def inline_literals(src):
     # feste Pfad-Literale "./assets/…" und "../assets/…" durch data:-URIs ersetzen
-    def rep(m):
-        q, path = m.group(1), m.group(2)
-        key = "./" + path.split("assets/", 1)[1] if False else "./assets/" + path.split("assets/", 1)[1]
-        return q + assets.get(key, path) + q
     return re.sub(r'(["\'(])(\.\.?/assets/[^"\')]+)(?=["\')])', lambda m: m.group(1) + assets.get("./assets/" + m.group(2).split("assets/", 1)[1], m.group(2)), src)
 
 # --- Module einsammeln + Spezifizierer umschreiben --------------------------

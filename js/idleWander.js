@@ -15,6 +15,7 @@
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { IDLE, frameLerp60 } from "./config.js";
+import { rand, normalizeAngle } from "./util.js";
 
 const _camL = new THREE.Vector3();
 const _headW = new THREE.Vector3();
@@ -55,8 +56,6 @@ export class IdleWander {
       this.pickNextState(true);
     }
   }
-  // (Einblick-Sway lebt seit 2026-07-15 in FigureFlip.tickSway — die Figur
-  //  liegt dort FLACH, das Wackeln ist eine rotation.z-Drehung der Fläche.)
   /* Replay-Reset (Dev-Panel): sauber zurück auf Anfang. */
   reset() {
     this.state = "bop"; this.stateTime = 0; this.clock = 0;
@@ -76,7 +75,7 @@ export class IdleWander {
     if (value) {
       this.state = "bop";
       this.stateTime = 0;
-      this.stateDuration = this.rand(this.P.bopHoldMin, this.P.bopHoldMax);
+      this.stateDuration = rand(this.P.bopHoldMin, this.P.bopHoldMax);
     }
   }
   tick(dt) {
@@ -87,7 +86,7 @@ export class IdleWander {
     this.applyBopScale();
     const camHeading = this.computeHeadingTowardCamera();
     if (camHeading !== null) {
-      const off = Math.abs(this.normalizeAngle(camHeading - this.heading));
+      const off = Math.abs(normalizeAngle(camHeading - this.heading));
       const thresholdRad = (this.P.cameraFacingThreshold * Math.PI) / 180;
       if (this.state !== "face_cam" && off > thresholdRad) {
         this.state = "face_cam";
@@ -140,12 +139,12 @@ export class IdleWander {
     const camH = this.computeHeadingTowardCamera();
     const thr = (this.P.cameraFacingThreshold * Math.PI) / 180 * 0.9;
     let faceYaw = courseYaw;
-    if (camH !== null && Math.abs(this.normalizeAngle(courseYaw - camH)) > thr) {
-      faceYaw = this.normalizeAngle(courseYaw + Math.PI);
+    if (camH !== null && Math.abs(normalizeAngle(courseYaw - camH)) > thr) {
+      faceYaw = normalizeAngle(courseYaw + Math.PI);
     }
     this.heading = faceYaw;
 
-    this.yawSmooth += this.normalizeAngle(faceYaw - this.yawSmooth) * Math.min(1, dt * 8);
+    this.yawSmooth += normalizeAngle(faceYaw - this.yawSmooth) * Math.min(1, dt * 8);
     el.rotation.y = this.yawSmooth;
 
     const dist = Math.min(this.P.walkSpeed * dt, distT);
@@ -172,7 +171,7 @@ export class IdleWander {
     this.walkTarget = null;
     this.state = "bop";
     this.stateTime = 0;
-    this.stateDuration = this.rand(minPause, maxPause);
+    this.stateDuration = rand(minPause, maxPause);
   }
   pickWalkTarget() {
     const halfW = (this.P.markerWidth * this.P.roamFraction) / 2;
@@ -183,12 +182,12 @@ export class IdleWander {
     const minDist = Math.min(halfW, halfH) * 0.6;
     let fallback = null;
     for (let i = 0; i < 16; i++) {
-      const t = { x: this.rand(-halfW, halfW), z: this.rand(-halfH, halfH) };
+      const t = { x: rand(-halfW, halfW), z: rand(-halfH, halfH) };
       const d = Math.hypot(t.x - pos.x, t.z - pos.z);
       if (d < minDist) continue;
       if (!fallback) fallback = t;
       const h = Math.atan2(t.x - pos.x, t.z - pos.z);
-      if (camH === null || Math.abs(this.normalizeAngle(h - camH)) <= thr) return t;
+      if (camH === null || Math.abs(normalizeAngle(h - camH)) <= thr) return t;
     }
     return fallback ?? { x: 0, z: 0 };
   }
@@ -208,7 +207,7 @@ export class IdleWander {
     this.fadeHead(dt, this.headBaseRotY);
     this.fadePitch(dt, this.computeHeadPitchTowardCamera());
     if (camHeading === null) { this.state = "bop"; return; }
-    const delta = this.normalizeAngle(camHeading - this.heading);
+    const delta = normalizeAngle(camHeading - this.heading);
     this.heading += delta * frameLerp60(this.P.faceCamLerp, dt);
     this.element.rotation.y = this.heading;
     this.yawSmooth = this.heading;
@@ -218,7 +217,7 @@ export class IdleWander {
       this.yawSmooth = this.heading;
       this.state = "bop";
       this.stateTime = 0;
-      this.stateDuration = this.rand(this.P.bopHoldMin, this.P.bopHoldMax);
+      this.stateDuration = rand(this.P.bopHoldMin, this.P.bopHoldMax);
     }
   }
   fadeRoll(dt, target) {
@@ -262,18 +261,18 @@ export class IdleWander {
     const headL = this.frame.toLocal(_headW);
     const worldYaw = Math.atan2(camL.x - headL.x, camL.z - headL.z);
     const rel = worldYaw - this.heading;
-    return THREE.MathUtils.clamp(this.normalizeAngle(rel), -this.P.headLookMax, this.P.headLookMax);
+    return THREE.MathUtils.clamp(normalizeAngle(rel), -this.P.headLookMax, this.P.headLookMax);
   }
   pickNextState(initial = false) {
     this.stateTime = 0;
     if (initial || this.state !== "bop") {
       this.state = "bop";
-      this.stateDuration = this.rand(this.P.bopHoldMin, this.P.bopHoldMax);
+      this.stateDuration = rand(this.P.bopHoldMin, this.P.bopHoldMax);
       return;
     }
     if (this.attending) {
       this.state = "bop";
-      this.stateDuration = this.rand(this.P.bopHoldMin, this.P.bopHoldMax);
+      this.stateDuration = rand(this.P.bopHoldMin, this.P.bopHoldMax);
       return;
     }
     const wLook = Math.max(0, this.P.lookChance);
@@ -282,26 +281,20 @@ export class IdleWander {
     const r = Math.random() * (wLook + wWalk + wCam);
     if (r < wLook) {
       this.state = "look_around";
-      this.headTargetY = this.headBaseRotY + (Math.random() < 0.5 ? -1 : 1) * this.rand(this.P.headLookMax * 0.4, this.P.headLookMax);
-      this.stateDuration = this.rand(this.P.actionMin, this.P.actionMax);
+      this.headTargetY = this.headBaseRotY + (Math.random() < 0.5 ? -1 : 1) * rand(this.P.headLookMax * 0.4, this.P.headLookMax);
+      this.stateDuration = rand(this.P.actionMin, this.P.actionMax);
     } else if (r < wLook + wWalk) {
       this.state = "walk";
       this.walkTarget = this.pickWalkTarget();
       this.yawSmooth = this.element.rotation.y;
-      this.stateDuration = this.rand(this.P.actionMin + 0.5, this.P.actionMax + 1.5);
+      this.stateDuration = rand(this.P.actionMin + 0.5, this.P.actionMax + 1.5);
     } else {
       this.state = "look_cam";
-      this.stateDuration = this.rand(this.P.actionMin, this.P.actionMax);
+      this.stateDuration = rand(this.P.actionMin, this.P.actionMax);
     }
   }
   figureBaseRotZ() {
     if (this._baseRotZ == null) this._baseRotZ = this.element.rotation.z;
     return this._baseRotZ;
-  }
-  rand(min, max) { return min + Math.random() * (max - min); }
-  normalizeAngle(a) {
-    while (a > Math.PI) a -= Math.PI * 2;
-    while (a < -Math.PI) a += Math.PI * 2;
-    return a;
   }
 }

@@ -14,11 +14,6 @@
 export const FX = ["welle", "zittern", "knall", "marker", "gross", "leise"];
 const FX_RE = new RegExp("<(" + FX.join("|") + ")>([\\s\\S]*?)<\\/\\1>", "g");
 
-/* Auszeichnung entfernen (für Stimme, Logs, Messung). */
-export function plain(txt) {
-  return String(txt ?? "").replace(FX_RE, "$2");
-}
-
 /* Markup → [{ ch, fx }]. Zeilenumbrüche werden zu Leerzeichen; Whitespace
    wird auf einzelne Leerzeichen eingedampft, damit der Umbruch nur an
    Wortgrenzen arbeiten muss. */

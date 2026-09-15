@@ -15,7 +15,7 @@
      durch `card.company` bzw. im Public-Modus durch `card.companyNeutral`
      ersetzt (Fallback „der Betrieb"). Die heutige Karte sagt schon überall
      „der Betrieb" — der Platzhalter ist für kommende Karten da.
-   • Public: `company`, `companyLogo`, `jobUrl` sind null; `edition` = "public".
+   • Public: `company`, `companyLogo` sind null; `edition` = "public".
    Splash-Block „bei + Logo/Firma" blendet main.js über body.public aus (der
    Public-Splash wird noch gestaltet, bis dahin steht dort nichts).
    ============================================================================= */
@@ -44,7 +44,6 @@ export function prepareCard(card, { publicMode = false } = {}) {
     edition: publicMode ? "public" : "firma",
     company: publicMode ? null : card.company,
     companyLogo: publicMode ? null : card.companyLogo,
-    jobUrl: publicMode ? null : card.jobUrl,
     initial: clean(card.initial),
     greeting: card.greeting ? { ...card.greeting, text: sub(card.greeting.text) } : card.greeting,
     asks,

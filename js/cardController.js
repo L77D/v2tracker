@@ -31,11 +31,12 @@ export class CardController {
     this.activation = activation;
     this.menu = menu;
     this.fx = fx ?? null;
-    this.idleTimer = null;
-    this.timer = null;         // automatisches Weiter (setTimeout)
+    // Timer nach Namen (2026-09-15): idle = Lesezeit, next = automatisches
+    // Weiter, lost = Menü einfrieren nach Tracking-Verlust. setT/clearT statt
+    // drei Feldern mit je eigenem clearTimeout-Block.
+    this.timers = {};
     this.pendingContinue = null;
     this.speaking = false;
-    this.lostTimer = null;
     this.phase = "waiting";    // waiting → attract → intro → live → resting
     this.setPose("idle");
   }
@@ -55,12 +56,18 @@ export class CardController {
     this.wander.reset();
     this.phase = "waiting";
     document.body.classList.add("scanning"); // Suchrahmen wieder an (wie nach dem Start)
-    window.setTimeout(() => { document.body.classList.remove("scanning"); this.onCardSeen(); }, 600);
+    window.setTimeout(() => { document.body.classList.remove("scanning"); this.onCardSeen(); }, CHOREO.replayRescanMs);
+  }
+  /* Timer-Verwaltung: ein laufender Timer gleichen Namens wird ersetzt. */
+  setT(name, fn, ms) {
+    this.clearT(name);
+    this.timers[name] = window.setTimeout(() => { this.timers[name] = null; fn(); }, ms);
+  }
+  clearT(name) {
+    if (this.timers[name]) { clearTimeout(this.timers[name]); this.timers[name] = null; }
   }
   clearTimers() {
-    if (this.idleTimer !== null) { clearTimeout(this.idleTimer); this.idleTimer = null; }
-    if (this.timer !== null) { clearTimeout(this.timer); this.timer = null; }
-    if (this.lostTimer !== null) { clearTimeout(this.lostTimer); this.lostTimer = null; }
+    for (const name of Object.keys(this.timers)) this.clearT(name);
     this.pendingContinue = null;
   }
   /* Kompatibilität (trackingHint etc.): „schon mal gestartet?" */
@@ -119,7 +126,7 @@ export class CardController {
   say(markup, tag, onDone, opts = {}) {
     this.cancelIdleReturn();
     this.pendingContinue = null;
-    if (this.timer !== null) { clearTimeout(this.timer); this.timer = null; }
+    this.clearT("next");
     const pages = this.bubble.paginate(markup);
     const step = (i) => {
       this.menu.clear();
@@ -127,7 +134,7 @@ export class CardController {
       this.wander.setAttending(!opts.first);
       this.face.setTalking(true);
       this.setPose(poseFor(tag));
-      const label = pages.length > 1 ? (i + 1) + "/" + pages.length : "";
+      const label = pages.length > 1 ? (i + 1) + "/" + pages.length : ""; // Seitenzähler; Anzeige per TYPO.pageLabel (seit Build 30 aus)
       this.bubble.setText(pages[i], () => {
         this.speaking = false;
         this.face.setTalking(false);
@@ -140,7 +147,7 @@ export class CardController {
   /* Weiterschalten nach dem Text: erzwungen (Knopf) oder automatisch. */
   advance(fn, { force = false, label = "Weiter", delay = CHOREO.continueDelayMs } = {}) {
     if (force) this.waitContinue(fn, label);
-    else this.timer = window.setTimeout(() => { this.timer = null; fn(); }, delay);
+    else this.setT("next", fn, delay);
   }
   /* RPG-Muster: Text bleibt stehen, bis der Nutzer weitertippt (Knopf oder Blase). */
   waitContinue(fn, label) {
@@ -174,7 +181,7 @@ export class CardController {
     this.engine.leaveThema();
     this.menu.showThemen();
   }
-  /* Frage aus dem Menü (auch Ausstieg und Link aus der Fußzeile). */
+  /* Frage aus dem Menü (auch Ausstieg-Kachel und Link-Frage). */
   answerQuestion(q) {
     if (this.phase !== "live" || this.speaking) return;
     if (typeof q === "string") q = this.engine.questionById(q);
@@ -183,7 +190,7 @@ export class CardController {
 
     if (q.end) {
       const farewell = () => this.say(q.text, q.tag, () => {
-        this.timer = window.setTimeout(() => { this.timer = null; this.collapse(); }, CHOREO.collapseDelayMs);
+        this.setT("next", () => this.collapse(), CHOREO.collapseDelayMs);
       });
       const fazit = this.engine.askOnExit();
       if (fazit) this.askBack(fazit, farewell); else farewell();
@@ -195,6 +202,8 @@ export class CardController {
       if (nextAsk) { this.askBack(nextAsk, () => this.backTo()); return; }
       this.backTo();
     };
+    // q.wait / o.wait / r.wait: Kartenfeld „Weiter-Knopf erzwingen" — im
+    // Vokabular vorgesehen, von cards/elektroniker.js heute nicht genutzt.
     this.say(q.text, q.tag, () => this.advance(after, {
       force: !!nextAsk || !!q.link || !!q.wait,
       label: q.link ? "Seite öffnen" : "Weiter",
@@ -257,14 +266,11 @@ export class CardController {
     if (this.phase === "waiting" || this.phase === "attract") return;
     // Ruhezustand: Panel-Zeile wechselt auf „Halte auf die Karte" (kein zweiter Hinweis)
     if (this.phase === "resting" && this.menu.phase === "idle") this.menu.showIdle(true);
-    if (this.lostTimer !== null) return;
-    this.lostTimer = window.setTimeout(() => {
-      this.lostTimer = null;
-      this.menu.setFrozen(true);
-    }, CHOREO.trackingLostMs);
+    if (this.timers.lost) return;
+    this.setT("lost", () => this.menu.setFrozen(true), CHOREO.trackingLostMs);
   }
   onTrackingFound() {
-    if (this.lostTimer !== null) { clearTimeout(this.lostTimer); this.lostTimer = null; }
+    this.clearT("lost");
     this.menu.setFrozen(false);
     if (this.phase === "resting" && this.menu.phase === "idle-lost") this.menu.showIdle(false);
   }
@@ -280,10 +286,10 @@ export class CardController {
   /* Lesezeit nach dem Typewriter: Blase weg, Pose zurück auf idle — das Menü
      bleibt. Läuft nur im Hub, nie während ein Weiter-Schritt wartet. */
   scheduleIdleReturn() {
-    this.cancelIdleReturn();
-    const delay = CHOREO.idleReturnMs ?? this.data.idleReturnMs ?? 3500;
-    this.idleTimer = window.setTimeout(() => {
-      this.idleTimer = null;
+    // Karte vor config (2026-09-15, Michael): bis Build 60 stand CHOREO zuerst
+    // in der ??-Kette, der Kartenwert (8000) konnte nie greifen.
+    const delay = this.data.idleReturnMs ?? CHOREO.idleReturnMs;
+    this.setT("idle", () => {
       if (this.phase !== "live" || this.speaking || this.pendingContinue) return;
       this.setPose("idle");
       this.wander.setBusy(false);
@@ -293,7 +299,5 @@ export class CardController {
       this.menu.clearSelection();
     }, delay);
   }
-  cancelIdleReturn() {
-    if (this.idleTimer !== null) { clearTimeout(this.idleTimer); this.idleTimer = null; }
-  }
+  cancelIdleReturn() { this.clearT("idle"); }
 }

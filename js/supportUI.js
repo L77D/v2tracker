@@ -10,17 +10,23 @@
      "gefunden" — lächelt (mock_02), blinzelt ab und zu
      "ruhe"     — lächelt, blinzelt
    ============================================================================= */
+import { rand } from "./util.js";
+
 const ICON_DIR = "./assets/ui/icon-handy/";
 const FRAMES = ["neutral", "blink", "left", "right", "mouth-open", "mouth-shut"];
 
-// Bilder einmal vorladen, damit der Frame-Wechsel nicht flackert
+// Bilder einmal vorladen, damit der Frame-Wechsel nicht flackert — beim
+// ersten Icon, nicht beim Import (2026-09-15; vorher auch im Desktop-Modus).
 const _cache = new Map();
-for (const f of FRAMES) { const im = new Image(); im.src = ICON_DIR + f + ".png"; _cache.set(f, im); }
-
-const rand = (a, b) => a + Math.random() * (b - a);
+function preloadFrames() {
+  if (_cache.size) return;
+  // (tools/build-lokal-prototyp.py patcht die Zeile `im.src = …` — Wortlaut halten)
+  for (const f of FRAMES) { const im = new Image(); im.src = ICON_DIR + f + ".png"; _cache.set(f, im); }
+}
 
 export class IconHandy {
   constructor(mode = "gefunden") {
+    preloadFrames();
     this.el = document.createElement("div");
     this.el.className = "support-icon";
     this.img = document.createElement("img");
@@ -29,7 +35,7 @@ export class IconHandy {
     this.timer = null;
     this.setMode(mode);
   }
-  frame(name) { this.img.src = ICON_DIR + name + ".png"; }
+  frame(name) { this.img.src = ICON_DIR + name + ".png"; } // (Patch-Anker build-lokal-prototyp.py)
   stop() { if (this.timer !== null) { clearTimeout(this.timer); this.timer = null; } }
   setMode(mode) {
     this.stop();
@@ -51,19 +57,24 @@ export class IconHandy {
       this.timer = setTimeout(() => this.blinkLoop(base), 130);
     }, rand(2000, 5000));
   }
-  destroy() { this.stop(); this.el.remove(); }
-  /* Lokal-Prototyp 2026-09-04: Icon springt links aus dem Bild (CSS-Bogen),
-     danach übernimmt die 3D-Version auf der Karte (activationFX.js). */
+  /* Abbau; ein noch ausstehendes jumpOut-onDone feuert dabei (2026-09-15:
+     Tap während des Sprungs entfernte das Element, animationend kam nie,
+     die 3D-Version des Icons blieb aus). */
+  destroy() { this.stop(); this.el.remove(); this.finishJump(); }
+  finishJump() { const cb = this.jumpDone; this.jumpDone = null; cb?.(); }
+  /* Icon springt links aus dem Bild (CSS-Bogen, 2026-09-04), danach übernimmt
+     die 3D-Version auf der Karte (activationFX.js). */
   jumpOut(onDone) {
     this.stop();
     this.frame("neutral");
+    this.jumpDone = onDone;
     this.el.classList.add("support-icon--jump");
-    this.el.addEventListener("animationend", () => { this.el.style.visibility = "hidden"; onDone?.(); }, { once: true });
+    this.el.addEventListener("animationend", () => { this.el.style.visibility = "hidden"; this.finishJump(); }, { once: true });
   }
 }
 
 /* Support-Zeile: Icon + eine oder zwei Balken-Zeilen.
-   lines: [{ text, kind: "blau"|"gelb", einzug: bool, pulse: bool, md: bool, wave: bool }] */
+   lines: [{ text, kind: "gelb"|undefined (blau), einzug: bool, pulse: bool, wave: bool }] */
 export function buildSupport(mode, lines) {
   const wrap = document.createElement("div");
   wrap.className = "support";
@@ -76,8 +87,7 @@ export function buildSupport(mode, lines) {
     s.className = "support-line"
       + (l.kind === "gelb" ? " support-line--gelb" : "")
       + (l.einzug ? " support-line--einzug" : "")
-      + (l.pulse ? " support-line--pulse" : "")
-      + (l.md ? " support-line--md" : "");
+      + (l.pulse ? " support-line--pulse" : "");
     if (l.wave) {
       // Laola: jeder Buchstabe ein Span mit Laufindex (--i) für die Verzögerung
       s.classList.add("support-line--wave");

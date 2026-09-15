@@ -21,6 +21,7 @@
 import * as THREE from "../vendor/three/three.module.js";
 import { TYPO, CHOREO, frameLerp60 } from "./config.js";
 import { sound } from "./sound.js";
+import { normalizeAngle } from "./util.js";
 import {
   parseChars, serialize, charsToString, splitWords, splitSentences, splitClauses, joinWithSpace,
 } from "./bubbleText.js";
@@ -97,8 +98,8 @@ export class SpeechBubble {
   }
 
   /* ---- Font / Messung ------------------------------------------------------ */
-  fontFor(fx) {
-    const size = fx === "gross" ? Math.round(TYPO.fontSize * TYPO.fxGrossScale) : TYPO.fontSize;
+  fontFor(fx, size = null) {
+    if (size === null) size = fx === "gross" ? Math.round(TYPO.fontSize * TYPO.fxGrossScale) : TYPO.fontSize;
     return `${TYPO.fontWeight} ${size}px ${TYPO.fontFamily}`;
   }
   /* Zeichenliste → Laufstücke gleicher Auszeichnung [{fx, chars, text, w}]. */
@@ -221,7 +222,6 @@ export class SpeechBubble {
     this.fireDone();
     return true;
   }
-  isTyping() { return this.typing; }
   hide() { this.typing = false; this.element.visible = false; }
   fireDone() { const cb = this.onDone; this.onDone = null; cb?.(); }
 
@@ -290,7 +290,7 @@ export class SpeechBubble {
     // Seitenzähler über dem Block, rechts, klein — seit 2026-09-07 per TYPO.pageLabel aus
     if (this.pageLabel && TYPO.pageLabel !== "nein") {
       const small = Math.round(TYPO.fontSize * 0.55);
-      ctx.font = `${TYPO.fontWeight} ${small}px ${TYPO.fontFamily}`;
+      ctx.font = this.fontFor(null, small);
       ctx.textAlign = "right";
       const lx = xLeft + blockW, ly = yTop - small * 0.25;
       ctx.lineWidth = TYPO.strokeWidth * 1.2;
@@ -373,7 +373,7 @@ export class SpeechBubble {
       this.bubbleYaw = worldYaw;
       this.bubbleYawInit = true;
     } else {
-      const delta = this.normalizeAngle(worldYaw - this.bubbleYaw);
+      const delta = normalizeAngle(worldYaw - this.bubbleYaw);
       this.bubbleYaw += delta * frameLerp60(CHOREO.billboardLerp, dt);
     }
     // Gewünschte Ausrichtung: aufrecht IM KARTEN-Frame + geglätteter Yaw.
@@ -384,11 +384,6 @@ export class SpeechBubble {
     this.frame.worldRoot.getWorldQuaternion(_q3).multiply(_q1);
     obj.parent.getWorldQuaternion(_q2).invert();
     obj.quaternion.copy(_q2.multiply(_q3));
-  }
-  normalizeAngle(a) {
-    while (a > Math.PI) a -= Math.PI * 2;
-    while (a < -Math.PI) a += Math.PI * 2;
-    return a;
   }
   tick(dt) {
     if (this.plane) {

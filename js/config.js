@@ -2,7 +2,13 @@
    DETAR — zentrale Konfiguration (alle Dashboards). EINE Quelle: die Werte
    hier sind die Live-Werte. Ein aus dem Dev-Panel exportiertes Preset kann
    als tuning.json ins Repo-Root gelegt werden und überschreibt sie beim Laden
-   (loadTuning) — für Tuning-Sessions, nicht als Dauerzustand.
+   (loadTuning, nur mit ?dev/?tuning) — für Tuning-Sessions, NIE einchecken
+   (.gitignore): sonst wirken Änderungen hier nicht mehr, solange der Block
+   in tuning.json steht („Masking-Falle", s. CLAUDE.md).
+
+   Fix-Log-Konvention: Tracking-Werte tragen Datum + Begründung im Kommentar
+   (CLAUDE.md „Konventionen"); Einträge „(MindAR-Stand …)" beschreiben den
+   Tracker von Branch main und gelten unter 8th Wall nur noch als Historie.
    ============================================================================= */
 
 // SpeechBubble → TYPO
@@ -13,13 +19,13 @@ export const TYPO = {
   lineSpacing: 0.8,
   textColor: "#f6f6f6", // UI-Update 2026-09-03 (Figma)
   strokeColor: "#000000",
-  strokeWidth: 8,      // 2026-09-09: aus tuning.json übernommen (vorher 22)
+  strokeWidth: 8,
   paddingPx: 28,
   maxLines: 5,
   maxWidth: 1.2,
   unitsPerPx: 0.002,
-  offsetX: 0,          // 2026-09-09: aus tuning.json (vorher 0.14)
-  offsetY: -0.17,      // 2026-09-09: aus tuning.json (vorher -0.3)
+  offsetX: 0,
+  offsetY: -0.17,
   msPerChar: 28,
   // Dialogsystem (2026-09-03): Baseline-Lage im Zeilenraster (Anteil fontSize,
   // alphabetic) + Highlight-Effekte im Sprechtext (Auszeichnung in der Karte:
@@ -53,18 +59,18 @@ export const FACE = {
 
 // IdleWander → IDLE
 export const IDLE = {
-  markerWidth: 0.09, markerHeight: 0.125, roamFraction: 0.8, // 2026-09-09: aus tuning.json (vorher 0.033/0.033)
-  bopAmplitude: 0.015, bopFrequency: 0.5, // 2026-09-09: aus tuning.json (vorher 0.04/1.1)
+  markerWidth: 0.09, markerHeight: 0.125, roamFraction: 0.8,
+  bopAmplitude: 0.015, bopFrequency: 0.5,
   walkSpeed: 0.04, walkFrequency: 2.2, walkRollMax: 0.18, stepSquash: 0.05,
   headLookMax: 0.5, headPitchMax: 0.35,
   bopHoldMin: 1.5, bopHoldMax: 3.5, actionMin: 1.2, actionMax: 2.4,
   cameraFacingThreshold: 45, faceCamLerp: 0.12,
-  lookChance: 0.6, walkChance: 0.4, // 2026-09-09: lookChance aus tuning.json (vorher 0.4)
+  lookChance: 0.6, walkChance: 0.4,
 };
 
 // ActivationAnim → ACT
 export const ACT = {
-  durationSec: 1.55, // 2026-09-09: aus tuning.json (vorher 1.2 / 0 / 1.7)
+  durationSec: 1.55,
   spins: 2,
   overshoot: 1.75,
 };
@@ -75,11 +81,20 @@ export const CHOREO = {
                          // die Figur) · "nein" = Figur kommt direkt beim Scan
   uiRevealMs: 1000,      // reine CSS-Einfahr-DAUER (--q-reveal-time), keine Wartezeit
   revealOffset: 60,      // CSS --q-reveal-offset (px)
-  idleReturnMs: 5500,    // Haltezeit NACH dem Typewriter (wird von der Karte überschrieben); 2026-09-09: aus tuning.json (vorher 8000)
+  idleReturnMs: 5500,    // Haltezeit NACH dem Typewriter — Fallback; eine Karte mit
+                         // eigenem idleReturnMs (cards/*.js) hat Vorrang (seit Build 61,
+                         // vorher stand config in der ??-Kette zuerst und gewann immer)
   greetingPose: "idle",
-  billboardLerp: 0.2,    // 2026-09-09: aus tuning.json (vorher 0.18)
+  billboardLerp: 0.2,
   jumpDurationSec: 0.45, // Figur-Tap: Parabel-Hüpfer zur Kartenmitte
   jumpHeight: 0.04,
+  // Tap-Erkennung (main.js; bis Build 60 Literale): Entprellung pointerup +
+  // click-Fallback (Doppel-Auslösung wäre seit dem Dialogsystem nicht mehr
+  // harmlos), Tap ≠ Drag über Weg und Dauer.
+  tapDebounceMs: 120,
+  tapMaxPx: 6,
+  tapMaxMs: 400,
+  replayRescanMs: 600,   // Dev-Replay: Suchrahmen so lange an, dann „Scan"
   // Dialogsystem (2026-09-03)
   continueDelayMs: 350,   // automatisches Weiter nach einer Antwort (kein Knopf)
   collapseDelayMs: 900,   // Abschiedszeile steht so lange, bevor die Figur einklappt
@@ -88,25 +103,24 @@ export const CHOREO = {
 };
 
 // Szene (Skalierung + Nick-Achse). cardWidth koppelt die Prototyp-Einheiten an
-// die MindAR-Einheiten: MindAR normiert die Kartenbreite auf 1 Einheit, im
-// Prototyp war die Karte cardWidth (0.17) Einheiten breit. worldRoot wird um
-// 1/cardWidth skaliert — damit gelten ALLE getunten Werte (Lauffeld, Bubble,
-// Sprünge …) unverändert weiter.
+// die Anchor-Einheit: eine Anchor-Einheit = eine Kartenbreite (main.js setzt die
+// Anchor-Scale auf die Kartenbreite; MindAR normierte genauso), im Prototyp war
+// die Karte cardWidth Einheiten breit. worldRoot wird um 1/cardWidth skaliert —
+// damit gelten ALLE getunten Werte (Lauffeld, Bubble, Sprünge …) unverändert.
 export const SCENE = {
-  cardWidth: 0.059,  // physische Kartenbreite in m (59 × 91 mm hochkant, Michael 2026-09-07);
-                     // 2026-09-09: Default statt tuning.json-Override (vorher 0.17)
-                     // (Karte 59×91 mm hochkant, Michael 2026-09-07; vorher 0.095)
-  cardAspect: 2156 / 1346, // Höhe/Breite des Tracking-Targets (2026-09-07, 2. Fassung: beschnittene
-                           // Demo-Karte 070926 ohne Rand, 1346×2156 px = 1,60; die Vollkarte war
-                           // 2910×4488 = 1,54, die PENNY-Demokarte 2199×3000 = 1,36).
-                           // MindAR normiert die Kartenbreite auf 1; die Höhe (Eck-Marker,
-                           // Lauffeld, Desktop-Plane) kommt aus diesem Wert.
+  cardWidth: 0.059,  // SZENEN-Einheit der Kartenbreite (Karte 59 × 91 mm hochkant, Michael
+                     // 2026-09-07; vorher 0.17 → 0.095). Die PHYSISCHE Breite fürs Tracking
+                     // kommt seit Build 57 aus targets/8thwall/karten.json (breiteMm).
+  cardAspect: 2156 / 1346, // Höhe/Breite der Karte in Anchor-Einheiten → Eck-Marker, Tap-Fläche,
+                           // Lauffeld, Desktop-Plane. Wert = beschnittene Demo-Karte 070926
+                           // (1346×2156 px = 1,60; MindAR-Target, 2026-09-07). Die gedruckte
+                           // Karte ist 63×88 mm = 1,40 (karten.json) — Angleichen ist ein
+                           // Stufe-3-Punkt (sichtbare Marker-Geometrie, Gerätetest).
   figureScale: 0.85, // 2026-09-07 (Michael): gesamte AR-Szene auf ~85 % — Figur samt
                      // Sprechblase (rig.js) und Hüpf-Icon (activationFX.js); die
                      // Eck-Marker bleiben auf den Kartenecken, die sind Kartengeometrie.
   headNodAxis: 0.25, // Höhe der Kopf-Nick-Achse ÜBER dem HeadPivot (≈ Kopfmitte)
-  bgColor: "#9a9a9a", // nur Desktop-Testmodus
-  debug: false,       // pinke Debug-Overlays (auch per ?debug in der URL)
+  bgColor: "#9a9a9a", // nur Desktop-Testmodus (Debug-Overlays: NUR per ?debug, kein Key hier)
 };
 
 // Tracking-Glättung: UNSER PoseStabilizer (js/poseStabilizer.js, Port des in
@@ -114,6 +128,8 @@ export const SCENE = {
 // Dead-Zone + Lost-Hold zwischen Rohpose und Figur. (Die 8th-Wall-Engine hat
 // keinen konfigurierbaren Vorfilter; die MindAR-Keys filterMinCF/filterBeta/
 // missTolerance/warmupTolerance sind seit 2026-09-09 weg.)
+// Toggle-Nummern 1–10 = Reihenfolge im Dev-Panel (js/devPanel.js, Block
+// „Tracking-Features"); ?stats nennt sie in der Flip-Zeile.
 // Faustregel: erst minCutoff runter, bis das Ruhe-Zittern weg ist, dann beta
 // hoch, bis schnelle Bewegung ohne Nachziehen folgt — EINE Schraube pro Test.
 // EINHEITEN: Der PoseStabilizer filtert in KARTENBREITEN (er normiert die
@@ -131,10 +147,11 @@ export const STAB = {
   nanGuard: "ja",    // 5 kaputte Posen verwerfen (nein = alter Verschwinde-Bug möglich!)
   snap: "ja",        // 6 Re-Found-Snap statt Hinübergleiten
   scaleLock: "ja",   // 9 Anchor-Scale einfrieren + Scale-Ausreißer-Frames verwerfen
-                     //   (2026-07-14: Scale ist strukturell KONSTANT — Wackeln kommt
-                     //   aus MindARs elementweisem Matrix-Filter/Fehl-Homographien
-                     //   und erzeugte „Figur schräg/zu groß" + Positions-Jitter über
-                     //   die Normierung)
+                     //   (MindAR-Stand 2026-07-14: Wackeln aus MindARs elementweisem
+                     //   Matrix-Filter/Fehl-Homographien → „Figur schräg/zu groß".)
+                     //   Unter 8th Wall ist detail.scale pro Track konstant → die Stufe
+                     //   löst strukturell nie aus; bleibt als Sicherung (Stufe 3: Ausbau
+                     //   nach Prüfung des Re-Lock-Zählers in ?stats am Gerät).
   gravityArbiter: "ja", // 10 Schwerkraft-Schiedsrichter gegen den „Pose-Flip" (2026-09-15):
                         //   die ebene Pose-Schätzung hat zwei Lösungen; 8th Wall liefert
                         //   manchmal stabil die gespiegelte (Karte um 2θ gekippt, Figur liegt
@@ -182,7 +199,8 @@ export const STAB = {
   // Frontalsicht sind beide Kandidaten gleich → kein Umschalten, kein Flattern.
   arbiterMargin: 0.15,
 
-  // Bewegungs-Extrapolation (2026-07-09): MindAR misst nur mit ~15–30 Hz —
+  // Bewegungs-Extrapolation (2026-07-09): die Bilderkennung misst nur mit
+  // ~15–30 Hz (MindAR wie 8th Wall; imageupdated feuert nur bei neuer Pose) —
   // zwischen zwei Messungen wird die Pose mit der zuletzt gemessenen
   // Geschwindigkeit WEITERGEFÜHRT (Dead Reckoning), statt treppig zu stehen.
   // Zusätzlich schaltet erkannte Bewegung die Dead-Zone ab: ruhig in Ruhe,
@@ -229,6 +247,7 @@ export const ACTFX = {
   iconHeight: 0.34,    // Icon-Höhe (Anteil Kartenbreite)
   hopHeight: 0.12,     // Sprunghöhe (Anteil Kartenbreite)
   hopSec: 0.32,        // Dauer eines Sprungs
+  squashSec: 0.14,     // Stauchen beim Aufkommen (bis Build 60 Literal)
   hopPauseSec: 0.9,    // Pause zwischen den Sprüngen
   dropHeight: 0.6,     // Landeanflug: Starthöhe (Anteil Kartenbreite)
   dropSec: 0.4,        // Dauer des Landeanflugs
