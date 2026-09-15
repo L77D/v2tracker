@@ -53,20 +53,45 @@ export class StatsOverlay {
     this.raw = new Ring();
     this.smooth = new Ring();
     this.lastDom = 0;
+    // LAYOUT (2026-09-15, Michael: iPhone 12 mini, Panel nahm das ganze Bild ein):
+    // oben links unter der Safe-Area, links/rechts 8 px Rand, rechts Platz für den
+    // ⚙-Dev-Knopf (top-right, ~70 px); Zeilen umbrechen (pre-wrap) statt über den
+    // Rand zu laufen; 10-px-Monospace; Höhe auf 45 % des Bildschirms gedeckelt,
+    // damit Karte, Figur und Menü sichtbar bleiben.
     this.box = document.createElement("div");
+    this.box.id = "statsBox";
     this.box.style.cssText =
-      "position:fixed;top:calc(140px + env(safe-area-inset-top));right:8px;z-index:50;" +
-      "background:rgba(0,0,0,0.72);border-radius:8px;padding:8px 10px;" +
-      "font:11px/1.5 monospace;pointer-events:none";
+      "position:fixed;top:calc(40px + env(safe-area-inset-top, 0px));left:8px;z-index:50;" +
+      "max-width:calc(100vw - 96px);max-height:45vh;overflow:hidden;box-sizing:border-box;" +
+      "background:rgba(0,0,0,0.72);border-radius:8px;padding:6px 8px;" +
+      "font:10px/1.35 monospace;pointer-events:none";
     this.el = document.createElement("div");
-    this.el.style.cssText = "color:#0f0;white-space:pre";
+    this.el.style.cssText = "color:#0f0;white-space:pre-wrap;word-break:break-word";
     this.box.appendChild(this.el);
+    // EIN/AUS-Knopf (2026-09-15): „📊" oben links, Gegenstück zum ⚙-Dev-Knopf
+    // oben rechts. Zustand überlebt Neuladen (localStorage, fail-safe: ohne
+    // Speicher bleibt das Panel sichtbar). Versteckt = kein DOM-Update im tick().
+    this.toggle = document.createElement("button");
+    this.toggle.id = "statsToggle";
+    this.toggle.style.cssText =
+      "position:fixed;top:calc(8px + env(safe-area-inset-top, 0px));left:8px;z-index:120;" +
+      "background:rgba(0,0,0,0.72);color:#0f0;border:1px solid #0f0;border-radius:8px;" +
+      "font:bold 12px monospace;padding:5px 8px;cursor:pointer;pointer-events:auto";
+    let hidden = false;
+    try { hidden = localStorage.getItem("detar.statsHidden") === "1"; } catch (e) { /* kein Speicher */ }
+    this.setHidden(hidden);
+    this.toggle.onclick = () => {
+      const h = !this.box.hidden;
+      this.setHidden(h);
+      try { localStorage.setItem("detar.statsHidden", h ? "1" : "0"); } catch (e) { /* egal */ }
+    };
+    document.body.appendChild(this.toggle);
     // Gyro-Toggle: GYRO.enabled wird pro Frame geprüft → wirkt sofort.
     // Kill-Switch-Vergleich am Gerät ohne Neuladen (Jitter mit/ohne Gyro).
     this.btn = document.createElement("button");
     this.btn.style.cssText =
       "margin-top:6px;width:100%;pointer-events:auto;cursor:pointer;" +
-      "font:bold 11px monospace;border:none;border-radius:6px;padding:5px 8px";
+      "font:bold 10px monospace;border:none;border-radius:6px;padding:4px 8px";
     this.btn.onclick = () => {
       GYRO.enabled = GYRO.enabled === "nein" ? "ja" : "nein";
       this.paintBtn();
@@ -74,6 +99,11 @@ export class StatsOverlay {
     this.paintBtn();
     this.box.appendChild(this.btn);
     document.body.appendChild(this.box);
+  }
+  setHidden(h) {
+    this.box.hidden = h;
+    this.toggle.textContent = h ? "📊 Stats" : "📊 aus";
+    this.toggle.title = h ? "Stats einblenden" : "Stats ausblenden";
   }
   paintBtn() {
     const on = GYRO.enabled !== "nein";
@@ -93,6 +123,7 @@ export class StatsOverlay {
       this.raw.reset();
       this.smooth.reset();
     }
+    if (this.box.hidden) return; // versteckt → kein DOM-Update (Jitter-Ringe laufen weiter)
     const now = performance.now();
     if (now - this.lastDom < 500) return;
     this.lastDom = now;

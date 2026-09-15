@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-09-15 · Build 59 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-09-15 · Build 60 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -277,7 +277,8 @@ Delta vor) als Prediction + Verlust-Brücke.
 
 `?stats` (Jitter roh/stab, Vision-Hz, BEWEGT/ruhig, Cam+PR, Build-Check,
 Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
-n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler) · `?karte=<id>` (Kartendesign aus
+n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
+oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?karte=<id>` (Kartendesign aus
 `targets/8thwall/karten.json`, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
 kein Test-Flag — steht im QR-Code der neutralen Karte) ·
