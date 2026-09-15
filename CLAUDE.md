@@ -1,16 +1,17 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-09-15 · Build 60 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-09-15 · Build 61 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
 Mobile WebAR-Demo (Studio2B / „DEIN ERSTER TAG"): Karte scannen → Comic-Figur
 steht auf der Karte und führt einen Dialog nach RPG-NPC-Vorbild (Hub mit
 Freischaltungen, Rückfragen der Figur, Sprechblase mit Seiten, Posen,
-Gesichtsanimation). Port des Zapworks/Mattercraft-Prototyps auf MindAR — kein
-LLM, keine API, kein Build-Schritt, statische Site. v1 enthält NUR den Dialog
-(Scope 31.08.2026); der Einblick (Portal/Galerie, `js/portalView.js`) bleibt im
-Repo, wird aber nicht mehr aufgebaut.
+Gesichtsanimation). Port des Zapworks/Mattercraft-Prototyps auf Open-Source-
+Bildtracking (dieser Branch: 8th-Wall-Engine; `main`: MindAR) — kein LLM,
+keine API, kein Build-Schritt, statische Site. v1 enthält NUR den Dialog
+(Scope 31.08.2026); der Einblick (Portal/Galerie) ist seit der Entschlackung
+(Build 49) aus dem Repo entfernt und lebt nur noch in der Historie.
 
 ## UI (seit Build 18, 2026-09-03)
 
@@ -41,8 +42,7 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   über Textkasten 178×73, ±2,34° Tilt. Maße 1:1 aus dem 402-px-Figma-Frame.
 - `js/activationFX.js` — vier gelbe Eck-Marker auf den Kartenecken (Canvas-
   Textur aus dem Figma-Pfad), wabern (`ACTFX.bobHeight/bobSec`), ploppen beim
-  Tap. Glow + Partikel sind weg; `ACTFX`-Keys sind neu (tuning.json hat
-  keinen ACTFX-Block).
+  Tap. Glow + Partikel sind weg.
 - Suchrahmen `#scanFrame` (weiße Ecken) über `body.scanning` — an nach dem
   Start, aus bei der ersten Erkennung.
 - **Build 27 (Michael 2026-09-07):** `SCENE.figureScale 0.85` skaliert Figur +
@@ -123,25 +123,21 @@ Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Prototyp
   seit dem Dialogsystem wäre Doppel-Auslösung NICHT mehr harmlos.
 - Splash: `card.companyLogo` (Pfad) oder Firmenname als Text; `card.jobUrl`
   wird seit Build 18 nicht mehr angezeigt (DET-Label raus).
-- Build 16 ist vom ungemergten Branch `tracking-runde5` belegt (Patch in
-  `patches/`), deshalb springt main von 15 auf 17.
+- Build 16 ist vom ungemergten Branch `tracking-runde5` belegt (nur in
+  `main`), deshalb springt main von 15 auf 17.
 
-**Tracking-Target (seit Build 26, 2026-09-07):** `targets/card.mind` = beschnittene
+**Tracking-Target:** liegt in `targets/8thwall/` (`card.json` +
+`card_luminance.png` aus `@8thwall/image-target-cli`, weitere Designs per
+`?karte`, s. „Kartendesigns"). Vorlage der Standard-Karte: beschnittene
 Demo-Karte 070926 (`Assets/September/demo_skat_070926_mind_cropped.png`,
-1346×2156 px, Aspekt 1,60 → `SCENE.cardAspect`), kompiliert mit dem Compiler
-aus `mind-ar@1.2.5` (Skript in der Session: Seite mit `Compiler.compileImageTargets`
-in headless Chrome — im versteckten Browser-Pane stallt tfjs, weil rAF pausiert).
-Vorgänger in `targets/old/`: Vollkarte „DETAR Tracking-Check Juni 2026"
-(2910×4488, 1,54) und PENNY-Demokarte (2199×3000, 1,36). Weil das Target
-beschnitten ist, ist seine physische Breite etwas kleiner als die 59 mm der
-Karte — `cardWidth 0.059` bleibt als Näherung (wirkt nur auf mm in `?stats`). Desktop-
-Kartenbild: `assets/card/detar_demokarte_070926.jpg` (1200 px, ~400 KB,
-aus der 3-MB-Druckdatei `Assets/September/demo_skat_070926.jpg` verkleinert —
-dieselbe Vorlage wie das Target).
-Physische Karte: **59 × 91 mm hochkant** (Michael 2026-09-07) →
-`tuning.json → SCENE.cardWidth 0.059`. Der Wert skaliert nur die mm-Angaben
-in `?stats` (Jitter-Richtwerte unten gelten weiter in mm); die Figur ist
-relativ zur Kartenbreite definiert und wird dadurch nicht kleiner.
+1346×2156 px, Aspekt 1,60 → `SCENE.cardAspect`, Szenen-Geometrie der Eck-
+Marker/Tap-Fläche). Desktop-Kartenbild: `assets/card/detar_demokarte_070926.jpg`
+(1200 px, aus der Druckdatei `Assets/September/demo_skat_070926.jpg`).
+Physische Breite fürs Tracking = `breiteMm` aus `karten.json` (63 mm,
+Druckspezifikation 63 × 88 mm); `SCENE.cardWidth 0.059` ist nur noch die
+Szenen-Einheit (worldRoot-Skalierung). Die Figur ist relativ zur Kartenbreite
+definiert. (MindAR-Target `card.mind`, Compiler-Skript, `targets/old/`: nur
+in `main`.)
 
 **Stack (seit 2026-09-09):** `three@0.160` als schlankes Bundle in
 `vendor/three/` (relativer Import `../vendor/three/three.module.js`, KEINE
@@ -177,10 +173,11 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
 
 ## Konventionen
 
-- **Versionierung:** `js/version.js` → `BUILD` = Commit-Anzahl
-  (`git rev-list --count HEAD` des neuen Commits). **Bei JEDEM Push auf main
-  hochzählen.** `?stats` zeigt den laufenden Build und prüft per
-  no-store-Fetch gegen den live-Stand („neu laden!" bei altem Cache).
+- **Versionierung:** `js/version.js` → `BUILD` = freilaufender Zähler,
+  **bei JEDEM Push +1** (früher = Commit-Anzahl; seit dem Spiegel-Repo stimmt
+  das nicht mehr, Build 60 = 50 Commits). `?stats` zeigt den laufenden Build
+  und prüft per no-store-Fetch gegen den live-Stand („neu laden!" bei altem
+  Cache).
 - **Keine tuning.json mehr im Repo** (seit 2026-09-09, Branch v2tracker-lean):
   alle Werte sind Defaults in `js/config.js` (EINE Quelle). Eine tuning.json
   wird nur mit `?dev`/`?tuning` geholt — Tuning-Werkzeug, nie einchecken
@@ -205,22 +202,27 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
 - **Lokal-Prototyp (Einzeldatei, Doppelklick, kein Server):**
   `python3 tools/build-lokal-prototyp.py <Ziel.html>` packt die App in eine
   HTML-Datei (Module als data:-URLs in der Import-Map, Assets/Fonts/tuning.json
-  eingebettet, Desktop-Modus + Dev-Panel erzwungen). Nach jedem Build neu
-  erzeugen; Ablage `…/Claude/Lokal-Prototyp/`. three.js kommt vom CDN, außer
-  `tools/vendor/three.module.js` + `OrbitControls.js` liegen bereit (offline).
-  Ersetzt `_Archiv/Lokal-Prototyp/DETAR_Lokal_Prototyp.html` (Juli-Stand).
-  **Ehemals Nur-Lokal-Änderungen (Michael 2026-09-04), seit Build 22 auch
-  live:** hängen an `body.lokal` (Klasse steht jetzt fest in `index.html`;
-  CSS-Blöcke am Ende von `app.css`/`question-menu.css`) und
-  `ACTFX.hopper="ja"` (Default in config.js): Silkscreen −12 % Laufweite + Kasten-
-  Padding 8/4/6 · Splash-Raster driftet nach rechts oben · engeres Kachel-
-  raster (88/102 px Zeilen) · „Halte auf die Karte" als Laola-Welle
-  (`wave`-Spans in supportUI) · Karte gefunden: Icon springt aus dem Panel
-  (`IconHandy.jumpOut`) und hüpft in 3D auf der Kartenmitte mit flachem
-  Pixel-Schatten (`ActivationFX.landIcon/tickHopper`).
+  eingebettet, Desktop-Modus + Dev-Panel erzwungen; three.js aus `vendor/three/`,
+  kein CDN). Nach jedem Build neu erzeugen; Ablage `…/Claude/Lokal-Prototyp/`.
+  Das Skript patcht fünf Quelltextzeilen per `assert` (markiert mit
+  „Patch-Anker build-lokal-prototyp.py" in main.js, config.js, rig.js,
+  supportUI.js) — Wortlaut dort nicht ändern.
+  **Feinschliff (Michael 2026-09-04), seit Build 22 live, seit Build 61 direkt
+  in den Basisregeln (kein `body.lokal`, keine Override-Blöcke mehr):**
+  Silkscreen −12 % Laufweite · Splash-Raster driftet nach rechts oben ·
+  enges Kachelraster (88/102 px Zeilen, `--q-row-themen/-fragen`) · „Halte auf
+  die Karte" als Laola-Welle (`wave`-Spans in supportUI) · Karte gefunden: Icon
+  springt aus dem Panel (`IconHandy.jumpOut`) und hüpft in 3D auf der
+  Kartenmitte mit flachem Pixel-Schatten (`ActivationFX.landIcon/tickHopper`,
+  `ACTFX.hopper="ja"`).
 - Kommentare/Commits auf Deutsch, Commit-Trailer `Co-Authored-By: Claude`.
 - Änderungen an Tracking-Werten immer mit Datum + Begründung im Kommentar
-  (Fix-Log lebt in den Code-Kommentaren).
+  (Fix-Log lebt in den Code-Kommentaren; „(MindAR-Stand …)" = Historie aus
+  `main`, gilt unter 8th Wall nur als Begründung des Aufbaus).
+- Gemeinsame Helfer in `js/util.js` (`el`, `rand`, `normalizeAngle`,
+  `finiteVec/finiteQuat`, `progress`) — nicht je Modul neu schreiben.
+- `.gitignore` hält `tuning.json`, `beats.theatre.json`, den Lokal-Prototyp und
+  CLI-Zwischenbilder aus dem Repo.
 
 ## Tracking-Architektur
 
@@ -247,12 +249,13 @@ nach oben zeigt — nur beta/gamma nötig, ohne Gyro passiv; Hysterese
 = komplett neu aufsetzen) → **Aufsetzen per Median** (Build 28: die ersten
 `acquireFrames` Messungen bzw. `acquireMaxMs` → Median je Achse, Medoid-
 Rotation, Median-Scale; solange läuft der laufende Median sichtbar mit — gilt
-für den ersten Scan, Re-Found und Snap) → **Neu-Erkennung auf Tap** (Build 29:
-Figur-Tap und Karten-Tap in „Karte gefunden" setzen `controller.trackingStates[0]
-.isTracking = false` → MindAR läuft im nächsten Frame durch Detect+Match
-(absolute Pose, ohne Fork) und `stab.reacquire()` setzt per Median neu auf;
-`?stats` zeigt „Roh↔Stab" in Grad/‰-Kartenbreiten + Zahl der Re-Erkennungen —
-Roh≈Stab und trotzdem schief = Drift in MindAR, Roh≠Stab = wir halten alt) → Bewegungs-Schätzung (250-ms-Drift-Fenster, tremor-fest) →
+für den ersten Scan, Re-Found und Snap) → **Neu-Aufsetzen auf Tap** (Build 29:
+Figur-Tap und Karten-Tap in „Karte gefunden" rufen `stab.reacquire()` → Median
+über die nächsten Messungen, während der Nutzer stillhält; die anstehende
+Rohpose von vor dem Tap zählt nicht (`skipCurrent`). `?stats` zeigt „Roh↔Stab"
+in Grad/‰-Kartenbreiten + Zahl der Re-Erkennungen — Roh≈Stab und trotzdem
+schief = Drift im Tracker, Roh≠Stab = wir halten alt. (Unter MindAR erzwang
+main.js zusätzlich Detect+Match des Trackers; 8th Wall erkennt kontinuierlich.) → Bewegungs-Schätzung (250-ms-Drift-Fenster, tremor-fest) →
 Far-Debounce (2 ferne Messungen → Snap) → Extrapolation (nur BEWEGT) →
 **One-Euro Position mit beta-GATE** (beta nur im BEWEGT-Modus; die Frame-
 Ableitung ist in Ruhe nie ~0 → ohne Gate stand der Filter permanent offen) →
@@ -260,16 +263,19 @@ adaptives Rotations-SLERP → Dead-Zones (nur Ruhe). GyroFusion liefert
 Kamera-Dreh-Deltas (Akkumulations-Dead-Band: qPrev rückt nur bei angewendetem
 Delta vor) als Prediction + Verlust-Brücke.
 
-## Aktuelle Kern-Werte (config.js, Build 13)
+## Aktuelle Kern-Werte (config.js)
 
 - `CAM`: unter 8th Wall wählt die Engine die Auflösung selbst (Constraint-
-  Leiter mit Retry) — `width/height` und `?res=` ohne Wirkung; `maxPixelRatio: 2`
-  gilt weiter (Canvas-Pixelgröße in main.js). (main/MindAR: 960×540 per
-  getUserMedia-Wrap.)
+  Leiter mit Retry); `maxPixelRatio: 2` gilt weiter (Canvas-Pixelgröße in
+  main.js). (main/MindAR: 960×540 per getUserMedia-Wrap, `?res=`.)
 - `STAB`: `minCutoff 0.1` · `beta 10` (gated) · `rotMinCutoff 0.5` ·
-  `rotBeta 4` · `minSpeed 0.04` · `minAngSpeed 0.09` · `scaleOutlier 0.1` ·
-  `filterMinCF 0.01` (MindAR-intern; 0.001 ließ die interne Pose so
-  nachhängen, dass der Tracker beim Verschieben abriss).
+  `rotBeta 4` · `minSpeed 0.04` · `minAngSpeed 0.09` · `scaleOutlier 0.1`
+  (Scale-Lock löst unter 8th Wall strukturell nie aus, s. Gotchas).
+  Die MindAR-Keys `filterMinCF/filterBeta/missTolerance/warmupTolerance`
+  gibt es hier nicht mehr.
+- `CHOREO.tapDebounceMs 120` · `tapMaxPx 6` · `tapMaxMs 400` (Tap-Erkennung,
+  main.js) · `idleReturnMs 5500` als Fallback — die Karte (`idleReturnMs` in
+  `cards/*.js`, heute 8000) hat Vorrang.
 - Feature-Toggles 1–10 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock, Nr. 10 =
   Schwerkraft-Schiedsrichter (Pose-Flip).
 
@@ -283,16 +289,21 @@ oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) 
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
 kein Test-Flag — steht im QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
-`?preflight=aus` · `?res=WxH` / `?res=0` (ohne Wirkung unter 8th Wall) ·
-Branch pruefstand: `?record`, `?replay`, `?metrics`.
+`?preflight=aus` · Branch pruefstand: `?record`, `?replay`, `?metrics`.
+(`?res=` gibt es nur in `main`/MindAR.)
 
 ## Qualitäts-Richtwerte (?stats, Ruhe, 3–5 s Fenster füllen lassen)
 
-- Jitter **stab**: aufgelegt ≈ 0–0,1 mm (Dead-Zone friert ein) · in der Hand
-  < 0,3 mm (Kalibrierziel; Bestwert 0,16 mm).
-- Jitter **roh**: aufgelegt 0,3–1 mm gesund; > 2–3 mm = Problem stromaufwärts
-  (Marker/Licht/FOV), nicht mit Filtern kaschieren. Marker-A/B immer über
-  **roh** vergleichen. stab sollte ~5–10× unter roh liegen.
+Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite aus
+`karten.json`, 63 mm); bis Build 60 rechnete `statsOverlay.js` fest mit einer
+150-mm-Karte — alte Protokolle durch 2,38 teilen, um sie zu vergleichen.
+
+- Jitter **stab**: aufgelegt ≈ 0–0,04 mm (Dead-Zone friert ein) · in der Hand
+  < 0,13 mm (Kalibrierziel; Bestwert 0,07 mm — alt: < 0,3 / 0,16).
+- Jitter **roh**: aufgelegt 0,13–0,4 mm gesund; > 0,8–1,3 mm = Problem
+  stromaufwärts (Marker/Licht/FOV), nicht mit Filtern kaschieren (alt:
+  0,3–1 / > 2–3). Marker-A/B immer über **roh** vergleichen. stab sollte
+  ~5–10× unter roh liegen.
 - Beim Stillhalten muss `ruhig` stehen, sonst misst man Bewegung.
 
 ## Gotchas
@@ -306,7 +317,7 @@ Branch pruefstand: `?record`, `?replay`, `?metrics`.
   Preset nehmen. `?preflight=…` überspringt boot() komplett (kein Dev-Panel).
 - 8th Wall: `disableWorldTracking: true` MUSS vor `XrController.pipelineModule()`
   und `XR8.run()` stehen. `XR8.Threejs` verlangt `window.THREE` (dieselbe
-  Instanz wie die Importmap). `renderer.setSize` der Engine schreibt Pixelmaße
+  Instanz wie `vendor/three/three.module.js`, main.js setzt sie). `renderer.setSize` der Engine schreibt Pixelmaße
   als Inline-CSS → `#xr-canvas` hat `width/height: 100% !important`.
 - 8th Wall: `reality.imageupdated` feuert nur bei geänderter Pose → der
   Stabilizer sieht unveränderte Frames als „stale" (wie MindAR). `detail.scale`
@@ -322,9 +333,16 @@ Branch pruefstand: `?record`, `?replay`, `?metrics`.
   konstant). Abhilfe: Schiedsrichter (Toggle 10); Diagnose in `?stats` Zeile
   „Flip" (`n·up roh` negativ/klein bei Karte auf dem Tisch = Engine liefert
   die Spiegel-Lösung). Herleitung + Handy-Test: `docs/8thwall-migration.md` 9.
-- (main/MindAR) mindar-image-three legt IMMER einen CSS3DRenderer-Layer an, der
-  Pointer-Events schluckt → `pointerEvents:none`; MindARs elementweiser Matrix-
-  Filter erzeugt nicht-starre Matrizen → Grund für den Scale-Lock; MindAR
+- Boot-Fehlerpfade (Build 61): `boot()` und `attachDevTools()` haben `.catch`
+  (vorher stille Unhandled Rejection = Splash mit totem Knopf); `loadEngine()`
+  hat 30 s Timeout; Kamera-Ausfall NACH dem Start zeigt „Kamera unterbrochen"
+  in `#lostHint`.
+- Kompatibilität: keine `static`-Klassenfelder im Live-Code (ES2022, iOS 14.5
+  — das Inline-Gate in index.html prüft nur `?.`/`??` und ließe iOS 13.4–14.4
+  ohne Hinweis hängen; Build 61 hat genau das in questionMenu.js behoben).
+- **Nur main/MindAR:** mindar-image-three legt IMMER einen CSS3DRenderer-Layer
+  an, der Pointer-Events schluckt → `pointerEvents:none`; MindARs elementweiser
+  Matrix-Filter erzeugt nicht-starre Matrizen → Grund für den Scale-Lock; MindAR
   schätzt das Kamera-FOV nur (Kipp-Wobble, Strategie A3).
 - iOS: Gyro-Permission MUSS in der Start-Geste angefragt werden (vor allen
   awaits); Safari cached JS aggressiv → Build-Check in ?stats nutzen. Achtung:
@@ -337,5 +355,13 @@ Branch pruefstand: `?record`, `?replay`, `?metrics`.
 
 - `docs/tracking-strategien.md` — Strategien A–E (Rohsignal, Fork,
   WebXR-Fusion, Eck-Anker-Karte, Prüfstand) mit Wissen + Vorgehen je Punkt.
-  Empfohlene Reihenfolge: E → D → A → B3/B1 → C.
+  MindAR-Stand (2026-07): B (MindAR-Fork) und C sind auf diesem Branch
+  gegenstandslos, A/D/E gelten sinngemäß weiter.
+- Refactoring Stufe 3 (offen, 2026-09-15): main.js in Module zerlegen (Tap-
+  Eingabe, Figur-Hüpfer, Pipeline-Modul) · `poseStabilizer.tick()` in Stufen
+  mit expliziten Parametern · Scale-Lock ausbauen (erst Re-Lock-Zähler am
+  Gerät prüfen) · Arbiter: `qEarth` ändert sich 60 Hz ohne Dead-Band → kann
+  stale Frames als „neu" melden (Vision-Hz in ?stats prüfen) · `SCENE.cardAspect`
+  1,60 → 1,40 (63×88 mm) · Tests (`node --test`) für bubbleText, dialogEngine,
+  edition, poseArbiter · `"ja"/"nein"` → Booleans (bricht alte Presets).
 - Fix-Historie: Code-Kommentare mit Datum (2026-07-08 / -09 / -13 / -14).

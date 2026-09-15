@@ -1,6 +1,9 @@
 # DETAR — Tracking-Verbesserung: Strategien A–E (Wissensdokument)
 
 Stand 2026-07-14 · Bezug: MindAR 1.2.5 + eigener PoseStabilizer (Build 10, `l77d/detar`).
+**Hinweis 2026-09-15:** Branch `v2tracker-prod` läuft auf der 8th-Wall-Engine — Strategie B
+(MindAR-Fork) und C (WebXR-Fusion mit MindAR) sind dort gegenstandslos; A (Rohsignal),
+D (Eck-Anker-Karte) und E (Prüfstand) gelten sinngemäß weiter. Dokument bleibt als Wissen.
 Zweck: Pro Strategie das Wissen (warum/Mechanik) und das Vorgehen (konkrete Schritte) festhalten — nachschlagbar, unabhängig vom Chat-Verlauf.
 
 ---

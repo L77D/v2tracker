@@ -92,9 +92,11 @@ skaliert.
 dieses Feld und löst `resources.luminanceImage` **neben der JSON** auf. Die
 eingecheckte `card.json` trägt trotzdem den korrigierten Pfad, damit sie auch
 für sich stimmt. Zusätzlich setzt `main.js` zur Laufzeit `moveable: true`
-(Karte in der Hand) und `physicalWidthInMeters = SCENE.cardWidth` (0,059 m aus
-`tuning.json`) — dadurch ist `detail.scale` metrisch und die mm-Werte in
-`?stats` stimmen; die Figurgröße hängt davon NICHT ab.
+(Karte in der Hand) und `physicalWidthInMeters = breiteMm / 1000` aus dem
+Eintrag in `targets/8thwall/karten.json` (seit Build 57; 63 mm) — dadurch ist
+`detail.scale` metrisch. Die mm-Werte in `?stats` rechnen seit Build 61 mit
+derselben Kartenbreite (vorher fest 150 mm → Faktor 2,4 zu groß); die
+Figurgröße hängt davon NICHT ab.
 
 ### Neue Karte / neues Layout
 
@@ -259,7 +261,7 @@ das Nötigste reduziert — PNGs bewusst noch nicht (kommt separat):
   (Sky/Semantik), Pixel-Array-Module — Patch in `vendor/8thwall/README.md`.
 - **Preload:** nur noch `xr.js`; der Tracker-Chunk kommt erst nach dem Klick.
 - **Bewusst NICHT angefasst:** der PoseStabilizer samt Toggles — ohne A/B am
-  Gerät (`?dev` → Toggles 1–9, `?stats`-Zahlen) wäre Löschen Raten.
+  Gerät (`?dev` → Toggles 1–10, `?stats`-Zahlen) wäre Löschen Raten.
 
 ## 6. Offen / noch nicht am Gerät verifiziert
 

@@ -26,7 +26,9 @@ Firmenblock im Splash, Fragen mit `branded: true` entfallen, `{firma}` in
 Texten wird neutral („der Betrieb"). Eine Kartendatei für beides
 (`js/edition.js`).
 
-**Kein LLM, keine externe API, kein CDN** — alle Inhalte sind autorisiert und
+**Kein LLM, keine externe API, kein CDN im Live-Code** (einzige Ausnahme: das
+Theatre.js-Studio unter dem Dev-Flag `?timeline` lädt sein Bundle von jsDelivr)
+— alle Inhalte sind autorisiert und
 hartkodiert (`cards/*.js`). Laufzeit-Abhängigkeiten liegen komplett im Repo:
 three.js 0.160 als schlankes Bundle (`vendor/three/`, tree-shaken auf die
 genutzten Klassen) + die zugeschnittene 8th-Wall-Engine (`vendor/8thwall/`).
@@ -62,21 +64,23 @@ Direktes Öffnen der Datei per Doppelklick funktioniert NICHT (ES-Module
 brauchen einen Server). Im Ordner starten:
 
 ```
-python3 -m http.server 8080        # oder: npx serve
+node tools/dev-server.js           # Port 8743, richtige MIME-Typen (.wasm/.webp), Cache aus
 ```
 
-dann `http://localhost:8080` öffnen.
+dann `http://localhost:8743/index.html?desktop&dev` öffnen (macOS: Doppelklick
+auf `Start-Dev-Server.command`). Ein `python3 -m http.server` geht zur Not
+auch, liefert `.wasm` aber ohne MIME-Typ.
 
 * **`?desktop`** — Desktop-Testmodus ohne Kamera: Karte als Boden-Plane,
   Maus = Orbit/Zoom (wie der Lokal-Tuning-Prototyp). Zum Prüfen von
-  Choreographie/Verhalten am Rechner: `http://localhost:8080/?desktop`
+  Choreographie/Verhalten am Rechner: `http://localhost:8743/?desktop`
 * **`?debug`** — pinke Hilfslinien (Lauffeld + FACE_CAM-Kegel), kombinierbar:
   `?desktop&debug`
 * **`?dev`** — Tuning-Panel (alle Regler live, localStorage-persistent,
-  Presets, tuning.json-Export, Replay, Tracking-Feature-Toggles). Bewusst
+  Presets, tuning.json-Export, Replay, Tracking-Feature-Toggles 1–10). Bewusst
   OHNE Theatre — bleibt auch am Handy übersichtlich.
-* **`?timeline`** — Theatre.js-Studio (visueller Keyframe-Editor). Für
-  Animations-Arbeit am Rechner: `?desktop&dev&timeline`.
+* **`?timeline`** — Theatre.js-Studio (visueller Keyframe-Editor, lädt das
+  Bundle vom CDN). Für Animations-Arbeit am Rechner: `?desktop&dev&timeline`.
 * **`?stats`** — Live-Diagnose am Handy: Tracking-/Gyro-Status, Jitter in mm,
   Gyro-Toggle, Build-Check, Engine-Variante. **`?nogyro`** — Gyro-Fusion
   komplett aus. **`?nosimd`** — Nicht-SIMD-Engine erzwingen.
@@ -92,22 +96,24 @@ Flags sind frei kombinierbar (z. B. `?dev&stats` am Handy fürs Tracking-Tuning)
 
 Autorisierte Animations-Beats werden visuell gekeyframed statt programmiert:
 
-1. `?desktop&dev` öffnen → Theatre-Studio erscheint (Outline links, Timeline
-   unten). Objekt „Beats / Figur" animiert den `BeatRoot`-Wrapper
+1. `?desktop&dev&timeline` öffnen → Theatre-Studio erscheint (Outline links,
+   Timeline unten). Objekt „Beats / Figur" animiert den `BeatRoot`-Wrapper
    (posX/Y/Z, rotY/Z, scale) — die reaktiven Behaviors (IdleWander, FACE_CAM)
    laufen unabhängig weiter und addieren sich dazu.
 2. Keyframes setzen, scrubben, Kurven im Studio editieren;
    „▶ Timeline" im Dev-Panel spielt die Sequenz ab.
 3. Dev-Panel → „Timeline exportieren" → die Datei als **`beats.theatre.json`**
-   ins Repo-Root legen und pushen.
-4. Live lädt die App nur den schlanken Player + diese JSON (ohne die Datei
-   und ohne `?dev` wird Theatre gar nicht geladen).
+   ins Repo-Root legen (steht in `.gitignore`).
+4. Einen Live-Player-Pfad gibt es derzeit NICHT: ohne `?timeline` wird
+   `timeline.js` weder geladen noch die JSON geholt (`main.js →
+   attachDevTools`). Sollen autorisierte Beats live laufen, dort einen
+   Player-Pfad ohne Flag öffnen.
 
 Reaktives Verhalten (Watscheln, Kamera-Blick, Billboard) bleibt bewusst Code —
 das lässt sich nicht keyframen, weil es auf die Kamera reagiert.
 
 Am Handy testen ohne Deploy: Rechner und Handy im selben WLAN, dann
-`http://<rechner-ip>:8080` — Achtung, Kamera geht nur über HTTPS; für echte
+`http://<rechner-ip>:8743` — Achtung, Kamera geht nur über HTTPS; für echte
 AR-Tests am Handy die GitHub-Pages-URL nehmen (push = live).
 
 ## Getunte Werte
@@ -152,8 +158,10 @@ Das Target ist aus dem beschnittenen Kartenbild erzeugt
    Ordner `targets/8thwall`, Name `card` (Details und Pipe-Variante:
    `docs/8thwall-migration.md`, Abschnitt 1)
 2. `card.json`, `card_luminance.png`, `card_thumbnail.png` einchecken
-   (`_cropped`/`_original` nicht)
-3. `SCENE.cardAspect` in `js/config.js` auf Höhe/Breite der ganzen Karte setzen
+   (`_cropped`/`_original` nicht — stehen in `.gitignore`)
+3. Physische Breite = `breiteMm` des Eintrags in `targets/8thwall/karten.json`
+   (`SCENE.cardAspect` in `js/config.js` ist nur die Szenen-Geometrie der
+   Eck-Marker; bei anderem Kartenformat mit anpassen)
 
 Der Crop ist immer 3:4 (zentriert, volle Kartenbreite). Gute Targets: viel
 Kontrast, viele unregelmäßige Details, matt gedruckt — dieselben Regeln wie
@@ -172,13 +180,17 @@ halten die Pose bei kurzem Tracking-Verlust. (`filterMinCF`/`filterBeta`/
 
 ```
 index.html            Splash (DU SCANNST … START) + AR-Container + Overlays
-css/app.css           Splash, DET-Logo-Overlay, Tracking-Hinweis, Font
-css/question-menu.css Bottom-UI (Onboarding + Fragen-Karussell), CSS-Dashboard
+css/app.css           Tokens, Splash, Support-Zeilen, Suchrahmen, Karte-verloren-Hinweis, Hinweis-Screens
+css/question-menu.css Bottom-UI (Themen, Fragen-Karussell, Optionen, Weiter)
 js/main.js            Boot, Engine-Variante (SIMD/nicht-SIMD), 8th-Wall-Setup (Pipeline-Modul), Figur-Tap, Loop
 js/preflight.js       Vorabprüfung im Splash (In-App-Browser, HTTPS, Kamera-API, WASM, WebP)
 js/edition.js         Edition Firma/Public (?public): Karte filtern, {firma} ersetzen
-js/desktopMode.js     ?desktop: Karte als Boden-Plane, Maus-Orbit (nur per Flag geladen)
+js/version.js         Build-Nummer (?stats vergleicht mit dem Live-Stand)
+js/util.js            gemeinsame Helfer (el, rand, normalizeAngle, finiteVec, progress)
 js/config.js          ALLE Tuning-Dashboards + tuning.json-Merge
+js/poseStabilizer.js  Tracking-Glättung (Median-Aufsetzen, One-Euro, SLERP, Dead-Zone, Lost-Hold)
+js/poseArbiter.js     Schwerkraft-Schiedsrichter gegen den Pose-Flip (Toggle 10)
+js/gyroFusion.js      Gyro-Deltas als Prediction + Verlust-Brücke
 js/rig.js             Figuren-Hierarchie (Transforms aus Scene.zcomp)
 js/cardController.js  Choreographie + Dialogablauf: Scan → Pop-In → Begrüßung →
                       Hub (Themen → Fragen) → Antwort/Seiten → Rückfragen →
@@ -188,10 +200,18 @@ js/bubbleText.js      Markup-Parser (Highlight-Tags), Satz-/Wortgrenzen
 js/idleWander.js      Watscheln, Bop, FACE_CAM, attending-Modus
 js/speechBubble.js    Canvas-Typewriter-Bubble mit Seiten, Billboard
 js/faceAnimator.js    Blinzeln + Mund-Sync
-js/activationAnim.js  Pop-In beim ersten Scan, Einklappen beim Ausstieg
-js/questionMenu.js    Onboarding + Dialog-Menü: Themenkarten, Fragen mit Marken,
-                      Antwortoptionen, Weiter, Fußzeile (DOM, Karussell)
+js/activationAnim.js  Pop-In beim ersten Scan, Einklappen beim Ausstieg (Figur-Scale)
+js/activationFX.js    Eck-Marker auf der Karte + hüpfendes Handy-Icon (Aktivier-Phase)
+js/questionMenu.js    Support-Zeilen + Dialog-Menü: Themenkacheln, Fragen mit Reitern,
+                      Antwortoptionen, Weiter (DOM, Karussell)
+js/supportUI.js       Handy-Icon (PNG-Frames) + Balken-Zeilen
+js/sound.js, voice.js UI-Sounds (vendor/tiks.js, Web Audio) + Animalese-Stimme für den Typewriter
 js/debugOverlay.js    pinke Hilfslinien (?debug)
+js/statsOverlay.js    ?stats: Jitter in mm, Vision-Hz, Flip-Zeile, Build-Check
+js/devPanel.js        ?dev: Regler für alle Dashboards, Toggles 1–10, Presets, Replay
+js/timeline.js        ?timeline: Theatre.js-Studio (CDN)
+js/desktopMode.js     ?desktop: Karte als Boden-Plane, Maus-Orbit (nur per Flag geladen)
+js/phoneFrame.js      Smartphone-Rahmen für den Desktop-Modus
 cards/                ein .js pro Beruf (Inhalte, hartkodiert)
 assets/               Character-WebPs, Logos, Fonts (Subset), Kartenbild
 targets/8thwall/      Image-Targets (card.json + card_luminance.png, weitere Designs) aus image-target-cli
@@ -201,6 +221,8 @@ vendor/qrcode/        qrcode-generator (MIT) für karten.html
 vendor/8thwall/       Open-Source-8th-Wall-Engine, zugeschnitten (xr.js + xr-tracking.js, MIT, WASM-SIMD)
 vendor/8thwall-nosimd/ dieselbe Engine ohne WASM-SIMD (Fallback, main.js wählt automatisch)
 tools/build-fonts.sh  Font-Subset (pyftsubset) aus den Original-TTFs
+tools/dev-server.js   lokaler Dev-Server (Port 8743, MIME-Typen, no-store)
+tools/build-lokal-prototyp.py  Einzeldatei-Prototyp (patcht markierte Quelltextzeilen)
 vendor/three/         three.js 0.160, tree-shaken (tools/build-three.sh)
 docs/8thwall-migration.md  Umstieg MindAR → 8th Wall: Target-Erzeugung, Änderungen, Events
 docs/kartendesigns.md      Kartendesigns per ?karte: neues Design anlegen, lokal testen
