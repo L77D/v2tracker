@@ -7,6 +7,13 @@
       "target": "card",
       "breiteMm": 63,
       "notiz": "Quelle Assets/September/demo_skat_070926_mind_cropped.png (1346×2156), image-target-cli 1.0.0, Standard-Crop 3:4 zentriert, 2026-09-09"
+    },
+    {
+      "id": "tarn",
+      "name": "Tarnmuster S/W 150926",
+      "target": "tarn",
+      "breiteMm": 63,
+      "notiz": "Hochkontrast-Pixelmuster, Upload Michael 2026-09-15 (744×1039, Aspekt 1,397 = 63×88 mm), image-target-cli 1.0.0, Standard-Crop 3:4 zentriert"
     }
   ]
 }

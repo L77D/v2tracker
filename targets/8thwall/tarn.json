@@ -1,0 +1,25 @@
+{
+  "imagePath": "image-targets/tarn_luminance.png",
+  "metadata": {
+    "quelle": "Upload Michael 2026-09-15 (744×1039, Alpha auf Weiß flachgelegt), image-target-cli 1.0.0, Standard-Crop 3:4 zentriert"
+  },
+  "name": "tarn",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 24,
+    "width": 744,
+    "height": 992,
+    "isRotated": false,
+    "originalWidth": 744,
+    "originalHeight": 1039
+  },
+  "resources": {
+    "originalImage": "tarn_original.png",
+    "croppedImage": "tarn_cropped.png",
+    "thumbnailImage": "tarn_thumbnail.png",
+    "luminanceImage": "tarn_luminance.png"
+  },
+  "created": 1789471883417,
+  "updated": 1789471883417
+}
