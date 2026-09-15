@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-09-15 · Build 58 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-09-15 · Build 59 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -237,7 +237,11 @@ Rendern: XR8.Threejs.onRender (buildExperience({render:false}))
 (main/MindAR: `anchor.group.matrix` roh pixel-skaliert, stabRoot auf Szenen-
 Ebene, `renderer.setAnimationLoop` — Rest identisch.)
 
-PoseStabilizer: Einheiten-Normierung auf Kartenbreiten → NaN-Guard →
+PoseStabilizer: NaN-Guard → **Schwerkraft-Schiedsrichter** (Build 59,
+`js/poseArbiter.js`, Toggle 10: aus der Rohpose die Spiegel-Kandidatin der
+ebenen Pose berechnen und die Lage wählen, deren Kartennormale im Erdframe
+nach oben zeigt — nur beta/gamma nötig, ohne Gyro passiv; Hysterese
+`STAB.arbiterMargin`) → Einheiten-Normierung auf Kartenbreiten →
 **Scale-Lock** (Scale strukturell konstant; >10 % Abweichung = Fehl-Homographie
 → Frame verwerfen; hält die Abweichung `scaleRelockMs` am Stück an → **Re-Lock**
 = komplett neu aufsetzen) → **Aufsetzen per Median** (Build 28: die ersten
@@ -266,12 +270,14 @@ Delta vor) als Prediction + Verlust-Brücke.
   `rotBeta 4` · `minSpeed 0.04` · `minAngSpeed 0.09` · `scaleOutlier 0.1` ·
   `filterMinCF 0.01` (MindAR-intern; 0.001 ließ die interne Pose so
   nachhängen, dass der Tracker beim Verschieben abriss).
-- Feature-Toggles 1–9 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock.
+- Feature-Toggles 1–10 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock, Nr. 10 =
+  Schwerkraft-Schiedsrichter (Pose-Flip).
 
 ## URL-Parameter
 
 `?stats` (Jitter roh/stab, Vision-Hz, BEWEGT/ruhig, Cam+PR, Build-Check,
-Engine-Variante, Design) · `?karte=<id>` (Kartendesign aus
+Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
+n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler) · `?karte=<id>` (Kartendesign aus
 `targets/8thwall/karten.json`, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
 kein Test-Flag — steht im QR-Code der neutralen Karte) ·
@@ -306,6 +312,15 @@ Branch pruefstand: `?record`, `?replay`, `?metrics`.
   gilt pro Track als konstant (Scale-Lock-Annahme, am Gerät prüfen).
 - 8th-Wall-Target ist immer ein 3:4-Crop (zentriert, volle Kartenbreite);
   eigener Crop muss die Kartenbreite behalten (Skalierung!).
+- **Pose-Flip (2026-09-15):** Die ebene Pose-Schätzung hat zwei Lösungen; die
+  Engine liefert manchmal STABIL die gespiegelte (Karte um 2θ um ihre Querachse
+  gekippt, θ = Handy-Neigung → bei 45° liegt die Figur flach zum Betrachter,
+  Kopf unten, Blasentext auf dem Kopf). Der Stabilizer folgt der Quelle und
+  kann das weder erzeugen noch halten (zwei ferne Messungen → Neuaufsetzen);
+  Scale-Lock ist unter 8th Wall wirkungslos (`scale` = konfigurierte Größe,
+  konstant). Abhilfe: Schiedsrichter (Toggle 10); Diagnose in `?stats` Zeile
+  „Flip" (`n·up roh` negativ/klein bei Karte auf dem Tisch = Engine liefert
+  die Spiegel-Lösung). Herleitung + Handy-Test: `docs/8thwall-migration.md` 9.
 - (main/MindAR) mindar-image-three legt IMMER einen CSS3DRenderer-Layer an, der
   Pointer-Events schluckt → `pointerEvents:none`; MindARs elementweiser Matrix-
   Filter erzeugt nicht-starre Matrizen → Grund für den Scale-Lock; MindAR

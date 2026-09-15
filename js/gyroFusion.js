@@ -112,6 +112,16 @@ export class GyroFusion {
     return this.delta;
   }
 
+  /* Absolute Orientierung Screen-/Kamera-Frame → Erdframe (Z = oben), oder null
+     ohne frisches Signal. Für den Schwerkraft-Schiedsrichter (poseArbiter.js,
+     2026-09-15): dort zählt nur der z-Anteil transformierter Vektoren, also
+     beta/gamma — der iOS-Alpha-Offset (alpha relativ zur Startlage) ist egal. */
+  getOrientation() {
+    if (!this.enabled || !this.active) return null;
+    if (performance.now() - this.lastEventMs > 250) return null;
+    return this.qCur;
+  }
+
   dispose() {
     window.removeEventListener("deviceorientation", this._onEvent, true);
   }

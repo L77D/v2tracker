@@ -135,6 +135,12 @@ export const STAB = {
                      //   aus MindARs elementweisem Matrix-Filter/Fehl-Homographien
                      //   und erzeugte „Figur schräg/zu groß" + Positions-Jitter über
                      //   die Normierung)
+  gravityArbiter: "ja", // 10 Schwerkraft-Schiedsrichter gegen den „Pose-Flip" (2026-09-15):
+                        //   die ebene Pose-Schätzung hat zwei Lösungen; 8th Wall liefert
+                        //   manchmal stabil die gespiegelte (Karte um 2θ gekippt, Figur liegt
+                        //   flach zum Betrachter, Kopf unten). Aus der Rohpose wird die
+                        //   Spiegel-Kandidatin berechnet und die Lage gewählt, deren Normale
+                        //   im Erdframe nach oben zeigt (js/poseArbiter.js). Ohne Gyro passiv.
   // 7 = GYRO.enabled · 8 = extrapolate (unten)
 
   minCutoff: 0.1,       // Grund-Glättung in Ruhe. KLEINER = ruhiger, aber träger.
@@ -170,6 +176,11 @@ export const STAB = {
   // scaleOutlier vom Lock ab, war der Lock falsch → komplett neu aufsetzen
   // (vorher wurden solche Frames endlos verworfen, die Figur blieb schief).
   scaleRelockMs: 600,
+  // SCHWERKRAFT-SCHIEDSRICHTER (2026-09-15): Hysterese — die Spiegel-Kandidatin
+  // gewinnt erst, wenn ihr z-Anteil (Normale im Erdframe, 1 = senkrecht nach
+  // oben) um mehr als arbiterMargin über dem der Rohpose liegt. Nahe der
+  // Frontalsicht sind beide Kandidaten gleich → kein Umschalten, kein Flattern.
+  arbiterMargin: 0.15,
 
   // Bewegungs-Extrapolation (2026-07-09): MindAR misst nur mit ~15–30 Hz —
   // zwischen zwei Messungen wird die Pose mit der zuletzt gemessenen

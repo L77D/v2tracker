@@ -7,7 +7,7 @@
    beta hoch, bis Bewegung ohne Nachziehen folgt.
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
-import { GYRO } from "./config.js";
+import { GYRO, STAB } from "./config.js";
 import { BUILD } from "./version.js";
 
 const _p = new THREE.Vector3();
@@ -104,6 +104,8 @@ export class StatsOverlay {
     const v = this.env?.getVideo?.();
     const cam = v && v.videoWidth ? `${v.videoWidth}×${v.videoHeight}` : "—";
     const pr = this.env?.renderer ? this.env.renderer.getPixelRatio().toFixed(1) : "—";
+    const arb = this.stab.arb ?? {};
+    const arbState = STAB.gravityArbiter === "nein" ? "AUS (Toggle)" : !arb.active ? "kein Gyro" : arb.flipped ? "GESPIEGELT→korrigiert" : "roh ok";
     const build = this.liveBuild == null ? `v${BUILD}`
       : this.liveBuild === BUILD ? `v${BUILD} (aktuell)`
       : `v${BUILD} — v${this.liveBuild} LIVE → neu laden!`;
@@ -115,6 +117,13 @@ export class StatsOverlay {
       `Jitter stab: ${f(this.smooth.rms())}\n` +
       `Vision: ${this.stab.visionHz ?? "—"} Hz  ${this.stab.moving ? "BEWEGT" : "ruhig"}\n` +
       `Roh↔Stab: ${(this.stab.rawSkewDeg ?? 0).toFixed(1)}°  ${((this.stab.rawOffset ?? 0) * 1000).toFixed(1)}‰KB  Re-Erk.: ${this.stab.relocCount ?? 0}\n` +
+      // Pose-Flip-Diagnose (2026-09-15): Schiedsrichter-Zustand, Kippwinkel der
+      // Kartennormale gegen die Sichtlinie, z-Anteil der Normale im Erdframe
+      // (1 = senkrecht nach oben; negativ/klein bei Karte auf dem Tisch = die
+      // Engine liefert die gespiegelte Lösung), Zahl der Wechsel; dazu die bis
+      // Build 58 unsichtbaren automatischen Snaps und Scale-Re-Locks.
+      `Flip: ${arbState}  Kipp ${(arb.tiltDeg ?? 0).toFixed(0)}°  n·up roh ${(arb.zRaw ?? 0).toFixed(2)} → gew. ${(arb.zChosen ?? 0).toFixed(2)}` +
+      `  Flips ${this.stab.flipCount ?? 0}  Snaps ${this.stab.snapCount ?? 0}  Re-Lock ${this.stab.relockCount ?? 0}\n` +
       `Build: ${build}\n` +
       // Engine-Variante (2026-09-09): SIMD oder Nicht-SIMD-Fallback (main.js
       // wählt per WebAssembly.validate; Konsole: „8th Wall XR Version: …s"

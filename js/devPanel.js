@@ -115,6 +115,7 @@ export class DevPanel {
         { o: GYRO, k: "enabled", l: "7 Gyro-Fusion", options: ["ja", "nein"] },
         { o: STAB, k: "extrapolate", l: "8 Bewegungs-Extrapolation", options: ["ja", "nein"] },
         { o: STAB, k: "scaleLock", l: "9 Scale-Lock (Anti-Verzerrung)", options: ["ja", "nein"] },
+        { o: STAB, k: "gravityArbiter", l: "10 Schwerkraft-Schiedsrichter (Pose-Flip)", options: ["ja", "nein"] },
       ]},
       { g: "Tracking (nur AR)", items: [
         { o: STAB, k: "minCutoff", l: "Glättung Ruhe (minCutoff)", min: 0.05, max: 5, step: 0.05 },
@@ -128,6 +129,7 @@ export class DevPanel {
         { o: STAB, k: "acquireFrames", l: "Aufsetzen: Median aus N Messungen", min: 1, max: 30, step: 1 },
         { o: STAB, k: "acquireMaxMs", l: "Aufsetzen: spätestens nach (ms)", min: 100, max: 2000, step: 50 },
         { o: STAB, k: "scaleRelockMs", l: "Scale-Re-Lock nach (ms)", min: 100, max: 3000, step: 50 },
+        { o: STAB, k: "arbiterMargin", l: "Schiedsrichter-Hysterese (z-Anteil)", min: 0, max: 0.6, step: 0.01 },
         { o: STAB, k: "lostHoldMs", l: "Lost-Hold (ms)", min: 0, max: 1000, step: 50 },
         { o: STAB, k: "extrapMaxMs", l: "Extrapolation max (ms)", min: 0, max: 400, step: 10 },
         { o: STAB, k: "minSpeed", l: "Bewegt ab (KB/s)", min: 0, max: 0.3, step: 0.005 },

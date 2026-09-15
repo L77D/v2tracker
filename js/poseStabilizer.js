@@ -21,6 +21,7 @@
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { STAB, GYRO } from "./config.js";
+import { arbitrateUpright } from "./poseArbiter.js";
 
 const _pos = new THREE.Vector3();
 const _quat = new THREE.Quaternion();
@@ -61,7 +62,13 @@ export class PoseStabilizer {
     // Diagnose (?stats): Abstand Rohpose ↔ geglätteter Zustand + Zahl der Neu-Erkennungen
     this.rawSkewDeg = 0;
     this.rawOffset = 0;
-    this.relocCount = 0;
+    this.relocCount = 0;   // Neu-Aufsetzen auf Tap (reacquire)
+    this.snapCount = 0;    // automatische Snaps (zwei ferne Messungen in Folge) — bis Build 58 unsichtbar
+    this.relockCount = 0;  // Scale-Re-Locks — dito
+    // Schwerkraft-Schiedsrichter (poseArbiter.js, 2026-09-15): Ergebnis des
+    // letzten Frames + Zahl der Zustandswechsel (roh ↔ gespiegelt)
+    this.arb = { flipped: false, zRaw: 0, zChosen: 0, tiltDeg: 0, active: false };
+    this.flipCount = 0;
 
     // Tracking-Status (Lost-Hold)
     this.tracking = false;
@@ -192,6 +199,24 @@ export class PoseStabilizer {
       return; // kaputter Frame → komplett verwerfen, letzte gute Pose steht
     }
 
+    // SCHWERKRAFT-SCHIEDSRICHTER (#10, 2026-09-15, „Pose-Flip"): Die ebene
+    // Pose-Schätzung hat zwei Lösungen; die Engine liefert manchmal stabil die
+    // gespiegelte (Karte um 2θ gekippt → Figur liegt flach zum Betrachter).
+    // Aus der Rohpose wird die Spiegel-Kandidatin berechnet und die Lage
+    // gewählt, deren Kartennormale im Erdframe nach oben zeigt (nur beta/gamma
+    // nötig). VOR Scale-Lock/Normierung/Stale-Erkennung: das Ergebnis hängt nur
+    // von der Rohpose ab, bitidentische Rohposen bleiben bitidentisch → stale
+    // Frames werden weiter erkannt. Ohne frisches Gyro-Signal passiv.
+    const qEarth = STAB.gravityArbiter !== "nein" ? (this.gyro?.getOrientation() ?? null) : null;
+    this.arb.active = !!qEarth;
+    if (qEarth) {
+      const was = this.arb.flipped;
+      arbitrateUpright(_pos, _quat, qEarth, STAB.arbiterMargin, this.arb);
+      if (this.arb.flipped !== was) this.flipCount++;
+    } else {
+      this.arb.flipped = false;
+    }
+
     // SCALE-LOCK (#9, 2026-07-14): Die Anchor-Scale ist strukturell KONSTANT
     // (postMatrix = Markerbreite in px; die ModelView-Transformation ist starr —
     // Entfernung steckt in der Translation, nie in der Scale). Jede Abweichung
@@ -214,6 +239,7 @@ export class PoseStabilizer {
           this.initialised = false;
           this.hasScaleLock = false;
           this.acq = null;
+          this.relockCount++;
         }
         return; // Fehl-Messung (schräg/riesig) → komplett verwerfen
       }
@@ -391,6 +417,7 @@ export class PoseStabilizer {
       this.farCount = (this.farCount ?? 0) + 1;
       if (this.farCount >= 2 && STAB.snap !== "nein") {
         this.initialised = false; // nächster Tick setzt hart neu auf
+        this.snapCount++;
       }
       return; // Ausreißer (oder Snap folgt) — Messung nicht in vel/meas übernehmen
     }

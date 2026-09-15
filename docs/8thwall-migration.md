@@ -379,3 +379,71 @@ noch gestaltet). `?stats` zeigt „PUBLIC"/„Firma". Geprüft am Rechner
 (`?public&desktop&dev`): Splash ohne Firma, Thema „Wie man reinkommt" nach
 „Wie bewirbt man sich?" ohne LINK-Kachel; ohne Flag unverändert (LINK-Kachel
 mit NEU). `?public` bleibt bei „Link kopieren" und „Neu laden" erhalten.
+
+## 9. Pose-Flip: Figur liegt flach zum Betrachter (Build 59, 2026-09-15)
+
+**Fehlerbild (Michael, zwei Kartenmotive, reproduzierbar):** Karte flach auf
+dem Tisch, Handy schräg von oben. Die Figur liegt statt aufrecht in der
+Tischebene, Füße an der Karte, Körper zum Betrachter, Kopf unten; die 3D-Blase
+jenseits des Kopfes, Text auf dem Kopf. 2D-UI normal. Stabil, kein Flackern.
+
+**Ursache:** Die ebene Pose-Schätzung hat zwei Lösungen, die fast identisch ins
+Bild projizieren. Die zweite ist die Karte um ihre Querachse durch die
+Kartenmitte um **2θ** gekippt (θ = Neigung des Handys gegen die Senkrechte).
+Durch die echte Hierarchie gerechnet (Kamera → stabRoot → worldRoot +90° X →
+FigureRoot/BubbleRoot mit Billboard-Yaw, Skript mit `vendor/three` r160):
+
+| θ | Figur-Aufwärts im Weltframe | Kopf auf dem Bildschirm | Blasentext |
+|---|---|---|---|
+| 30° | (0, −0,87, 0,50): lehnt 60° zum Betrachter | unter den Füßen | auf dem Kopf |
+| 45° | (0, −1, 0): liegt flach zum Betrachter | unter den Füßen | auf dem Kopf |
+| 60° | (0, −0,87, −0,50): zeigt in den Tisch | unter den Füßen | auf dem Kopf |
+
+Die Blasenvorderseite zeigt dabei zur Kamera (Text gedreht, nicht gespiegelt);
+die Sprites sind `DoubleSide`, die Figur bleibt sichtbar. Das ist der
+Screenshot 1:1.
+
+Reprojektions-Residuum der besten Pose in der Spiegel-Hälfte (7×9-Raster auf
+der 63×88-mm-Karte, f = 1000 px): 45°/25 cm ≈ 17 px, 45°/50 cm ≈ 4,4 px,
+45°/80 cm ≈ 1,7 px; bei 15° kein eigenes Minimum (beide Lösungen fallen
+zusammen). Die falsche Mulde ist also nur bei schwacher Perspektive (fern,
+frontal) bildlich kaum unterscheidbar — ein Tracker, der von der vorigen Pose
+aus verfeinert, bleibt danach in seiner Mulde. Warum die Engine
+(`xr-tracking.js`, WASM) sie wählt und hält, ist nicht einsehbar; sie
+registriert `deviceorientation`/`devicemotion`, nutzt sie aber erkennbar nicht
+zur Auflösung. Headless (Chromium + Fake-Kamera mit synthetischem Kartenbild)
+sprang die Erkennung unter SwiftShader nicht an.
+
+**Ausgeschlossen:** Stabilizer (zwei ferne Messungen → `initialised=false`,
+`acquire()` filtert nichts — eine stabil richtige Rohpose setzt sich nach
+≤ 2 Messungen durch), GyroFusion (Quaternion-Formel = three.js Euler „ZXY",
+Deltas werden von jeder Vision-Messung zurückgezogen, Brücke ≤ `bridgeMs`),
+Konventionen (`updateAnchor` = Kamera⁻¹ × Bildpose, uniforme Skalierung; ein
+Fehler wäre immer sichtbar), Target-Geometrie (`scaledWidth` nur Skalierung).
+Scale-Lock ist unter 8th Wall tot: `scale` = `Math.max(widthInMeters,
+heightInMeters)` = konfigurierte Größe, konstant.
+
+**Abhilfe (`js/poseArbiter.js`, Toggle 10 `STAB.gravityArbiter`, Hysterese
+`STAB.arbiterMargin`):** Beide Lösungen sind eine Involution. Aus der Rohpose
+wird die Spiegel-Kandidatin berechnet (Normale n an der Sichtlinie u
+gespiegelt = Drehung um n×u um 2θ, Position bleibt) und die Lage gewählt, deren
+Kartennormale im Erdframe (`GyroFusion.getOrientation()`) stärker nach oben
+zeigt. Es zählt nur der z-Anteil, also beta/gamma — der iOS-Alpha-Offset und
+das Dead-Band von `getDelta()` sind irrelevant. Läuft im Stabilizer VOR
+Scale-Lock/Normierung/Stale-Erkennung; bitidentische Rohposen bleiben
+bitidentisch. Ohne frisches Gyro-Signal passiv. Grenze: Karten, die von
+UNTEN betrachtet werden, würden falsch entschieden (für Tisch/Hand irrelevant).
+
+**Am Handy prüfen (`?stats&dev`):** Fehlerbild herbeiführen. Toggle 10 AN:
+Figur steht, Zeile `Flip: GESPIEGELT→korrigiert`, `n·up roh` negativ/klein,
+`gew.` nahe 1. Toggle 10 AUS: Figur kippt sofort in die Tischebene; beim
+langsamen Kippen des Handys lehnt sie doppelt so schnell wie das Handy
+(Signatur 2θ). `?nogyro`: Zeile „kein Gyro", Schiedsrichter passiv. Karte
+1,5 s abdecken: kommt die Engine richtig zurück? `Snaps`/`Re-Lock` zählen die
+bis Build 58 unsichtbaren automatischen Neuaufsetzer. Jitter stab in Ruhe
+weiter < 0,3 mm, Vision-Hz unverändert.
+
+**Nicht gemacht:** Neu-Erkennung erzwingen (keine Engine-API), Engine-Fix im
+Monorepo (Wurzelbehandlung, erst nach Bestätigung am Handy und Lesen des
+Tracker-Quellcodes), Stabilizer-Schwellen (`snapAngle`, `acquireFrames`)
+drehen — wirkungslos gegen die Quelle.
