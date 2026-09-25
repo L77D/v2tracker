@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-09-15 · Build 61 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-09-25 · Build 62 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -281,7 +281,11 @@ Delta vor) als Prediction + Verlust-Brücke.
 
 ## URL-Parameter
 
-`?stats` (Jitter roh/stab, Vision-Hz, BEWEGT/ruhig, Cam+PR, Build-Check,
+`?stats` (seit Build 62 Kennzahlen aus `js/jitterMetrics.js` über 5 s: Takt,
+Rauschen roh|stab als 2. Differenz nur auf neuen Messungen, Kopf-Messpunkt in px
+mit Versatz + „Lauf ohne Bild", F2F, Modus-Anteil/Wechsel/Auslöser/Drift,
+Gyro-Rate; Knöpfe Fall F0–F4 · „Messung 10 s" → Kopieren (Tabellenzeile) /
+„Log ↓" (JSON); Anleitung `docs/handheld-jitter-analyse.md` Abschnitt e · Cam+PR, Build-Check,
 Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
 oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?karte=<id>` (Kartendesign aus
@@ -293,6 +297,13 @@ kein Test-Flag — steht im QR-Code der neutralen Karte) ·
 (`?res=` gibt es nur in `main`/MindAR.)
 
 ## Qualitäts-Richtwerte (?stats, Ruhe, 3–5 s Fenster füllen lassen)
+
+**Seit Build 62 gibt es „Jitter roh/stab" nicht mehr.** Die alte Zahl
+(Frame-zu-Frame, roh mit Nullen der Frames ohne Messung verdünnt) heißt jetzt
+„F2F" und zählt nur neue Messungen; sie enthält Handbewegung. Für Rauschen
+gilt „Rauschen roh|stab" (2. Differenz, 3D), für das Sichtbare „Kopf px".
+Neue Richtwerte erst nach der Messreihe (`docs/handheld-jitter-analyse.md`);
+die Werte unten sind alte F2F-Zahlen und nur noch für Stativ/F0 vergleichbar.
 
 Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite aus
 `karten.json`, 63 mm); bis Build 60 rechnete `statsOverlay.js` fest mit einer

@@ -68,6 +68,14 @@ export class PoseStabilizer {
     // letzten Frames + Zahl der Zustandswechsel (roh ↔ gespiegelt)
     this.arb = { flipped: false, zRaw: 0, zChosen: 0, tiltDeg: 0, active: false };
     this.flipCount = 0;
+    // Messwerkzeug ?stats (2026-09-25, Handheld-Analyse): reine Diagnose, ändert
+    // kein Verhalten. newMeas = in diesem Tick kam eine neue Vision-Messung an
+    // (rawPos/rawQuat = diese Messung nach Schiedsrichter, in Kartenbreiten);
+    // Zähler für Modus-Wechsel, NaN-Verwürfe und angewendete Gyro-Deltas.
+    this.diag = {
+      newMeas: false, rawPos: new THREE.Vector3(), rawQuat: new THREE.Quaternion(),
+      modeSwitches: 0, moveCause: "—", nanCount: 0, gyroApplied: 0,
+    };
 
     // Tracking-Status (Lost-Hold)
     this.tracking = false;
@@ -150,6 +158,7 @@ export class PoseStabilizer {
     this.lastClockMs = now;
     if (dtMs <= 0) dtMs = 1000 / STAB.refHz;
     const dt = dtMs / 1000;
+    this.diag.newMeas = false;
 
     // Gyro-Delta JEDEN Frame abholen (hält den internen Zustand frisch).
     // null = KEIN frisches Signal (keine Permission / kein Sensor / stale).
@@ -196,6 +205,7 @@ export class PoseStabilizer {
     this.source.matrix.decompose(_pos, _quat, _scale);
     if (STAB.nanGuard !== "nein" &&
         (!finiteVec(_pos) || !finiteQuat(_quat) || !finiteVec(_scale) || _scale.x < 1e-8)) {
+      this.diag.nanCount++;
       return; // kaputter Frame → komplett verwerfen, letzte gute Pose steht
     }
 
@@ -400,6 +410,9 @@ export class PoseStabilizer {
     this.hasRaw = true;
     if (!isNew) return; // stale Frame — MindAR hat nicht neu gemessen
     this.measCount++;
+    this.diag.newMeas = true;
+    this.diag.rawPos.copy(_pos);
+    this.diag.rawQuat.copy(_quat);
 
     // AUSREISSER-DEBOUNCE + Snap (#6, 2026-07-13): Messung weit weg vom
     // Glättungszustand? EINE solche Messung ist meist ein Fehlgriff unter
@@ -488,6 +501,7 @@ export class PoseStabilizer {
     const speed = this.driftSpeed;
     const angSpeed = this.driftAngSpeed;
     const above = speed > STAB.minSpeed || angSpeed > STAB.minAngSpeed;
+    const wasMoving = this.moving;
     if (above) {
       this.moving = true;
       this.lastAboveMs = now;
@@ -498,6 +512,11 @@ export class PoseStabilizer {
       this.moving = false;
     }
     const moving = this.moving;
+    if (moving !== wasMoving) this.diag.modeSwitches++;
+    if (above) {
+      const p = speed > STAB.minSpeed, a = angSpeed > STAB.minAngSpeed;
+      this.diag.moveCause = p && a ? "beide" : p ? "Pos" : "Winkel";
+    }
     if (STAB.extrapolate === "nein" || !moving) return moving;
     const tp = (Math.min(now - this.measT, STAB.extrapMaxMs) + STAB.latencyMs) / 1000;
     if (tp <= 0) return moving;
@@ -525,6 +544,7 @@ export class PoseStabilizer {
     // Dead-Band + Glitch-Filter leben seit 2026-07-14 in GyroFusion.getDelta()
     // (Akkumulations-Schwelle statt pro-Frame-Verwerfen, Finding 4) — hier
     // kommt nur noch Anwendbares an.
+    this.diag.gyroApplied++;
     _dqInv.copy(dq).invert();
     this.smoothQuat.premultiply(_dqInv);
     this.smoothPos.applyQuaternion(_dqInv);

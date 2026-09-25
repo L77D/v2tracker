@@ -675,7 +675,7 @@ function detarPipelineModule(XR8, { resolve, reject }) {
 
       // ?stats — Live-Diagnose am Gerät (Tracking/Gyro/Jitter in Zahlen)
       stats = StatsOverlay
-        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, card, engine: ENGINE_VARIANT, karte })
+        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, karte })
         : null;
 
       exp = buildExperience({

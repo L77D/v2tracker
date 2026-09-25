@@ -339,10 +339,66 @@ Aufwände als Arbeitszeit inklusive Gerätetest, ohne Wertung, ohne Rangfolge.
   - iOS/Android: Aufnahme auf beiden; `?record` braucht HTTPS.
   - Voraussetzung: Branch `pruefstand` ist MindAR-basiert und ungemergt.
 
+## e) Phase 2, Schritt 1: Messwerkzeug (Build 62, 2026-09-25)
+
+Umgesetzt ist das Werkzeug aus Abschnitt b. Das Filterverhalten ist
+**unverändert**: Der Stabilizer bekommt nur Diagnose-Zähler (`stab.diag`).
+
+### Was neu ist
+
+- `js/jitterMetrics.js` — Kennzahlen, reine Rechnung (auch in Node prüfbar).
+- `js/statsOverlay.js` — neue Zeilen, 5-s-Fenster, Mess-Knöpfe oben im Panel.
+- `js/poseStabilizer.js` — `diag`: neue Messung ja/nein + Rohmessung,
+  Modus-Wechsel, Auslöser, NaN-Verwürfe, angewendete Gyro-Deltas.
+- `js/main.js` — reicht die Kamera an `?stats` durch (Projektion in px).
+
+### Anzeige lesen
+
+- **Takt:** Vision-Hz ≈ Kamera-fps (meist 30) ist gesund. Vision-Hz ≈
+  Render-fps (60) → Stale-Erkennung defekt, bitte melden.
+- **Rauschen roh|stab (mm · °):** 2. Differenz, 3D, nur neue Messungen.
+  Handbewegung fällt weitgehend heraus (Prüfung: 12 mm Handbewegung bei 0,7 Hz
+  hebt F2F um den Faktor 9, diese Zahl nur um ≈ 25 %).
+- **Kopf px roh|stab:** dasselbe für einen festen Punkt 1,5 Kartenbreiten über
+  der Kartenmitte (≈ Kopfhöhe), in Bildschirm-px. **Hauptwert für das
+  Sichtbare** (stab).
+- **Versatz:** mittlerer Abstand Figur-Kopf ↔ Rohpose-Kopf in px. Hoch bei
+  Bewegung = Nachlauf/Schwimmen.
+- **Lauf o. Bild:** Figurbewegung in px/s in Ticks ohne neue Messung. Das
+  Kamerabild steht dann (B1); alles hier ist Extrapolation oder
+  Gyro-Prediction.
+- **F2F:** alte Zahl, enthält Handbewegung.
+- **Modus:** Anteil BEWEGT, Wechsel pro 10 s, Auslöser (Pos/Winkel/beide),
+  Drift ÷ Schwelle (Position/Winkel; > 1× = BEWEGT).
+- **Gyro-Rate:** Drehrate des Handys (misst auch bei Toggle 7 aus), angewendete
+  Deltas pro s.
+
+### Messung durchführen
+
+1. Handy mit `?stats&dev` öffnen (Testlink), Karte suchen, Figur antippen.
+2. Fall-Knopf auf F0 … F4 stellen (siehe Abschnitt b).
+3. „Messung 10 s" tippen, Haltung 10 s halten. Der Knopf zählt herunter.
+4. Gelbe Zeile = Kurzfazit. „Kopieren" legt Kopf- + Wertezeile
+   (Tab-getrennt, Dezimalkomma) in die Zwischenablage → in eine Tabelle
+   einfügen. „Log ↓" speichert alle Tick-Proben als JSON (für ein späteres
+   Offline-Replay, Option E-light).
+5. Pro Einstellung 3 Messungen, Reihenfolge A-B-B-A (Abschnitt c).
+
+Spalte `toggles` = Toggles 1–10 als Ziffern (1 = an), so bleibt jede Zeile
+eindeutig einer Einstellung zugeordnet. `verlorenMs` > 0 = Karte war während
+der Messung verloren → Messung wiederholen.
+
+### Nächster Schritt
+
+Messreihe nach Abschnitt c, zuerst A/A (zweimal alles an, F1 und F2), dann
+Referenz Toggle 1. Die A/B-Tests der Schritte 1–8 brauchen keine neuen
+Schalter; alle Stellschrauben stehen schon im Dev-Panel. Neue Filter-
+Änderungen (z. B. W3, W5) kommen erst nach den Zahlen, jede mit eigenem
+Dev-Panel-Schalter.
+
 ## Offene Punkte vor Phase 2
 
-- Konvention `version.js`: Der Auftrag nennt `git rev-list --count HEAD`,
-  `js/version.js:1-4` und CLAUDE.md sagen „freilaufender Zähler +1 pro Push".
-  Bitte eine Regel festlegen.
+- Konvention `version.js`: geklärt (Michael 2026-09-25) — freilaufender
+  Zähler, +1 pro Push.
 - Dieses Dokument wurde ohne Build-Erhöhung gepusht (kein Code geändert).
 - B1/B2 sind aus dem Engine-Code gelesen, nicht am Gerät gemessen.
