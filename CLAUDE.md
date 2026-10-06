@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-06 · Build 63 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-06 · Build 64 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -114,8 +114,13 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
 - Kartendatei `karten/elektroniker-siemens/karte.json` = Inhalt von
   `cards/elektroniker.js` (Build 62) 1:1, plus `_hinweis`, `format`, `id`,
   `figur`, `designs`, `vorschau` (alte id `siemens_elektroniker_betriebstechnik`).
+- Fonts (Build 64): fester deutscher Zeichensatz (ASCII, Latin-1, Latin
+  Extended-A, Șș Țț, ẞ, Typografie, € ™ −, UI-Pfeile) in
+  `tools/font-subset-unicodes.txt` — unabhängig von Karten-Texten; Jersey 10
+  29,0 KB, Silkscreen 14,8 KB. Originale aus npm `@expo-google-fonts/*`
+  (github.com aus der Cloud gesperrt), Details im Kopf von `tools/build-fonts.sh`.
 - Offen (eigener Schritt): Service Worker (fester Cache der Engine, zentrale
-  Updates) · Font-Subset mit festem deutschem Zeichensatz statt Kartentexten.
+  Updates).
 
 ## Dialogsystem (seit Build 17, 2026-09-03)
 
@@ -229,8 +234,9 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   Neues CSS mit Fallback (`inset` → top/right/bottom/left). Engine-Update
   immer BEIDE Varianten bauen (`wasmreleasesimd` → `vendor/8thwall/`,
   `wasmrelease` → `vendor/8thwall-nosimd/`, s. `vendor/8thwall/README.md`).
-  Neue Zeichen in Karten-Texten → `tools/build-fonts.sh` (Font-Subset,
-  Original-TTFs von Google Fonts). Vollständige Gate-Tabelle:
+  Fonts haben seit Build 64 einen festen deutschen Zeichensatz — neue Karten
+  brauchen keinen Font-Neubau; nur wer den Satz erweitert, nutzt
+  `tools/build-fonts.sh` (Original-TTFs von Google Fonts). Vollständige Gate-Tabelle:
   `docs/8thwall-migration.md` 7.2.
 - **Lokal-Prototyp (Einzeldatei, Doppelklick, kein Server):**
   `python3 tools/build-lokal-prototyp.py <Ziel.html>` packt die App in eine

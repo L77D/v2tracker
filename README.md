@@ -26,10 +26,18 @@ Firmenblock im Splash, Fragen mit `branded: true` entfallen, `{firma}` in
 Texten wird neutral („der Betrieb"). Eine Kartendatei für beides
 (`js/edition.js`).
 
+**Engine und Karten getrennt (Build 63, 2026-10-06):** Die Engine
+(`index.html`, `js/`, `css/`, `assets/`, `vendor/`) liegt einmal zentral; jede
+Karte ist ein reiner Daten-Ordner `karten/<id>/` ohne Code — Dialog
+(`karte.json`), Figurenbilder, Kartenbilder fürs Tracking, Desktop-Vorschau.
+Welche Karte läuft, steht im QR-Code: **`?k=<id>`** (ohne Parameter die
+Standard-Karte aus `karten/katalog.json`). Ein Engine-Update gilt sofort für
+alle Karten; eine neue Karte fasst die Engine nicht an.
+
 **Kein LLM, keine externe API, kein CDN im Live-Code** (einzige Ausnahme: das
 Theatre.js-Studio unter dem Dev-Flag `?timeline` lädt sein Bundle von jsDelivr)
 — alle Inhalte sind autorisiert und
-hartkodiert (`cards/*.js`). Laufzeit-Abhängigkeiten liegen komplett im Repo:
+liegen als Daten im Repo (`karten/<id>/karte.json`). Laufzeit-Abhängigkeiten liegen komplett im Repo:
 three.js 0.160 als schlankes Bundle (`vendor/three/`, tree-shaken auf die
 genutzten Klassen) + die zugeschnittene 8th-Wall-Engine (`vendor/8thwall/`).
 Nach dem Klick geht kein Byte an Dritte. Schlank seit Branch `v2tracker-lean`
@@ -39,9 +47,10 @@ und MindAR-Targets entfernt.
 
 UI (Build 18, 2026-09-03) nach Figma „DETAR": Blau/Gelb/Schwarz, Pixel-Halo-
 Kästen, Handy-Icon, Eck-Marker. Fonts: Jersey 10 + Silkscreen, beide SIL Open
-Font License (`assets/fonts/`, Lizenztexte daneben; auf die genutzten Zeichen
-gekürzt — `tools/build-fonts.sh`). Figur als WebP mit Alpha
-(`assets/character/`, 768×1152).
+Font License (`assets/fonts/`, Lizenztexte daneben; auf einen festen deutschen
+Zeichensatz gekürzt — ASCII, Latin-1, Latin Extended-A, ẞ, Typografie —
+`tools/build-fonts.sh`). Figur als WebP mit Alpha im Kartenordner
+(`karten/<id>/figur/`, 768×1152).
 
 ---
 
@@ -86,9 +95,12 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   komplett aus. **`?nosimd`** — Nicht-SIMD-Engine erzwingen.
   **`?preflight=inapp|nocam|insecure|nowasm|nowebp`** — Hinweis-Bildschirme
   der Vorabprüfung ansehen (nur Test). **`?public`** — Public-Edition (kein
-  Test-Flag, steht im QR-Code der neutralen Karte). **`?karte=<id>`** —
-  Kartendesign aus `targets/8thwall/karten.json` (ohne Parameter: `card`);
-  Übersicht mit QR-Codes zum Umschalten am Handy: `karten.html`.
+  Test-Flag, steht im QR-Code der neutralen Karte). **`?k=<id>`** — Karte
+  aus `karten/katalog.json` (ohne Parameter: Standard-Karte).
+  **`?design=<id>`** — Kartenbild (Design) der Karte aus `karte.json → designs`
+  (ohne Parameter: das erste, heute `card`; Test-Design `tarn`). Übersicht mit
+  QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=` gibt es seit
+  Build 63 nicht mehr.)
 
 Flags sind frei kombinierbar (z. B. `?dev&stats` am Handy fürs Tracking-Tuning).
 
@@ -126,41 +138,64 @@ Live-Werte in `js/config.js` — EINE Quelle. Für Tuning-Sessions: Dev-Panel
 
 ## Neue Karte / neuer Beruf
 
-1. `cards/elektroniker.js` kopieren, Texte/Fragen/Rückfragen/Link ändern
-   (Datenmodell und Regeln: `Dialogsystem/DETAR_Dialogsystem.md` im Projekt-
-   ordner; Emotion-Tags aus dem geschlossenen Vokabular, Highlight-Tags
-   `<marker> <gross> <leise> <knall>`). Firmenbezug nur über `company`,
-   `companyLogo`, `companyNeutral`, `{firma}` in Texten und `branded: true`
-   an Fragen, die es nur in der Firmenversion gibt — dann funktioniert
-   `?public` ohne zweite Datei.
-2. Import oben in `js/main.js` auf die neue Datei umstellen.
-3. Neues Kartenbild als 8th-Wall-Target erzeugen (s. u.) und die Dateien in
-   `targets/8thwall/` ersetzen.
-4. Character-Bilder in `assets/character/` austauschen: aus den 1024×1536-
-   PNGs des Nano-Banana-Workflows (gleiche Slicing-Positionen) WebP mit Alpha
-   in 768×1152 erzeugen (exakt 2:3 — Pivots in `rig.js` sind relativ; Qualität
-   85, Lanczos auf premultipliziertem Alpha, s. Commit „Figur-PNGs → WebP").
-5. Enthalten die neuen Texte Zeichen außerhalb von Latin-1 + „“”‚‘’…–—→✅,
-   Font-Subset neu bauen (`tools/build-fonts.sh`).
+Eine Karte = ein Ordner, die Engine bleibt unangetastet:
+
+```
+karten/<id>/
+  karte.json        Dialog + Figur + Designs ("format": 1)
+  figur/            body_idle.webp (Pflicht) + weitere Posen, head.webp, face_*.webp
+  targets/          <design>.json + <design>_luminance.png (image-target-cli)
+  vorschau.jpg      Kartenbild für ?desktop (optional)
+  logo.webp         Firmenlogo (optional)
+```
+
+1. Ordner `karten/elektroniker-siemens/` kopieren, neue `<id>` vergeben (kurz,
+   Kleinbuchstaben, Bindestriche — steht im QR-Code und wird nie wieder
+   geändert oder wiederverwendet).
+2. `karte.json` anpassen: Texte/Fragen/Rückfragen/Link (Datenmodell und Regeln:
+   `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Emotion-Tags aus dem
+   geschlossenen Vokabular, Highlight-Tags `<marker> <gross> <leise> <knall>`).
+   Firmenbezug nur über `company`, `companyLogo`, `companyNeutral`, `{firma}`
+   in Texten und `branded: true` an Fragen, die es nur in der Firmenversion
+   gibt — dann funktioniert `?public` ohne zweite Datei. Pfade in `karte.json`
+   gelten relativ zum Kartenordner.
+3. Figur in `figur/` austauschen: aus den 1024×1536-PNGs des Nano-Banana-
+   Workflows (gleiche Slicing-Positionen = Figuren-Vorlage) WebP mit Alpha in
+   768×1152 erzeugen (exakt 2:3 — Pivots in `rig.js` sind relativ; Qualität 85,
+   Lanczos auf premultipliziertem Alpha, s. Commit „Figur-PNGs → WebP").
+   **Posen:** `figur.posen` listet `{name: bild}`. Die Standardposen heißen
+   `idle`/`affirm`/`think`; Emotion-Tags werden über `POSES` in
+   `js/config.js` darauf abgebildet. Eine **Sonderpose** nur dieser Karte:
+   Bild ablegen, in `figur.posen` unter einem eigenen Namen eintragen und den
+   Namen als `tag` an der Dialogzeile verwenden. Unbekannte Namen → `idle`.
+4. Kartenbild als 8th-Wall-Target erzeugen (s. u.), Dateien nach `targets/`,
+   Eintrag in `designs` (`id`, `name`, `target`, `breiteMm`, `notiz`).
+5. Karte in `karten/katalog.json` eintragen (`id`, `name`, `aktiv: true`).
+   QR-Code: `…/?k=<id>` (Public-Edition: `…/?k=<id>&public`).
+6. Zeichen außerhalb des festen Schriftsatzes fallen auf die Systemschrift
+   zurück — Prüfbefehl im Kopf von `tools/build-fonts.sh`.
+
+Eine Karte zurückziehen: im Katalog `aktiv: false` (Link zeigt dann einen
+Hinweis statt einer Fehlerseite).
 
 ## Tracking-Target (8th Wall) neu erzeugen
 
-Ein **weiteres Design** neben dem bestehenden (statt es zu ersetzen): eigene
-Dateibasis + Zeile in `targets/8thwall/karten.json`, Aufruf per `?karte=<id>`
-— Schritt für Schritt inkl. lokalem Test über cloudflared-Tunnel in
-`docs/kartendesigns.md`. Das Standard-Target `card` ersetzen:
+Ein Design = ein Kartenbild einer Karte. Weitere Designs derselben Karte (z. B.
+das Test-Design `tarn`) liegen daneben in `karten/<id>/targets/` und stehen in
+`designs` der `karte.json`; Aufruf per `?design=<id>`. (`docs/kartendesigns.md`
+beschreibt noch den Stand vor Build 63 mit `targets/8thwall/` und `?karte`.)
 
-Das Target ist aus dem beschnittenen Kartenbild erzeugt
-(`Assets/September/demo_skat_070926_mind_cropped.png`, 1346×2156; Druckdatei
-`demo_skat_070926.jpg`). Bei neuem Karten-Layout:
+Das Standard-Target `card` der Elektroniker-Karte ist aus dem beschnittenen
+Kartenbild erzeugt (`Assets/September/demo_skat_070926_mind_cropped.png`,
+1346×2156; Druckdatei `demo_skat_070926.jpg`). Bei neuem Karten-Layout:
 
 1. `npx @8thwall/image-target-cli@latest` — Bildpfad, Typ `flat`, Default-Crop,
-   Ordner `targets/8thwall`, Name `card` (Details und Pipe-Variante:
-   `docs/8thwall-migration.md`, Abschnitt 1)
-2. `card.json`, `card_luminance.png`, `card_thumbnail.png` einchecken
-   (`_cropped`/`_original` nicht — stehen in `.gitignore`)
-3. Physische Breite = `breiteMm` des Eintrags in `targets/8thwall/karten.json`
-   (`SCENE.cardAspect` in `js/config.js` ist nur die Szenen-Geometrie der
+   Name = Design-id (Details und Pipe-Variante: `docs/8thwall-migration.md`,
+   Abschnitt 1)
+2. `<name>.json` und `<name>_luminance.png` nach `karten/<id>/targets/` legen
+   und einchecken (Thumbnail, `_cropped`/`_original` braucht die App nicht)
+3. Physische Breite = `breiteMm` des Designs in `karte.json` (Standard 63 mm;
+   `SCENE.cardAspect` in `js/config.js` ist nur die Szenen-Geometrie der
    Eck-Marker; bei anderem Kartenformat mit anpassen)
 
 Der Crop ist immer 3:4 (zentriert, volle Kartenbreite). Gute Targets: viel
@@ -183,6 +218,7 @@ index.html            Splash (DU SCANNST … START) + AR-Container + Overlays
 css/app.css           Tokens, Splash, Support-Zeilen, Suchrahmen, Karte-verloren-Hinweis, Hinweis-Screens
 css/question-menu.css Bottom-UI (Themen, Fragen-Karussell, Optionen, Weiter)
 js/main.js            Boot, Engine-Variante (SIMD/nicht-SIMD), 8th-Wall-Setup (Pipeline-Modul), Figur-Tap, Loop
+js/kartenLader.js     Karte laden (?k, ?design): Katalog, karte.json, Format-Prüfung, Pfade
 js/preflight.js       Vorabprüfung im Splash (In-App-Browser, HTTPS, Kamera-API, WASM, WebP)
 js/edition.js         Edition Firma/Public (?public): Karte filtern, {firma} ersetzen
 js/version.js         Build-Nummer (?stats vergleicht mit dem Live-Stand)
@@ -191,7 +227,7 @@ js/config.js          ALLE Tuning-Dashboards + tuning.json-Merge
 js/poseStabilizer.js  Tracking-Glättung (Median-Aufsetzen, One-Euro, SLERP, Dead-Zone, Lost-Hold)
 js/poseArbiter.js     Schwerkraft-Schiedsrichter gegen den Pose-Flip (Toggle 10)
 js/gyroFusion.js      Gyro-Deltas als Prediction + Verlust-Brücke
-js/rig.js             Figuren-Hierarchie (Transforms aus Scene.zcomp)
+js/rig.js             Figuren-Hierarchie (Transforms aus Scene.zcomp), Körper je Pose der Karte
 js/cardController.js  Choreographie + Dialogablauf: Scan → Pop-In → Begrüßung →
                       Hub (Themen → Fragen) → Antwort/Seiten → Rückfragen →
                       Ausstieg → Ruhezustand → Wiedereinstieg
@@ -212,20 +248,19 @@ js/devPanel.js        ?dev: Regler für alle Dashboards, Toggles 1–10, Presets
 js/timeline.js        ?timeline: Theatre.js-Studio (CDN)
 js/desktopMode.js     ?desktop: Karte als Boden-Plane, Maus-Orbit (nur per Flag geladen)
 js/phoneFrame.js      Smartphone-Rahmen für den Desktop-Modus
-cards/                ein .js pro Beruf (Inhalte, hartkodiert)
-assets/               Character-WebPs, Logos, Fonts (Subset), Kartenbild
-targets/8thwall/      Image-Targets (card.json + card_luminance.png, weitere Designs) aus image-target-cli
-                      + karten.json (Designliste für ?karte)
-karten.html           Übersicht der Designs mit QR-Codes (Umschalten am Handy)
+karten/katalog.json   Liste aller Karten + Standard-Karte (?k)
+karten/<id>/          eine Karte: karte.json (Dialog, Figur, Designs), figur/, targets/, vorschau.jpg
+assets/               nur Geteiltes: UI-Grafiken, Logos, Fonts (Subset)
+karten.html           Übersicht Karte × Design mit QR-Codes (Umschalten am Handy)
 vendor/qrcode/        qrcode-generator (MIT) für karten.html
 vendor/8thwall/       Open-Source-8th-Wall-Engine, zugeschnitten (xr.js + xr-tracking.js, MIT, WASM-SIMD)
 vendor/8thwall-nosimd/ dieselbe Engine ohne WASM-SIMD (Fallback, main.js wählt automatisch)
-tools/build-fonts.sh  Font-Subset (pyftsubset) aus den Original-TTFs
+tools/build-fonts.sh  Font-Subset (pyftsubset, fester deutscher Zeichensatz) aus den Original-TTFs
 tools/dev-server.js   lokaler Dev-Server (Port 8743, MIME-Typen, no-store)
 tools/build-lokal-prototyp.py  Einzeldatei-Prototyp (patcht markierte Quelltextzeilen)
 vendor/three/         three.js 0.160, tree-shaken (tools/build-three.sh)
 docs/8thwall-migration.md  Umstieg MindAR → 8th Wall: Target-Erzeugung, Änderungen, Events
-docs/kartendesigns.md      Kartendesigns per ?karte: neues Design anlegen, lokal testen
+docs/kartendesigns.md      Kartendesigns (Stand vor Build 63, ?karte): lokaler Test mit cloudflared
 ```
 
 ## Technik-Notizen (für spätere Änderungen wichtig)
