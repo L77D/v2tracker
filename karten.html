@@ -6,7 +6,7 @@
   <title>DETAR — Kartendesigns</title>
   <!-- Übersicht der Kartendesigns (2026-09-15; seit Build 63 aus karten/katalog.json
        + karten/<id>/karte.json → designs): zeigt je Karte × Design Name, Link und
-       QR-Code auf index.html?k=<karte>&design=<design>, damit
+       QR-Code auf index.html?k=<karte>[&design=<design>], damit
        man am Handy zwischen Varianten springen kann. Die Links zeigen auf DIESEN
        Host (GitHub-Pages-Spiegel oder cloudflared-Tunnel) — so stimmen die
        QR-Codes auch beim lokalen Test. QR-Erzeugung liegt im Repo
@@ -32,7 +32,7 @@
 </head>
 <body>
   <h1>DETAR — Kartendesigns</h1>
-  <p class="sub">Quelle: <code>karten/katalog.json</code> + <code>karten/&lt;id&gt;/karte.json</code> (designs) · QR-Code scannen oder „Starten" tippen → App mit <code>?k=&lt;karte&gt;&amp;design=&lt;design&gt;</code>.</p>
+  <p class="sub">Quelle: <code>karten/katalog.json</code> + <code>karten/&lt;id&gt;/karte.json</code> (designs) · QR-Code scannen oder „Starten" tippen → App mit <code>?k=&lt;karte&gt;</code>; <code>&amp;design=&lt;design&gt;</code> nur bei einem anderen als dem ersten Design der Karte (kürzerer QR-Code).</p>
   <p class="flags">
     Zusatz-Flags im Link:
     <label><input type="checkbox" id="fStats" checked /> <code>stats</code> (Diagnose)</label>
@@ -63,7 +63,10 @@
       }
 
       function linkFor(k) {
-        var q = ["k=" + encodeURIComponent(k.karte), "design=" + encodeURIComponent(k.id)].concat(flags());
+        // Erstes Design = Standard der App → kein &design= im Link (kürzerer QR)
+        var q = ["k=" + encodeURIComponent(k.karte)];
+        if (!k.erstes) q.push("design=" + encodeURIComponent(k.id));
+        q = q.concat(flags());
         return base + "?" + q.join("&");
       }
 
@@ -94,7 +97,8 @@
             "<h2></h2><p class='id'></p><canvas></canvas>" +
             "<p class='meta'></p><a class='start'>Starten</a><a class='url'></a>";
           el.querySelector("h2").textContent = k.name || k.id;
-          el.querySelector(".id").textContent = "?k=" + k.karte + "&design=" + k.id + " · " + (k.target || "?") + " · " + (k.breiteMm || "?") + " mm";
+          el.querySelector(".id").textContent = "?k=" + k.karte + (k.erstes ? "" : "&design=" + k.id) + " · Design " + k.id +
+            (k.erstes ? " (Standard)" : "") + " · " + (k.target || "?") + " · " + (k.breiteMm || "?") + " mm";
           el.querySelector(".meta").textContent = k.notiz || "";
           var a = el.querySelector("a.start"); a.href = link;
           var u = el.querySelector("a.url"); u.href = link; u.textContent = link;
@@ -140,7 +144,7 @@
             var ds = karte.designs || [];
             proKarte[eintrag.id] = [];
             for (var d = 0; d < ds.length; d++) proKarte[eintrag.id].push({
-              karte: eintrag.id, id: ds[d].id, target: ds[d].target, breiteMm: ds[d].breiteMm,
+              karte: eintrag.id, id: ds[d].id, erstes: d === 0, target: ds[d].target, breiteMm: ds[d].breiteMm,
               name: (eintrag.name || eintrag.id) + " — " + (ds[d].name || ds[d].id), notiz: ds[d].notiz });
             fertig();
           }, function (msg) { zeigeFehler(msg); fertig(); });
