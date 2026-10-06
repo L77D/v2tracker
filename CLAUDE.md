@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-06 · Build 65 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-06 · Build 66 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -109,8 +109,8 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
   karte.json. `physicalWidthInMeters` = `breiteMm/1000` (Standard 63 mm,
   Druckspezifikation) — NICHT `SCENE.cardWidth` (Szenen-Einheit 0.059).
   `?stats` zeigt „Design: id · targets/<d>.json · mm". Übersicht mit QR-Codes:
-  `karten.html` (Karte × Design, QR aus `vendor/qrcode/`). `docs/kartendesigns.md`
-  beschreibt noch den alten Stand (targets/8thwall, ?karte).
+  `karten.html` (Karte × Design, QR aus `vendor/qrcode/`). Neues Design + Tracking-
+  Vergleich der Designs + lokaler Test: `docs/kartendesigns.md`.
 - Kartendatei `karten/elektroniker-siemens/karte.json` = Inhalt von
   `cards/elektroniker.js` (Build 62) 1:1, plus `_hinweis`, `format`, `id`,
   `figur`, `designs`, `vorschau` (alte id `siemens_elektroniker_betriebstechnik`).

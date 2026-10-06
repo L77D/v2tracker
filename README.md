@@ -182,8 +182,8 @@ Hinweis statt einer Fehlerseite).
 
 Ein Design = ein Kartenbild einer Karte. Weitere Designs derselben Karte (z. B.
 das Test-Design `tarn`) liegen daneben in `karten/<id>/targets/` und stehen in
-`designs` der `karte.json`; Aufruf per `?design=<id>`. (`docs/kartendesigns.md`
-beschreibt noch den Stand vor Build 63 mit `targets/8thwall/` und `?karte`.)
+`designs` der `karte.json`; Aufruf per `?design=<id>`. Schritt für Schritt inkl. Tracking-Vergleich
+der Designs und lokalem Test über cloudflared: `docs/kartendesigns.md`.
 
 Das Standard-Target `card` der Elektroniker-Karte ist aus dem beschnittenen
 Kartenbild erzeugt (`Assets/September/demo_skat_070926_mind_cropped.png`,
@@ -260,7 +260,7 @@ tools/dev-server.js   lokaler Dev-Server (Port 8743, MIME-Typen, no-store)
 tools/build-lokal-prototyp.py  Einzeldatei-Prototyp (patcht markierte Quelltextzeilen)
 vendor/three/         three.js 0.160, tree-shaken (tools/build-three.sh)
 docs/8thwall-migration.md  Umstieg MindAR → 8th Wall: Target-Erzeugung, Änderungen, Events
-docs/kartendesigns.md      Kartendesigns (Stand vor Build 63, ?karte): lokaler Test mit cloudflared
+docs/kartendesigns.md      Kartendesigns: neues Design, Tracking-Vergleich, lokaler Test (cloudflared)
 ```
 
 ## Technik-Notizen (für spätere Änderungen wichtig)

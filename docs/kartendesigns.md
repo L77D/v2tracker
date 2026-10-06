@@ -1,64 +1,103 @@
-# Kartendesigns umschalten (`?karte=<id>`, Build 57, 2026-09-15)
+# Kartendesigns (`?design=<id>`, seit Build 57; neue Struktur seit Build 63)
 
-Mehrere Kartendesigns liegen als eigene Targets nebeneinander in
-`targets/8thwall/` und werden per URL-Parameter gewählt — kein Branch pro
-Design, `main` bleibt unberührt.
+Ein **Design** ist ein Kartenbild derselben Karte: Dialog und Figur bleiben
+gleich, nur das Bild, das die Kamera erkennt, wechselt. So lassen sich
+mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
+`main` bleibt unberührt. (Bis Build 62: `targets/8thwall/karten.json` und
+`?karte=<id>`; beides gibt es nicht mehr.)
 
-- `targets/8thwall/karten.json` — die Liste. Je Eintrag: `id` (steht in der
-  URL), `name` (Anzeigename), `target` (Dateibasis: `<target>.json` +
-  `<target>_luminance.png`), `breiteMm` (physische Kartenbreite),
-  `notiz` (frei).
-- `index.html?karte=<id>` lädt das Target des Eintrags. Ohne Parameter gilt
-  `card` = der bisherige Stand. Unbekannte id → Hinweis in der Fehlerzeile des
-  Splash („Unbekannte Karte … — bekannt: …"), der Start-Button bleibt aus.
-- `physicalWidthInMeters` = `breiteMm / 1000` des Eintrags (Standard 63 mm
-  laut Druckspezifikation; bis Build 56 kam der Wert aus `SCENE.cardWidth`
-  = 59 mm). `SCENE.cardWidth` in `config.js` bleibt die Szenen-Einheit
-  (worldRoot-Skalierung, Eck-Marker, Desktop-Plane) und ist davon getrennt.
-  `SCENE.cardAspect` gilt weiterhin für alle Designs gemeinsam — solange alle
-  im Format 63 × 88 mm bleiben, passt das.
-- `?stats` zeigt die Zeile `Design: <id> · <target>.json · <breiteMm> mm`.
-- `karten.html` — Übersicht: liest `karten.json`, zeigt je Design Name, Link
-  und QR-Code auf `?karte=<id>` (Häkchen für `stats`, `public`, `nosimd`).
-  Die Links zeigen auf den Host, von dem die Seite geladen wurde — am
-  Pages-Spiegel wie am Tunnel. QR-Erzeugung: `vendor/qrcode/qrcode.js`
-  (qrcode-generator 2.0.4, MIT), kein CDN.
-- `?karte` überlebt „Neu laden" und „Link kopieren" (beides behält die Query)
-  und lässt sich mit allen anderen Flags kombinieren (`?karte=x&public&stats`).
+- **Liste:** `karte.json → designs` im Kartenordner, z. B.
+  `karten/elektroniker-siemens/karte.json`. Je Eintrag: `id` (steht in der
+  URL), `name` (Anzeigename), `target` (Pfad relativ zum Kartenordner, z. B.
+  `targets/tarn.json`), `breiteMm` (physische Kartenbreite), `notiz` (frei).
+- **Dateien:** `karten/<karte>/targets/<id>.json` + `<id>_luminance.png`. Das
+  Luminanzbild wird neben der JSON gesucht (`resources.luminanceImage`).
+- **Aufruf:** `index.html?k=<karte>&design=<id>`. Ohne `&design` gilt das
+  **erste** Design der Liste (heute `card`) — gedruckte QR-Codes brauchen den
+  Parameter also nicht. Unbekannte id → Hinweis in der Fehlerzeile des Splash
+  („Unbekanntes Design … — bekannt: …"), der Start-Button bleibt aus.
+- **Breite:** `physicalWidthInMeters` = `breiteMm / 1000` (Standard 63 mm
+  laut Druckspezifikation). `SCENE.cardWidth` in `config.js` bleibt die
+  Szenen-Einheit (worldRoot-Skalierung) und ist davon getrennt.
+  `SCENE.cardAspect` gilt für alle Designs gemeinsam — betrifft nur Eck-Marker,
+  Tap-Fläche und Desktop-Plane, nicht das Tracking.
+- **`?stats`** zeigt die Zeile `Design: <id> · targets/<id>.json · <breiteMm> mm`;
+  die Kopierzeile von „Messung 10 s" hat eine Spalte `design`.
+- **`karten.html`** — Übersicht: liest `karten/katalog.json` und je Karte die
+  `karte.json`, zeigt je Karte × Design Name, Link und QR-Code (Häkchen für
+  `stats`, `public`, `nosimd`). Beim ersten Design steht nur `?k=<karte>` im
+  Link, sonst zusätzlich `&design=<id>`. Die Links zeigen auf den Host, von dem
+  die Seite geladen wurde — am Pages-Spiegel wie am Tunnel. QR-Erzeugung:
+  `vendor/qrcode/qrcode.js` (qrcode-generator 2.0.4, MIT), kein CDN.
+- `?design` überlebt „Neu laden" und „Link kopieren" (beides behält die Query)
+  und lässt sich mit allen anderen Flags kombinieren
+  (`?k=elektroniker-siemens&design=x&public&stats`).
 
 ## Neues Design hinzufügen
 
 1. **Kartenbild exportieren** — die ganze Karte ohne Beschnittrand, hochkant,
-   mindestens ~1300 px breit (das bisherige Target ist 1346 × 2156). PNG oder
+   mindestens ~1300 px breit (das Standard-Target ist 1346 × 2156). PNG oder
    JPG. Layout-Regeln fürs Tracking: `Tracking-Pruefstand/` im Projektordner.
 2. **Target erzeugen** (Node ≥ 18; die CLI ist interaktiv, Pipe-Variante
-   unten). Name = die Dateibasis, die in `karten.json` unter `target` steht —
-   kurz, keine Leerzeichen, z. B. `v3-blau`:
+   unten). Name = Design-id — kurz, Kleinbuchstaben, keine Leerzeichen,
+   z. B. `v3-blau`:
 
    ```bash
-   printf '%s\n' "/pfad/zur/karte_v3.png" "" "" "targets/8thwall" "v3-blau" \
+   printf '%s\n' "/pfad/zur/karte_v3.png" "" "" "karten/elektroniker-siemens/targets" "v3-blau" \
      | OVERWRITE_FILES=true npx @8thwall/image-target-cli@latest
    ```
 
    (Prompts: Bildpfad · Typ leer = `flat` · Default-Crop leer = Ja · Ordner ·
    Name. Details: `docs/8thwall-migration.md`, Abschnitt 1.)
-3. **Zwei Dateien behalten:** `targets/8thwall/v3-blau.json` und
-   `v3-blau_luminance.png` (Pflicht); `_thumbnail.png` darf bleiben,
-   `_cropped.png` und `_original.png` löschen (nicht einchecken).
-4. **Zeile in `karten.json`:**
+3. **Zwei Dateien behalten:** `v3-blau.json` und `v3-blau_luminance.png`.
+   `_thumbnail.png`, `_cropped.png` und `_original.png` löschen — die App
+   braucht sie nicht (nicht einchecken).
+4. **Eintrag in `designs`** der `karte.json`, hinten anhängen:
 
    ```json
-   { "id": "v3-blau", "name": "V3 blau", "target": "v3-blau", "breiteMm": 63, "notiz": "Export 2026-09-20, Figma Seite X" }
+   { "id": "v3-blau", "name": "V3 blau", "target": "targets/v3-blau.json", "breiteMm": 63, "notiz": "Export 2026-10-06, Figma Seite X" }
    ```
 
-   `id` und `target` dürfen gleich sein; `id` ist das, was im QR-Code steht.
-5. Committen und den Spiegel nachziehen — `karten.html` zeigt den neuen
-   Eintrag mit QR-Code sofort.
+   Das erste Design der Liste ist der Standard — neue Designs nicht davor
+   einsortieren, solange sie nur getestet werden.
+5. Committen und pushen (Testseite erst nach Merge in `main`, sonst Tunnel,
+   s. u.) — `karten.html` zeigt das neue Design mit QR-Code sofort.
 
 Ein Design **wechseln** heißt also nie, `card.json` zu überschreiben: neue
-Dateibasis, neue Zeile. Erst wenn ein Design das Standarddesign werden soll,
-wird in `karten.json` der Eintrag `card` darauf umgestellt (oder die Dateien
-umbenannt).
+Dateien, neuer Eintrag. Soll ein Design Standard werden, wird sein Eintrag
+an die erste Stelle von `designs` verschoben.
+
+## Designs auf Tracking vergleichen
+
+Ziel: herausfinden, welches gedruckte Design die Engine am ruhigsten und
+zuverlässigsten erkennt. Gemessen wird mit dem Werkzeug in `?stats`
+(Anleitung und Kennzahlen: `docs/handheld-jitter-analyse.md`, Abschnitt e).
+
+1. **QR-Codes holen:** `karten.html` öffnen, Häkchen `stats` setzen (für das
+   Dev-Panel `&dev` von Hand anhängen). Je Design eine Kachel.
+2. **Gleiche Bedingungen für alle Designs:** gleiches Licht, gleiches Handy,
+   Abstand ≈ 25 cm, Neigung ≈ 45°, Karte matt und flach. Alle Filter-Toggles
+   gleich lassen (Spalte `toggles` in der Kopierzeile prüfen).
+3. **Je Design messen:** QR scannen, Karte suchen, Figur antippen
+   (Neu-Aufsetzen), Fall **F0** (Stativ: Handy fest aufgelegt, Karte liegt —
+   reines Tracking-Rauschen, wichtigster Fall für den Design-Vergleich) und
+   **F2** (freihändig, Demo-Normalfall) wählen; F4 (Karte 1,5 s abdecken)
+   zeigt, wie schnell ein Design wiedergefunden wird. „Messung 10 s", danach „Kopieren" → Tabellenzeile.
+   3 Messungen je Design und Fall, Reihenfolge A-B-B-A (Ermüdung und
+   Lichtwechsel mitteln sich heraus). Fälle: `docs/handheld-jitter-analyse.md` b.
+4. **Vergleichen über das Rohsignal:**
+   - **Rauschen roh** (mm · °) — der Hauptwert. Kleiner = Design trackt
+     ruhiger. NICHT über „stab" vergleichen: der Filter glättet die
+     Unterschiede weg (Regel aus CLAUDE.md, „Marker-A/B immer über roh").
+   - **`verlorenMs`** > 0 = Karte war während der Messung verloren → Messung
+     wiederholen; häufige Verluste bei einem Design sind selbst ein Ergebnis.
+   - **Takt** (Vision-Hz): sollte bei allen Designs gleich sein; weicht er ab,
+     liegt es am Gerät, nicht am Design.
+   - Ergänzend von Hand notieren: wie schnell die Karte erkannt wird und ob
+     sie bei flacher Neigung oder Teilverdeckung (Daumen) hält.
+5. Richtwerte für F0 (alte F2F-Zahlen, nur grob vergleichbar): roh
+   0,13–0,4 mm gesund, > 0,8 mm = Problem im Bild (Kontrast, Glanz, zu wenig
+   Details).
 
 ## Lokal testen (Handy braucht HTTPS)
 
@@ -79,6 +118,6 @@ QR-Codes zeigen auf die Tunnel-Adresse, am Handy scannen, fertig. Nach jeder
 Änderung reicht Neu laden am Handy (der Dev-Server sendet `no-store`); die
 Tunnel-Adresse wechselt bei jedem Neustart von `cloudflared`.
 
-Am Rechner ohne Kamera: `http://localhost:8743/?desktop&dev&karte=<id>`
+Am Rechner ohne Kamera: `http://localhost:8743/?desktop&dev&design=<id>`
 (Desktop-Modus nutzt das Target nicht, prüft aber die Auflösung der id und
-den Splash-Hinweis). Mit Webcam: `http://localhost:8743/?stats&karte=<id>`.
+den Splash-Hinweis). Mit Webcam: `http://localhost:8743/?stats&design=<id>`.
