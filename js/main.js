@@ -35,8 +35,7 @@
    1/cardWidth lässt alle getunten Werte (Lauffeld, Bubble, Sprünge …) gelten.
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
-import { card as cardData } from "../cards/elektroniker.js";
-import { prepareCard } from "./edition.js";
+import { ladeKarte } from "./kartenLader.js";
 import { SCENE, STAB, CAM, CHOREO, GYRO, loadTuning, syncCssVars } from "./config.js";
 import { buildRig } from "./rig.js";
 import { FaceAnimator } from "./faceAnimator.js";
@@ -62,7 +61,11 @@ const DESKTOP_MODE = params.has("desktop");
 // auf allen Wegen erhalten bleiben (Neu laden, „Link kopieren" — beides
 // behält die Query).
 const PUBLIC_MODE = params.has("public");
-const card = prepareCard(cardData, { publicMode: PUBLIC_MODE });
+// Karte (Content) kommt seit Build 63 aus karten/<id>/karte.json (js/kartenLader.js,
+// ?k=<id>) und wird in boot() gesetzt — vorher statischer Import von
+// cards/elektroniker.js. `design` = gewähltes Kartenbild fürs Tracking (?design).
+let card = null;
+let design = null;
 // Debug NUR per URL (?debug) — bewusst kein Config-Key dafür (ein Leftover
 // aus Tuning-Sessions soll nie live erscheinen; SCENE.debug seit Build 61 weg).
 const DEBUG_MODE = params.has("debug");
@@ -108,49 +111,13 @@ const ENGINE_SIMD = !params.has("nosimd") && hasWasmSimd();
 const ENGINE_VARIANT = ENGINE_SIMD ? "SIMD" : (params.has("nosimd") ? "nicht-SIMD (?nosimd)" : "nicht-SIMD (Fallback)");
 const XR_ENGINE_URL = ENGINE_SIMD ? "./vendor/8thwall/xr.js" : "./vendor/8thwall-nosimd/xr.js";
 // Image-Target-Daten (image-target-cli, s. docs/8thwall-migration.md). Eine
-// Seite = eine Karte = ein Target (bzw. ein Design aus karten.json, s. u.).
-//
-// KARTENDESIGNS (Michael 2026-09-15): Mehrere Designs liegen als eigene
-// Targets in targets/8thwall/ und stehen in targets/8thwall/karten.json
-// (id, name, target = Dateibasis, breiteMm, notiz). ?karte=<id> wählt das
-// Design; ohne Parameter gilt KARTE_STANDARD (= der bisherige Stand card.json,
-// nichts ändert sich). Unbekannte id → Hinweis im Splash, Button bleibt aus.
-// Die Kartenbreite des Eintrags wird zu physicalWidthInMeters (Standard 63 mm
-// laut Druckspezifikation; vorher SCENE.cardWidth = 59 mm). SCENE.cardWidth
+// Seite = eine Karte = ein Target. Seit Build 63 (2026-10-06) liegen Karte und
+// ihre Designs (Kartenbilder) in karten/<id>/ — Auswahl per ?k=<id> und
+// ?design=<id>, aufgelöst in js/kartenLader.js (ersetzt targets/8thwall/
+// karten.json und ?karte=). Die Kartenbreite des Designs wird zu
+// physicalWidthInMeters (Standard 63 mm laut Druckspezifikation); SCENE.cardWidth
 // bleibt die SZENEN-Einheit (worldRoot-Skalierung, Eck-Marker) und ist davon
-// unabhängig. Übersicht mit QR-Codes zum Umschalten: karten.html.
-const TARGET_DIR = "./targets/8thwall/";
-const KARTEN_URL = TARGET_DIR + "karten.json";
-const KARTE_STANDARD = "card";
-const KARTE_BREITE_MM = 63;
-const KARTE_ID = params.get("karte") || KARTE_STANDARD;
-// Eintrag aus karten.json (in boot() aufgelöst); Fallback = der bisherige Stand,
-// falls die Liste nicht ladbar ist und kein ?karte gesetzt wurde.
-let karte = { id: KARTE_STANDARD, name: KARTE_STANDARD, target: KARTE_STANDARD, breiteMm: KARTE_BREITE_MM };
-
-/* karten.json laden und den Eintrag zu KARTE_ID wählen. Liefert {karte} oder
-   {error, ids}, wenn der Eintrag fehlt (boot() zeigt dann den Hinweis). Ohne ?karte und ohne ladbare
-   Liste bleibt der eingebaute Standard — die App startet wie bisher. */
-async function resolveKarte() {
-  let list = null;
-  try {
-    const res = await fetch(KARTEN_URL, { cache: "no-store" });
-    if (res.ok) list = (await res.json()).karten;
-  } catch (e) { /* offline/Fehler → unten behandelt */ }
-  if (!Array.isArray(list)) {
-    if (params.has("karte")) return { error: "Kartenliste nicht ladbar: " + KARTEN_URL, ids: [] };
-    console.warn("DETAR karten.json nicht ladbar — Standard-Target", KARTE_STANDARD);
-    return { karte };
-  }
-  const ids = list.map((k) => k.id);
-  const hit = list.find((k) => k.id === KARTE_ID);
-  if (!hit) return { error: "Unbekannte Karte „" + KARTE_ID + "“", ids };
-  const breite = Number(hit.breiteMm);
-  return { karte: {
-    id: hit.id, name: hit.name || hit.id, target: hit.target || hit.id,
-    breiteMm: Number.isFinite(breite) && breite > 0 ? breite : KARTE_BREITE_MM, notiz: hit.notiz || "",
-  } };
-}
+// unabhängig. Übersicht mit QR-Codes: karten.html.
 
 let gyro = null; // GyroFusion — wird in der START-Geste angelegt (iOS-Permission)
 
@@ -162,26 +129,26 @@ async function boot() {
   // kein WASM → Hinweis-Bildschirm statt Fehler nach dem Klick; Button bleibt
   // aus. Test: ?preflight=inapp|nocam|insecure|nowasm|nowebp (s. js/preflight.js).
   const blocked = await preflight(params.get("preflight"));
+  // Karte laden (?k=<id> gegen karten/katalog.json, Design per ?design=<id>).
+  // Unbekannte Karte/Design: Hinweis in der Fehlerzeile des Splash, Button
+  // bleibt aus — statt einer leeren Seite nach dem Klick (Target-404).
+  const resolved = await ladeKarte(params, { publicMode: PUBLIC_MODE });
   if (blocked) {
-    el("cardName").textContent = card.profession;
+    el("cardName").textContent = resolved.card?.profession ?? resolved.beruf ?? "";
     showPreflightScreen(blocked);
     return;
   }
-  // Kartendesign auflösen (?karte=<id> gegen targets/8thwall/karten.json).
-  // Unbekannte id: Hinweis in der Fehlerzeile des Splash, Button bleibt aus —
-  // statt einer leeren Seite nach dem Klick (Target-404).
-  const resolved = await resolveKarte();
   if (resolved.error) {
-    el("cardName").textContent = card.profession;
+    if (resolved.beruf) el("cardName").textContent = resolved.beruf;
     const box = el("errorBox");
     box.textContent = resolved.error + (resolved.ids.length ? " — bekannt: " + resolved.ids.join(", ") : "") +
-      " (Parameter ?karte, Liste: targets/8thwall/karten.json)";
+      (resolved.hinweis ?? "");
     box.style.display = "block";
     console.warn("DETAR", resolved.error, resolved.ids);
     return;
   }
-  karte = resolved.karte;
-  log("DETAR Karte:", karte.id, "·", karte.name, "·", karte.breiteMm, "mm →", TARGET_DIR + karte.target + ".json");
+  ({ card, design } = resolved);
+  log("DETAR Karte:", card.id, "· Design:", design.id, "·", design.name, "·", design.breiteMm, "mm →", design.targetUrl);
   // Engine-Kern VORLADEN (Netzwerk, nicht ausgeführt) — erst hier per JS statt
   // als <link> in index.html, weil die Variante (SIMD / nicht-SIMD) vom Gerät
   // abhängt; so lädt jedes Gerät nur die eine xr.js, die es auch nutzt. Der
@@ -238,7 +205,7 @@ async function boot() {
       gyro.enable(); // bewusst nicht awaiten (Geste nicht verlieren)
     }
     try {
-      if (DESKTOP_MODE) await desktop.startDesktop({ buildExperience, attachDevTools });
+      if (DESKTOP_MODE) await desktop.startDesktop({ buildExperience, attachDevTools, vorschau: card.vorschau });
       else await startAR();
       document.body.classList.add("launched");
       document.body.classList.add("scanning"); // Suchrahmen (weiße Ecken) bis zur ersten Erkennung
@@ -295,7 +262,7 @@ function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTic
     },
   };
 
-  const nodes = buildRig(worldRoot);
+  const nodes = buildRig(worldRoot, card.figur);
 
   const faceAnim = new FaceAnimator(nodes);
   const bubble = new SpeechBubble(nodes, frame);
@@ -352,7 +319,7 @@ function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTic
   const _tapNdc = new THREE.Vector2();
   let _downX = 0, _downY = 0, _downT = 0;
   const figureMeshes = [
-    nodes.BodyIdle, nodes.BodyAffirm, nodes.BodyThink,
+    ...Object.values(nodes.bodies),
     nodes.Head, nodes.FaceNeutral, nodes.FaceBlink, nodes.FaceTalk,
   ];
   let _lastTapT = 0;
@@ -473,23 +440,23 @@ function loadEngine() {
 
 /* Target-Daten (JSON aus image-target-cli) laden. Das Luminanz-Bild wird
    NEBEN der JSON gesucht (resources.luminanceImage) — so kann ein frisch
-   generierter CLI-Ordner 1:1 nach targets/8thwall/ kopiert werden, ohne den
+   generierter CLI-Ordner 1:1 nach karten/<id>/targets/ kopiert werden, ohne den
    von der CLI fest eingetragenen Pfad „image-targets/…" anzupassen. */
 async function loadTargetData() {
-  const targetUrl = TARGET_DIR + karte.target + ".json";
+  const targetUrl = design.targetUrl;
   const res = await fetch(targetUrl, { cache: "no-store" });
-  if (!res.ok) throw new Error("Target-Datei fehlt: " + targetUrl + " (Karte „" + karte.id + "“ in karten.json)");
+  if (!res.ok) throw new Error("Target-Datei fehlt: " + targetUrl + " (Design „" + design.id + "“ der Karte „" + card.id + "“)");
   const data = await res.json();
   const base = new URL(targetUrl, location.href);
   const lum = data.resources?.luminanceImage;
-  data.imagePath = lum ? new URL(lum, base).href : new URL(data.imagePath, location.href).href;
+  data.imagePath = new URL(lum || data.imagePath, base).href;
   // Karte liegt in der Hand → beweglich (kein „static target"). Physische
-  // Breite = Kartenbreite des Eintrags in karten.json (breiteMm, Standard
+  // Breite = Kartenbreite des Designs in karte.json (breiteMm, Standard
   // 63 mm laut Druckspezifikation; bis Build 56 SCENE.cardWidth = 59 mm):
   // damit ist detail.scale metrisch; die Figur hängt davon nicht ab
   // (Anchor-Einheit = Kartenbreite, s. Kopfkommentar).
   data.moveable = true;
-  data.physicalWidthInMeters = karte.breiteMm / 1000;
+  data.physicalWidthInMeters = design.breiteMm / 1000;
   return data;
 }
 
@@ -675,7 +642,7 @@ function detarPipelineModule(XR8, { resolve, reject }) {
 
       // ?stats — Live-Diagnose am Gerät (Tracking/Gyro/Jitter in Zahlen)
       stats = StatsOverlay
-        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, karte })
+        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design })
         : null;
 
       exp = buildExperience({

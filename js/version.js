@@ -7,5 +7,5 @@
    (cache: no-store) — steht dort eine höhere Nummer, läuft am Gerät ein alter
    Cache → „neu laden". Damit ist am Handy ablesbar, ob der Stand aktuell ist.
    ============================================================================= */
-export const BUILD = 62;
-export const BUILD_DATE = "2026-09-25";
+export const BUILD = 63;
+export const BUILD_DATE = "2026-10-06";

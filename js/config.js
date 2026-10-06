@@ -47,7 +47,11 @@ export const POSES = {
   winken: "affirm", bestaetigen: "affirm", stolz: "affirm", zeigen: "affirm",
   denken: "think", schulterzucken: "think", erschoepft: "think",
 };
-export const poseFor = (tag) => POSES[tag] ?? "idle";
+// Seit Build 63: `posen` = Posenliste der Karte (karte.json → figur.posen).
+// Hat die Karte eine Pose mit genau diesem Namen (auch eine Sonderpose), gilt
+// sie; sonst die Zuordnung oben, falls die Karte diesen Körper hat; sonst idle.
+export const poseFor = (tag, posen = {}) =>
+  (tag in posen ? tag : (POSES[tag] in posen ? POSES[tag] : "idle"));
 
 // FaceAnimator → FACE
 export const FACE = {

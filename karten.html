@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DETAR — Kartendesigns</title>
-  <!-- Übersicht der Kartendesigns (2026-09-15): liest targets/8thwall/karten.json
-       und zeigt je Design Name, Link und QR-Code auf index.html?karte=<id>, damit
+  <!-- Übersicht der Kartendesigns (2026-09-15; seit Build 63 aus karten/katalog.json
+       + karten/<id>/karte.json → designs): zeigt je Karte × Design Name, Link und
+       QR-Code auf index.html?k=<karte>&design=<design>, damit
        man am Handy zwischen Varianten springen kann. Die Links zeigen auf DIESEN
        Host (GitHub-Pages-Spiegel oder cloudflared-Tunnel) — so stimmen die
        QR-Codes auch beim lokalen Test. QR-Erzeugung liegt im Repo
@@ -31,7 +32,7 @@
 </head>
 <body>
   <h1>DETAR — Kartendesigns</h1>
-  <p class="sub">Quelle: <code>targets/8thwall/karten.json</code> · QR-Code scannen oder „Starten" tippen → App mit <code>?karte=&lt;id&gt;</code>. Neues Design: <code>docs/kartendesigns.md</code>.</p>
+  <p class="sub">Quelle: <code>karten/katalog.json</code> + <code>karten/&lt;id&gt;/karte.json</code> (designs) · QR-Code scannen oder „Starten" tippen → App mit <code>?k=&lt;karte&gt;&amp;design=&lt;design&gt;</code>.</p>
   <p class="flags">
     Zusatz-Flags im Link:
     <label><input type="checkbox" id="fStats" checked /> <code>stats</code> (Diagnose)</label>
@@ -62,7 +63,7 @@
       }
 
       function linkFor(k) {
-        var q = ["karte=" + encodeURIComponent(k.id)].concat(flags());
+        var q = ["k=" + encodeURIComponent(k.karte), "design=" + encodeURIComponent(k.id)].concat(flags());
         return base + "?" + q.join("&");
       }
 
@@ -93,7 +94,7 @@
             "<h2></h2><p class='id'></p><canvas></canvas>" +
             "<p class='meta'></p><a class='start'>Starten</a><a class='url'></a>";
           el.querySelector("h2").textContent = k.name || k.id;
-          el.querySelector(".id").textContent = "?karte=" + k.id + " · " + (k.target || k.id) + ".json · " + (k.breiteMm || "?") + " mm";
+          el.querySelector(".id").textContent = "?k=" + k.karte + "&design=" + k.id + " · " + (k.target || "?") + " · " + (k.breiteMm || "?") + " mm";
           el.querySelector(".meta").textContent = k.notiz || "";
           var a = el.querySelector("a.start"); a.href = link;
           var u = el.querySelector("a.url"); u.href = link; u.textContent = link;
@@ -106,19 +107,45 @@
       var boxes = document.querySelectorAll(".flags input");
       for (var b = 0; b < boxes.length; b++) boxes[b].onchange = render;
 
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", "./targets/8thwall/karten.json?t=" + Date.now(), true);
-      xhr.onload = function () {
-        try {
-          if (xhr.status !== 200) throw new Error("HTTP " + xhr.status);
-          var data = JSON.parse(xhr.responseText);
-          karten = data.karten || [];
-          if (!karten.length) throw new Error("karten.json enthält keine Einträge");
-          render();
-        } catch (e) { errEl.textContent = "karten.json nicht lesbar: " + e; }
-      };
-      xhr.onerror = function () { errEl.textContent = "karten.json nicht ladbar (Server läuft? Pfad targets/8thwall/karten.json)"; };
-      xhr.send();
+      function holeJson(url, ok, fail) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url + "?t=" + Date.now(), true);
+        xhr.onload = function () {
+          try {
+            if (xhr.status !== 200) throw new Error("HTTP " + xhr.status);
+            ok(JSON.parse(xhr.responseText));
+          } catch (e) { fail(url + " nicht lesbar: " + e); }
+        };
+        xhr.onerror = function () { fail(url + " nicht ladbar (Server läuft?)"); };
+        xhr.send();
+      }
+      function zeigeFehler(msg) { errEl.textContent += msg + "\n"; }
+
+      // Katalog → je aktive Karte deren karte.json → je Design eine Kachel
+      holeJson("./karten/katalog.json", function (katalog) {
+        var liste = [];
+        var all = katalog.karten || [];
+        for (var i = 0; i < all.length; i++) if (all[i].aktiv !== false) liste.push(all[i]);
+        if (!liste.length) { zeigeFehler("katalog.json enthält keine aktiven Karten"); return; }
+        var offen = liste.length;
+        var proKarte = {};
+        for (var j = 0; j < liste.length; j++) (function (eintrag) {
+          var fertig = function () {
+            if (--offen) return;
+            karten = [];
+            for (var n = 0; n < liste.length; n++) karten = karten.concat(proKarte[liste[n].id] || []);
+            render();
+          };
+          holeJson("./karten/" + eintrag.id + "/karte.json", function (karte) {
+            var ds = karte.designs || [];
+            proKarte[eintrag.id] = [];
+            for (var d = 0; d < ds.length; d++) proKarte[eintrag.id].push({
+              karte: eintrag.id, id: ds[d].id, target: ds[d].target, breiteMm: ds[d].breiteMm,
+              name: (eintrag.name || eintrag.id) + " — " + (ds[d].name || ds[d].id), notiz: ds[d].notiz });
+            fertig();
+          }, function (msg) { zeigeFehler(msg); fertig(); });
+        })(liste[j]);
+      }, zeigeFehler);
     })();
   </script>
 </body>

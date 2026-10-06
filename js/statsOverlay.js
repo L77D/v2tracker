@@ -55,7 +55,7 @@ export class StatsOverlay {
         if (m) this.liveBuild = +m[1];
       })
       .catch(() => {}); // offline/Fehler → nur die eigene Nummer anzeigen
-    this.mm = Number(env?.karte?.breiteMm) || 63;
+    this.mm = Number(env?.design?.breiteMm) || 63;
     this.win = [];          // Tick-Proben der letzten WIN_MS (jitterMetrics.js)
     this.cap = null;        // laufende „Messung 10 s": { t0, samples, snaps0, nan0, lostMs, lastT }
     this.result = null;     // letzte fertige Messung: { metrics, meta, samples }
@@ -151,7 +151,7 @@ export class StatsOverlay {
       toggles: toggleCode(),
       minSpeed: STAB.minSpeed, minAngSpeed: STAB.minAngSpeed, minCutoff: STAB.minCutoff,
       beta: STAB.beta, rotMinCutoff: STAB.rotMinCutoff, rotBeta: STAB.rotBeta,
-      latencyMs: STAB.latencyMs, breiteMm: this.mm, design: this.env?.karte?.id ?? null,
+      latencyMs: STAB.latencyMs, breiteMm: this.mm, design: this.env?.design?.id ?? null,
       snaps: (this.stab.snapCount ?? 0) - c.snaps0,
       nan: (this.stab.diag?.nanCount ?? 0) - c.nan0,
       verlorenMs: Math.round(c.lostMs),
@@ -298,10 +298,10 @@ export class StatsOverlay {
       // max-age 600), ein frischer Build kann eine alte Karte mitschleppen.
       `Karte: ${this.env?.card?.id ?? "—"} · ${this.env?.card?.edition === "public" ? "PUBLIC" : "Firma"} · ${this.env?.card?.questions?.length ?? "?"} Fragen` +
       `${this.env?.card?.questions?.some((q) => q.link) ? " · Link-Frage" : ""}\n` +
-      // Kartendesign (2026-09-15): aktive id aus ?karte (targets/8thwall/
-      // karten.json), Target-Dateibasis und die physische Breite, die als
-      // physicalWidthInMeters an die Engine ging.
-      `Design: ${this.env?.karte?.id ?? "—"} · ${this.env?.karte?.target ?? "—"}.json · ${this.env?.karte?.breiteMm ?? "—"} mm`;
+      // Kartendesign (2026-09-15; seit Build 63 aus karte.json → designs,
+      // gewählt per ?design): id, Target-Datei im Kartenordner und die
+      // physische Breite, die als physicalWidthInMeters an die Engine ging.
+      `Design: ${this.env?.design?.id ?? "—"} · ${this.env?.design?.target ?? "—"} · ${this.env?.design?.breiteMm ?? "—"} mm`;
   }
 
   /* Kennzahlen-Zeilen über das 5-s-Fenster (Abschnitt b der Analyse). */

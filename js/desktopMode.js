@@ -18,7 +18,7 @@ export async function createPhoneFrame() {
 
 /* Szene + Loop; buildExperience/attachDevTools kommen aus main.js (gemeinsamer
    Aufbau für AR und Desktop). Simuliert nach 1,2 s den Scan. */
-export async function startDesktop({ buildExperience, attachDevTools }) {
+export async function startDesktop({ buildExperience, attachDevTools, vorschau }) {
   const { OrbitControls } = await import("../vendor/three/addons/controls/OrbitControls.js");
   const container = document.getElementById("ar-container");
 
@@ -51,9 +51,10 @@ export async function startDesktop({ buildExperience, attachDevTools }) {
   controls.maxPolarAngle = Math.PI / 2 - 0.05;
   controls.update();
 
-  // Karte als Boden (nur Optik im Testmodus)
-  const tex = new THREE.TextureLoader().load("./assets/card/detar_demokarte_070926.jpg");
-  tex.colorSpace = THREE.SRGBColorSpace;
+  // Karte als Boden (nur Optik im Testmodus). Bild = "vorschau" der Karte
+  // (karten/<id>/, seit Build 63); ohne Vorschau eine weiße Fläche.
+  const tex = vorschau ? new THREE.TextureLoader().load(vorschau) : null; // (Patch-Anker build-lokal-prototyp.py)
+  if (tex) tex.colorSpace = THREE.SRGBColorSpace;
   // Seitenverhältnis wie die Eck-Marker (SCENE.cardAspect) — bis Build 60 stand
   // hier 2048/1500 (PENNY-Demokarte), Bild und Marker passten nicht zusammen.
   const cardMesh = new THREE.Mesh(

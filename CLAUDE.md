@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-09-25 · Build 62 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns ?karte + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-06 · Build 63 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -72,25 +72,58 @@ in der Karten-Zeile „PUBLIC"/„Firma". Keine zweite Kartendatei, kein zweites
 HTML. Der Parameter überlebt „Neu laden" und „Link kopieren" (preflight.js
 arbeitet am rohen Query-String, damit `?public` nicht zu `public=` wird).
 
-## Kartendesigns (seit Build 57, 2026-09-15)
+## Engine und Karten (seit Build 63, 2026-10-06)
 
-Mehrere Designs als eigene Targets in `targets/8thwall/`, Liste
-`targets/8thwall/karten.json` (`id`, `name`, `target` = Dateibasis,
-`breiteMm`, `notiz`). `?karte=<id>` wählt das Design, ohne Parameter gilt
-`card` (bisheriger Stand). Unbekannte id → Hinweis in `#errorBox`, Button
-bleibt aus. `physicalWidthInMeters` = `breiteMm/1000` des Eintrags (Standard
-63 mm, Druckspezifikation) — NICHT mehr `SCENE.cardWidth` (bleibt Szenen-
-Einheit 0.059). `?stats` zeigt „Design: id · target.json · mm". Übersicht mit
-QR-Codes: `karten.html` (QR aus `vendor/qrcode/`, MIT, kein CDN). Neues
-Design + lokaler Test mit cloudflared: `docs/kartendesigns.md`.
+Ziel: viele Karten, eine Engine. Die **Engine** (`index.html`, `js/`, `css/`,
+`assets/` = nur Geteiltes wie UI/Fonts/Logo, `vendor/`) liegt einmal zentral;
+jede **Karte** ist ein reiner Daten-Ordner ohne Code. Engine-Update = einmal
+hochladen, alle Karten nutzen es.
+
+```
+karten/katalog.json            {standard, karten:[{id, name, aktiv}]}
+karten/<id>/karte.json         "format": 1 · Dialog · figur · designs · vorschau
+karten/<id>/figur/*.webp       Körper je Pose, Kopf, Gesichter
+karten/<id>/targets/<d>.json + <d>_luminance.png   (image-target-cli)
+karten/<id>/vorschau.jpg       Kartenbild für ?desktop
+```
+
+- `js/kartenLader.js → ladeKarte()`: `?k=<id>` (ohne = `katalog.standard`),
+  `?design=<id>` (ohne = erstes Design der Karte), prüft `format`
+  (`KARTEN_FORMAT`, ältere Formate dort übersetzen), macht Pfade aus
+  karte.json (figur, vorschau, companyLogo, designs[].target) relativ zum
+  Kartenordner absolut, ruft `prepareCard()` (Edition). Unbekannte Karte/
+  Design/`aktiv: false` → Hinweis in `#errorBox`, Button bleibt aus. Alles per
+  `fetch` mit `no-store`. `?karte=` gibt es nicht mehr (Michael 2026-10-06:
+  komplett auf `?k=`).
+- Pro Sitzung genau EINE Karte und EIN Target. Karten-Ids nie umbenennen oder
+  wiederverwenden (stehen in gedruckten QR-Codes).
+- **Figur** (`figur` in karte.json): `posen {name: bild}` (`idle` Pflicht) →
+  `rig.js` baut je Pose ein Körper-Sprite (`nodes.bodies[name]`), `kopf`,
+  `gesicht {neutral, blink, talk}`. Maße/Pivots in `rig.js` = Figuren-Vorlage
+  (gleiche Leinwand 1024×1536 für alle Figuren). Posenwahl
+  `config.js → poseFor(tag, posen)`: Pose mit genau dem Tag-Namen (auch
+  Sonderposen einer Karte) → sonst `POSES[tag]`, falls die Karte den Körper
+  hat → sonst idle.
+- **Designs** (seit Build 57: mehrere Kartenbilder derselben Karte, heute
+  `card` + `tarn`): `designs[{id, name, target, breiteMm, notiz}]` in
+  karte.json. `physicalWidthInMeters` = `breiteMm/1000` (Standard 63 mm,
+  Druckspezifikation) — NICHT `SCENE.cardWidth` (Szenen-Einheit 0.059).
+  `?stats` zeigt „Design: id · targets/<d>.json · mm". Übersicht mit QR-Codes:
+  `karten.html` (Karte × Design, QR aus `vendor/qrcode/`). `docs/kartendesigns.md`
+  beschreibt noch den alten Stand (targets/8thwall, ?karte).
+- Kartendatei `karten/elektroniker-siemens/karte.json` = Inhalt von
+  `cards/elektroniker.js` (Build 62) 1:1, plus `_hinweis`, `format`, `id`,
+  `figur`, `designs`, `vorschau` (alte id `siemens_elektroniker_betriebstechnik`).
+- Offen (eigener Schritt): Service Worker (fester Cache der Engine, zentrale
+  Updates) · Font-Subset mit festem deutschem Zeichensatz statt Kartentexten.
 
 ## Dialogsystem (seit Build 17, 2026-09-03)
 
 Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Prototyp
 `detar_dialog_v2.html` (Themenebene) ist die Referenz, die App portiert ihn 1:1.
 
-- `cards/elektroniker.js` — Kartendatei (Siemens-Dialog, PENNY-Figur/-Marker
-  als Platzhalter). Felder: `themen`, `initial`, `greeting{tag,text}`,
+- `karten/elektroniker-siemens/karte.json` — Kartendatei (Siemens-Dialog,
+  PENNY-Figur/-Marker als Platzhalter; bis Build 62 `cards/elektroniker.js`). Felder: `themen`, `initial`, `greeting{tag,text}`,
   `asks[{trigger,prompt,options[{label,sets,unlocks,tag,reply}]}]`,
   `questions[{id,thema,label,text,tag,unlocks,requires,link,url,end}]`,
   `reentry.rules`. Text darf `<marker> <gross> <leise> <knall>` tragen
@@ -114,7 +147,7 @@ Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Prototyp
   neuer Tab), freigeschaltet durch „bewerbung"; `permaQuestions()` bleibt
   ungenutzt.
 - `config.js → POSES`: Emotion-Tag → Körper (idle/affirm/think), bis der Rig
-  die elf Posen liefert. `CHOREO`: continueDelayMs, collapseDelayMs,
+  die elf Posen liefert; die Posenliste der Karte hat Vorrang (s. „Engine und Karten"). `CHOREO`: continueDelayMs, collapseDelayMs,
   collapseSec, trackingLostMs (Menü friert nach Verlust ein).
 - Randzustände: Kamera abgelehnt → `body.camera-denied` (eigener Bildschirm im
   Splash); Tracking verloren → `menu.setFrozen()` + `#lostHint` (Icon-Zeile
@@ -126,14 +159,14 @@ Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Prototyp
 - Build 16 ist vom ungemergten Branch `tracking-runde5` belegt (nur in
   `main`), deshalb springt main von 15 auf 17.
 
-**Tracking-Target:** liegt in `targets/8thwall/` (`card.json` +
+**Tracking-Target:** liegt im Kartenordner `karten/<id>/targets/` (`card.json` +
 `card_luminance.png` aus `@8thwall/image-target-cli`, weitere Designs per
-`?karte`, s. „Kartendesigns"). Vorlage der Standard-Karte: beschnittene
+`?design`, s. „Engine und Karten"). Vorlage der Standard-Karte: beschnittene
 Demo-Karte 070926 (`Assets/September/demo_skat_070926_mind_cropped.png`,
 1346×2156 px, Aspekt 1,60 → `SCENE.cardAspect`, Szenen-Geometrie der Eck-
-Marker/Tap-Fläche). Desktop-Kartenbild: `assets/card/detar_demokarte_070926.jpg`
+Marker/Tap-Fläche). Desktop-Kartenbild: `karten/elektroniker-siemens/vorschau.jpg`
 (1200 px, aus der Druckdatei `Assets/September/demo_skat_070926.jpg`).
-Physische Breite fürs Tracking = `breiteMm` aus `karten.json` (63 mm,
+Physische Breite fürs Tracking = `breiteMm` des Designs in karte.json (63 mm,
 Druckspezifikation 63 × 88 mm); `SCENE.cardWidth 0.059` ist nur noch die
 Szenen-Einheit (worldRoot-Skalierung). Die Figur ist relativ zur Kartenbreite
 definiert. (MindAR-Target `card.mind`, Compiler-Skript, `targets/old/`: nur
@@ -148,9 +181,9 @@ wählt per `WebAssembly.validate`, `?nosimd` erzwingt) — `xr.js` +
 kein API-Key. Engine wird erst in der Start-Geste geladen; `js/preflight.js`
 prüft vorher In-App-Browser/HTTPS/Kamera-API/WASM/WebP und zeigt sonst
 `#preflightScreen`. Production-Härtung + Gate-Tabelle:
-`docs/8thwall-migration.md` Abschnitt 7. Target: `targets/8thwall/card.json` + `card_luminance.png` aus
-`@8thwall/image-target-cli`; weitere Designs daneben, gewählt per `?karte`
-(`karten.json`, `docs/kartendesigns.md`). Alles dazu: `docs/8thwall-migration.md`.
+`docs/8thwall-migration.md` Abschnitt 7. Target: `karten/<id>/targets/card.json` + `card_luminance.png` aus
+`@8thwall/image-target-cli`; weitere Designs daneben, gewählt per `?design`
+(s. „Engine und Karten"). Alles dazu: `docs/8thwall-migration.md`.
 `main` läuft weiter auf `mind-ar@1.2.5` (dort: mind-ar ist gegen three 0.160
 gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
 
@@ -204,9 +237,11 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   HTML-Datei (Module als data:-URLs in der Import-Map, Assets/Fonts/tuning.json
   eingebettet, Desktop-Modus + Dev-Panel erzwungen; three.js aus `vendor/three/`,
   kein CDN). Nach jedem Build neu erzeugen; Ablage `…/Claude/Lokal-Prototyp/`.
-  Das Skript patcht fünf Quelltextzeilen per `assert` (markiert mit
+  Das Skript patcht Quelltextzeilen per `assert` (markiert mit
   „Patch-Anker build-lokal-prototyp.py" in main.js, config.js, rig.js,
-  supportUI.js) — Wortlaut dort nicht ändern.
+  supportUI.js, kartenLader.js, desktopMode.js) — Wortlaut dort nicht ändern.
+  Seit Build 63 bettet es `karten/` ein (Bilder als data:-URIs, JSON als
+  `window.__JSON`, ohne `targets/`).
   **Feinschliff (Michael 2026-09-04), seit Build 22 live, seit Build 61 direkt
   in den Basisregeln (kein `body.lokal`, keine Override-Blöcke mehr):**
   Silkscreen −12 % Laufweite · Splash-Raster driftet nach rechts oben ·
@@ -275,7 +310,7 @@ Delta vor) als Prediction + Verlust-Brücke.
   gibt es hier nicht mehr.
 - `CHOREO.tapDebounceMs 120` · `tapMaxPx 6` · `tapMaxMs 400` (Tap-Erkennung,
   main.js) · `idleReturnMs 5500` als Fallback — die Karte (`idleReturnMs` in
-  `cards/*.js`, heute 8000) hat Vorrang.
+  karte.json, heute 8000) hat Vorrang.
 - Feature-Toggles 1–10 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock, Nr. 10 =
   Schwerkraft-Schiedsrichter (Pose-Flip).
 
@@ -288,8 +323,8 @@ Gyro-Rate; Knöpfe Fall F0–F4 · „Messung 10 s" → Kopieren (Tabellenzeile)
 „Log ↓" (JSON); Anleitung `docs/handheld-jitter-analyse.md` Abschnitt e · Cam+PR, Build-Check,
 Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
-oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?karte=<id>` (Kartendesign aus
-`targets/8thwall/karten.json`, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
+oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Karte aus
+`karten/katalog.json`) · `?design=<id>` (Kartenbild aus karte.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
 kein Test-Flag — steht im QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
@@ -305,8 +340,8 @@ gilt „Rauschen roh|stab" (2. Differenz, 3D), für das Sichtbare „Kopf px".
 Neue Richtwerte erst nach der Messreihe (`docs/handheld-jitter-analyse.md`);
 die Werte unten sind alte F2F-Zahlen und nur noch für Stativ/F0 vergleichbar.
 
-Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite aus
-`karten.json`, 63 mm); bis Build 60 rechnete `statsOverlay.js` fest mit einer
+Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
+63 mm); bis Build 60 rechnete `statsOverlay.js` fest mit einer
 150-mm-Karte — alte Protokolle durch 2,38 teilen, um sie zu vergleichen.
 
 - Jitter **stab**: aufgelegt ≈ 0–0,04 mm (Dead-Zone friert ein) · in der Hand
@@ -358,7 +393,8 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite aus
 - iOS: Gyro-Permission MUSS in der Start-Geste angefragt werden (vor allen
   awaits); Safari cached JS aggressiv → Build-Check in ?stats nutzen. Achtung:
   Safari cached JEDE Datei einzeln (Pages: max-age 600) — `version.js` kann
-  frisch sein, während `cards/*.js` noch alt ist. `?stats` zeigt deshalb seit
+  frisch sein, während ein anderes Modul noch alt ist (karte.json/katalog.json
+  holt der Kartenlader seit Build 63 mit no-store). `?stats` zeigt deshalb seit
   Build 33 auch die geladene Karte (id, Fragenzahl, Link-Frage). Einzelne
   Datei erzwingen: ihre URL direkt in Safari öffnen, dann die App neu laden.
 

@@ -43,6 +43,21 @@ for dp, _, files in os.walk(os.path.join(ROOT, "assets")):
         rel = "./" + os.path.relpath(full, ROOT).replace(os.sep, "/")
         assets[rel] = data_uri(full)
 
+# --- Karten (seit Build 63: karten/<id>/ statt cards/ + assets/character) ------
+# Bilder als data:-URIs unter "./karten/…" (rig.js/desktopMode.js holen sie über
+# __asset), JSON (katalog.json, karte.json) als Objekte in window.__JSON (fetch geht
+# unter file:// nicht). targets/ bleibt draußen — der Prototyp läuft nur im
+# Desktop-Modus und braucht kein Tracking-Target.
+karten_json = {}
+for dp, _, files in os.walk(os.path.join(ROOT, "karten")):
+    if os.sep + "targets" in dp: continue
+    for f in files:
+        if f.startswith("."): continue
+        full = os.path.join(dp, f)
+        rel = "./" + os.path.relpath(full, ROOT).replace(os.sep, "/")
+        if f.endswith(".json"): karten_json[rel] = json.loads(read(full))
+        else: assets[rel] = data_uri(full)
+
 def inline_literals(src):
     # feste Pfad-Literale "./assets/…" und "../assets/…" durch data:-URIs ersetzen
     return re.sub(r'(["\'(])(\.\.?/assets/[^"\')]+)(?=["\')])', lambda m: m.group(1) + assets.get("./assets/" + m.group(2).split("assets/", 1)[1], m.group(2)), src)
@@ -64,8 +79,6 @@ def add_module(rel):
 for dp, _, files in os.walk(os.path.join(ROOT, "js")):
     for f in files:
         if f.endswith(".js"): add_module(os.path.relpath(os.path.join(dp, f), ROOT).replace(os.sep, "/"))
-for f in os.listdir(os.path.join(ROOT, "cards")):
-    if f.endswith(".js"): add_module("cards/" + f)
 # three.js + OrbitControls wie normale Module (relative Imports ../vendor/three/…
 # aus js/ bzw. ../../three.module.js aus OrbitControls.js lösen auf dieselben Keys)
 for rel in ("vendor/three/three.module.js", "vendor/three/addons/controls/OrbitControls.js"):
@@ -86,6 +99,10 @@ patch("js/config.js", '    const res = await fetch("./tuning.json", { cache: "no
       '    if (window.__TUNING) { const s = window.__TUNING; for (const [name, obj] of Object.entries(ALL)) if (s[name]) Object.assign(obj, s[name]); return true; }\n'
       '    const res = await fetch("./tuning.json", { cache: "no-store" });')
 patch("js/rig.js", "const t = texLoader.load(url);", "const t = texLoader.load(__asset(url));")
+patch("js/kartenLader.js", '  const res = await fetch(url, { cache: "no-store" });',
+      '  if (window.__JSON) { if (url in window.__JSON) return JSON.parse(JSON.stringify(window.__JSON[url])); throw new Error("HTTP 404: " + url); }\n'
+      '  const res = await fetch(url, { cache: "no-store" });')
+patch("js/desktopMode.js", "new THREE.TextureLoader().load(vorschau)", "new THREE.TextureLoader().load(__asset(vorschau))")
 patch("js/supportUI.js", 'im.src = ICON_DIR + f + ".png";', 'im.src = __asset(ICON_DIR + f + ".png");')
 patch("js/supportUI.js", 'this.img.src = ICON_DIR + name + ".png";', 'this.img.src = __asset(ICON_DIR + name + ".png");')
 
@@ -108,8 +125,12 @@ html = inline_literals(html)
 html = re.sub(r'\s*<link rel="(?:module)?preload" href="./vendor/8thwall/[^"]+"[^>]*>', "", html)
 tuning_path = os.path.join(ROOT, "tuning.json")
 tuning = json.loads(read(tuning_path)) if os.path.exists(tuning_path) else {}  # seit 2026-09-09 optional
-boot = ("<script>window.__LOKAL = true; window.__TUNING = %s; window.__ASSETS = %s; "
-        "window.__asset = (p) => (window.__ASSETS[p] ?? p);</script>") % (json.dumps(tuning), json.dumps(assets))
+# __asset: der Kartenlader macht Kartenpfade absolut (file:///…/karten/…) — vor dem
+# Nachschlagen auf "./…" relativ zur HTML-Datei zurückführen.
+boot = ("<script>window.__LOKAL = true; window.__TUNING = %s; window.__ASSETS = %s; window.__JSON = %s; "
+        "window.__asset = (p) => { const b = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, ''); "
+        "const k = p.startsWith(b) ? './' + p.slice(b.length) : p; return window.__ASSETS[k] ?? p; };</script>") % (
+        json.dumps(tuning), json.dumps(assets), json.dumps(karten_json))
 html = html.replace('<script type="module" src="./js/main.js"></script>',
                     boot + '\n  <script type="module">import "detar/js/main.js";</script>')
 html = html.replace("<title>DEIN ERSTER TAG — AR</title>", "<title>DETAR — Lokal-Prototyp (offline)</title>")

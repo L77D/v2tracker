@@ -133,7 +133,7 @@ export class CardController {
       this.speaking = true;
       this.wander.setAttending(!opts.first);
       this.face.setTalking(true);
-      this.setPose(poseFor(tag));
+      this.setPose(poseFor(tag, this.data.figur?.posen));
       const label = pages.length > 1 ? (i + 1) + "/" + pages.length : ""; // Seitenzähler; Anzeige per TYPO.pageLabel (seit Build 30 aus)
       this.bubble.setText(pages[i], () => {
         this.speaking = false;
@@ -279,9 +279,10 @@ export class CardController {
 
   /* ---- Posen / Lesezeit ---------------------------------------------------- */
   setPose(pose) {
-    this.nodes.BodyIdle.visible = pose === "idle";
-    this.nodes.BodyAffirm.visible = pose === "affirm";
-    this.nodes.BodyThink.visible = pose === "think";
+    // Körper je Pose aus der Karte (nodes.bodies, rig.js); unbekannt → idle
+    const bodies = this.nodes.bodies;
+    const name = pose in bodies ? pose : "idle";
+    for (const [k, b] of Object.entries(bodies)) b.visible = k === name;
   }
   /* Lesezeit nach dem Typewriter: Blase weg, Pose zurück auf idle — das Menü
      bleibt. Läuft nur im Hub, nie während ein Weiter-Schritt wartet. */

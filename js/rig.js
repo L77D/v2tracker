@@ -1,6 +1,6 @@
 /* =============================================================================
    DETAR — Figuren-Rig. Hierarchie + Transforms exakt aus Scene.zcomp /
-   Lokal-Prototyp: FigureRoot → BodyPivot (Füße) → 3 Body-Sprites + HeadPivot
+   Lokal-Prototyp: FigureRoot → BodyPivot (Füße) → Body-Sprites (je Pose der Karte) + HeadPivot
    (Hals) → HeadNod (Nick-Achse ≈ Kopfmitte) → Head + 3 Face-Sprites.
    Painter's Algorithm: depthTest AUS auf allen flachen Layern, feste
    renderOrder (Body 0, Head 1, Face 2, Bubble 3) — wie LayerSort.
@@ -39,14 +39,17 @@ function makeSprite(url, aspectW, aspectH, renderOrder) {
 // ist am Handy nie größer als ~400 px, 768 px reichen für Retina. WebP mit
 // Alpha: Safari ab iOS 14, Chrome ab 32 — unter der Modul-Grenze (iOS 11) liegt
 // nur iOS 11–13, dort bliebe die Figur unsichtbar (bewusst hingenommen).
-const A = "./assets/character/";
 // Kopf-/Gesichts-Lage relativ zur Nick-Achse (Mattercraft-Export, 1:1 übernommen)
 const HEAD_Y0 = -0.1157760907793379;
 const FACE_Y0 = -0.11886690574041192;
 const FACE_Z0 = 0.002275570500326991;
 
-/* Baut das komplette Rig unter `parent` und liefert alle Knoten zurück. */
-export function buildRig(parent) {
+/* Baut das komplette Rig unter `parent` und liefert alle Knoten zurück.
+   `figur` kommt aus der Karte (karte.json → figur, Pfade vom Kartenlader
+   absolut gemacht): posen {name: bild} — je Pose ein Körper-Sprite unter
+   nodes.bodies[name], "idle" ist Pflicht —, kopf, gesicht {neutral, blink, talk}.
+   Maße und Pivots unten sind die Figuren-Vorlage (für alle Karten gleich). */
+export function buildRig(parent, figur) {
   // BeatRoot: neutraler Wrapper für AUTORISIERTE Animationen (Theatre.js-
   // Timeline). Behaviors fassen nur FigureRoot an, die Timeline nur BeatRoot —
   // beide addieren sich, ohne sich in die Quere zu kommen.
@@ -62,12 +65,13 @@ export function buildRig(parent) {
   BodyPivot.position.set(0, -0.4897775782082088, 0);
   FigureRoot.add(BodyPivot);
 
-  const BodyIdle   = makeSprite(A + "body_idle.webp",         1024, 1536, 0);
-  const BodyAffirm = makeSprite(A + "body_react_affirm.webp", 1024, 1536, 0);
-  const BodyThink  = makeSprite(A + "body_react_think.webp",  1024, 1536, 0);
-  for (const b of [BodyIdle, BodyAffirm, BodyThink]) {
+  const bodies = {};
+  for (const [name, url] of Object.entries(figur.posen)) {
+    const b = makeSprite(url, 1024, 1536, 0);
     b.position.set(0, 0.5, 0);
+    b.visible = name === "idle";
     BodyPivot.add(b);
+    bodies[name] = b;
   }
 
   const HeadPivot = new THREE.Group();
@@ -79,17 +83,17 @@ export function buildRig(parent) {
   const HeadNod = new THREE.Group();
   HeadPivot.add(HeadNod);
 
-  const Head = makeSprite(A + "head.webp", 1024, 1536, 1);
+  const Head = makeSprite(figur.kopf, 1024, 1536, 1);
   HeadNod.add(Head);
 
-  const FaceNeutral = makeSprite(A + "face_neutral.webp", 1024, 1536, 2);
-  const FaceBlink   = makeSprite(A + "face_blink.webp",   1024, 1536, 2);
-  const FaceTalk    = makeSprite(A + "face_talk.webp",    1024, 1536, 2);
+  const FaceNeutral = makeSprite(figur.gesicht.neutral, 1024, 1536, 2);
+  const FaceBlink   = makeSprite(figur.gesicht.blink,   1024, 1536, 2);
+  const FaceTalk    = makeSprite(figur.gesicht.talk,    1024, 1536, 2);
   HeadNod.add(FaceNeutral, FaceBlink, FaceTalk);
 
   const nodes = {
     BeatRoot, FigureRoot, BodyPivot, HeadPivot, HeadNod, Head,
-    BodyIdle, BodyAffirm, BodyThink,
+    bodies,
     FaceNeutral, FaceBlink, FaceTalk,
   };
 
