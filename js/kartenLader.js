@@ -104,7 +104,6 @@ export async function ladeKarte(params) {
   };
 
   // Dialog und Kartendaten zu EINEM Kartenobjekt (wie bisher karte.json) — der Rest der Engine bleibt gleich
-  const { _hinweis: _h, ...dialogFelder } = dialog;
-  const karte = { ...dialogFelder, ...roh, format, figur, vorschau: abs(roh.vorschau), companyLogo: abs(roh.companyLogo) };
+  const karte = { ...dialog, ...roh, format, figur, vorschau: abs(roh.vorschau), companyLogo: abs(roh.companyLogo) };
   return { card: prepareCard(karte, { publicMode }), design, publicMode };
 }

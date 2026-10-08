@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-08 · Build 76 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-08 · Build 77 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -133,7 +133,7 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
   der Siemens-Elektroniker ist interner Prototyp und heißt Karte `000` (Build 73,
   vorher id `elektroniker-siemens`; Michael 2026-10-08).
 - Prototyp `karten/000/` (daten.json + dialog.json) = Inhalt von
-  `cards/elektroniker.js` (Build 62) plus `_hinweis`, `format`, `id`,
+  `cards/elektroniker.js` (Build 62) plus `format`, `id`,
   `figur`, `designs`, `vorschau` (alte id `siemens_elektroniker_betriebstechnik`);
   seit Build 67–70 aufs Regelwerk gebracht (Quelle: Siemens-Ausschreibung,
   abgerufen 2026-10-08; Rest `[Annahme]`).
@@ -157,7 +157,7 @@ Public-Fassung, `persona` als Feld, kein `quelle`. Build 68 (Michael
 deckungsgleich ohne Logo/Link/Firmenbezüge; nichts, was sich schnell ändert
 (kein Gehalt — Pflichtfrage `geld` ersetzt durch `berufsschule`); keine
 Eigennamen aus dem Betrieb; `firmenbegriffe` (Liste in dialog.json) dürfen nur
-in Firmenfassungen stehen; Prüfseite zeigt die Lesefassung beider Fassungen. Build 70: Aussagen ohne Quelle tragen `[Annahme]` im Text (App zeigt die Marke; vor der Freigabe auflösen; zählt nicht zur Länge); Ziel eine Seite, Sinn auf der ersten Seite. Build 71: Schätzfrage mit vier Optionen (drei Schätzungen + „Keine Ahnung", 2×2-Raster). Vorbild:
+in Firmenfassungen stehen; Prüfseite zeigt die Lesefassung beider Fassungen. Build 70: Aussagen ohne Quelle tragen `[Annahme]` im Text (App zeigt die Marke; vor der Freigabe auflösen; zählt nicht zur Länge); Ziel eine Seite, Sinn auf der ersten Seite. Build 71: Schätzfrage mit vier Optionen (drei Schätzungen + „Keine Ahnung", 2×2-Raster). Build 77 (Michael 2026-10-08): in exportierten JSONs (daten.json, dialog.json, katalog.json) steht nur, was App oder Prüfseite lesen — kein `_hinweis` mehr (Notizen → Prüfbericht im Projektordner, Feldbeschreibung daten.json → Regelwerk „Einbau"); die Prüfseite meldet nicht vorgesehene Felder als Fehler. Vorbild:
 `karten/000/dialog.json`. Prüfseite
 `tools/kartenpruefung.html` (+ `kartenpruefung.js`, reine Regeln) misst mit
 `SpeechBubble.paginate()` am echten Font — Prüfregeln dort und Regelwerk

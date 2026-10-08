@@ -1,9 +1,4 @@
 {
-  "_hinweis": [
-    "Kartendaten (Inhalt für die Engine, kein Code): Beruf, Firma, Logo, Figur, Kartenbilder fürs Tracking, Vorschau. Der Dialog steht daneben in dialog.json (seit Build 72, 2026-10-08: karte.json in daten.json + dialog.json geteilt). Aus cards/elektroniker.js übernommen am 2026-10-06 (Build 63).",
-    "INTERNER PROTOTYP, Karte 000 (bis Build 72 id „elektroniker-siemens“): Figur und Marker sind PLATZHALTER (PENNY-Lagerlogistik-Assets). Produktionskarten liegen unter karten/<nr>/ (z. B. karten/001/).",
-    "Pfade (figur, vorschau, companyLogo, designs[].target) gelten relativ zu diesem Ordner. Hat figur.posen einen Eintrag mit dem Namen eines Emotion-Tags, gilt er; sonst die Standard-Zuordnung in js/config.js → POSES; sonst idle."
-  ],
   "format": 2,
   "id": "000",
   "profession": "Elektroniker/in für Betriebstechnik",

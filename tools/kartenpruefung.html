@@ -129,7 +129,7 @@ async function ladeUndPruefe() {
     const hole = (datei) => fetch(`../karten/${id}/${datei}`, { cache: "no-store" }).then((r) => { if (!r.ok) throw new Error(datei + ": HTTP " + r.status); return r.json(); });
     const [daten, dialog] = await Promise.all([hole("daten.json"), hole("dialog.json")]);
     const karte = { ...dialog, ...daten };
-    zeige("Karte „" + id + "“", karte, {});
+    zeige("Karte „" + id + "“", karte, { dateien: { dialog, daten } });
   } catch (e) {
     $("ausgabe").innerHTML = `<div class="ergebnis nok">karten/${esc(id)}/ (daten.json + dialog.json) nicht ladbar: ${esc(e.message)}</div>`;
   }

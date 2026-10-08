@@ -1,6 +1,6 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 08.10.2026 (Build 71). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
+Stand 08.10.2026 (Build 77). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
 im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
 Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 **Kontrakt** geschrieben: Jede Regel ist prüfbar.
@@ -475,7 +475,11 @@ Feldregeln:
   `zeigen` · `zweihaendig`. Pflicht bei Begrüßung, jeder Frage, jeder
   Rückfrage, jeder Option und jeder Wiedereinstiegs-Regel.
 - `unlocks` und `requires` zeigen nur auf existierende IDs.
-- **Kein Feld `quelle`** und keine weiteren Felder außer den hier genannten.
+- **Kein Feld `quelle`** und keine weiteren Felder außer den hier genannten —
+  auch keine Notizfelder wie `_hinweis`. In den exportierten Dateien
+  (`dialog.json`, `daten.json`, `katalog.json`) steht nur, was App oder
+  Prüfseite lesen. Quellen, Lücken und Entscheidungen stehen im Prüfbericht
+  (`Dialog/` im Kartenordner).
 
 ---
 
@@ -590,6 +594,8 @@ Geprüft wird:
 - [ ] Jeder `tag` aus dem Vokabular; Auszeichnung nur aus A8, geschlossen,
       nicht verschachtelt.
 - [ ] `firmenbegriffe` vorhanden (Liste, darf leer sein).
+- [ ] Keine nicht vorgesehenen Felder in `dialog.json` und `daten.json`, auch
+      kein `_hinweis` (A11).
 - [ ] `{firma}` höchstens zweimal; jeder Text mit `{firma}` hat eine neutrale
       Fassung; der Firmenname steht nirgends ausgeschrieben.
 - [ ] Was die neutrale Fassung zeigt (gemeinsame Texte und `…Public`), enthält
@@ -651,10 +657,32 @@ Eine Karte besteht aus zwei Dateien (seit Build 72, 2026-10-08): `daten.json`
 (Kartendaten) und `dialog.json` (Dialog). Produktionskarten heißen nach ihrer
 Nummer: `karten/001/`, Aufruf `?k=001`.
 
-1. Ordner `karten/<nr>/` anlegen (Vorlage: `karten/000/`),
-   `daten.json` setzen: `format` (2), `id` (= Nummer), `profession`,
-   `company`, `companyLogo`, `companyNeutral`, `idleReturnMs`, `figur`,
-   `designs`, `vorschau`.
+1. Ordner `karten/<nr>/` anlegen (Vorlage: `Vorlagen/_Karte/Export/NNN/` im
+   Projektordner) und `daten.json` setzen — nur diese Felder:
+
+   | Feld | Inhalt |
+   |---|---|
+   | `format` | 2 |
+   | `id` | Kartennummer, dreistellig (`"001"`) |
+   | `profession` | Beruf, z. B. „Gleisbauer/in" |
+   | `company` | Firmenname (für `{firma}` und den Splash) |
+   | `companyLogo` | `logo.webp` (fehlt in der Public-Fassung automatisch) |
+   | `companyNeutral` | „der Betrieb" (Notnagel, falls `{firma}` in der Public-Fassung steht) |
+   | `idleReturnMs` | Haltezeit nach einem Text, Standard 8000 |
+   | `vorschau` | `vorschau.jpg` (Kartenbild für `?desktop`) |
+   | `figur` | `posen` (Pose → Bild, `idle` Pflicht), `kopf`, `gesicht` (`neutral`, `blink`, `talk`) |
+   | `designs` | je Fassung ein Erkennungsbild: `id`, `fassung` (`firma`/`public`), `name`, `target`, `breiteMm` (63), `notiz` |
+
+   - Pfade gelten relativ zum Kartenordner `karten/<nr>/`.
+   - `?k=<nr>` nimmt das erste Design mit `"fassung": "firma"`, `?k=<nr>P` das
+     erste mit `"fassung": "public"` (Karte ohne Logo). Seriennummern gehören
+     nicht hierher — sie sind nur intern vermerkt (Projektordner).
+   - Figur: Die Ebenen kommen direkt aus dem Grafikprogramm in `figur/` — WebP
+     mit Transparenz, alle Ebenen auf derselben Fläche 768 × 1152 px
+     (Halsgelenk ~36 % von oben, Fußpunkt ~98 %). Exportnamen: `body_idle`
+     (Pflicht), `body_<tag>` je weitere Pose (Tag-Namen aus A11), `head`,
+     `face_neutral`, `face_blink`, `face_talk`. Ungenutzte Posen aus `posen`
+     streichen.
 2. Den geprüften Dialogteil als `dialog.json` daneben legen (`persona`,
    `firmenbegriffe`, `themen`, `initial`, `greeting`, `asks`, `questions`,
    `reentry`).
