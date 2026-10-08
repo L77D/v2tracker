@@ -375,7 +375,7 @@ Umgesetzt ist das Werkzeug aus Abschnitt b. Das Filterverhalten ist
 
 ### Messung durchführen
 
-1. Handy mit `?stats&dev` öffnen (Testlink), Karte suchen, Figur antippen.
+1. Handy mit `?k=000&stats&dev` öffnen (Testlink), Karte suchen, Figur antippen.
 2. Fall-Knopf auf F0 … F4 stellen (siehe Abschnitt b).
 3. „Messung 10 s" tippen, Haltung 10 s halten. Der Knopf zählt herunter.
 4. Gelbe Zeile = Kurzfazit. „Kopieren" legt Kopf- + Wertezeile

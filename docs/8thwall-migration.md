@@ -222,8 +222,8 @@ scale, scaledWidth, scaledHeight, properties`.
 ## 4. Prüfen
 
 1. **Rechner, ohne Kamera:** `node tools/dev-server.js` →
-   `http://localhost:8743/?desktop&dev` — Desktop-Modus ist unberührt.
-2. **Rechner, mit Webcam:** `http://localhost:8743/?stats` → „Scan starten" →
+   `http://localhost:8743/?k=000&desktop&dev` — Desktop-Modus ist unberührt.
+2. **Rechner, mit Webcam:** `http://localhost:8743/?k=000&stats` → „Scan starten" →
    Kamerafreigabe → Karte vor die Webcam (`allowedDevices: ANY` erlaubt das
    ohne World-Tracking). Konsole: `8th Wall XR Version …`, `DETAR Target
    geladen`, dann `Track: FOUND` in `?stats`.
@@ -440,7 +440,7 @@ Scale-Lock/Normierung/Stale-Erkennung; bitidentische Rohposen bleiben
 bitidentisch. Ohne frisches Gyro-Signal passiv. Grenze: Karten, die von
 UNTEN betrachtet werden, würden falsch entschieden (für Tisch/Hand irrelevant).
 
-**Am Handy prüfen (`?stats&dev`):** Fehlerbild herbeiführen. Toggle 10 AN:
+**Am Handy prüfen (`?k=000&stats&dev`):** Fehlerbild herbeiführen. Toggle 10 AN:
 Figur steht, Zeile `Flip: GESPIEGELT→korrigiert`, `n·up roh` negativ/klein,
 `gew.` nahe 1. Toggle 10 AUS: Figur kippt sofort in die Tischebene; beim
 langsamen Kippen des Handys lehnt sie doppelt so schnell wie das Handy

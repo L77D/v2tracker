@@ -77,20 +77,20 @@ brauchen einen Server). Im Ordner starten:
 node tools/dev-server.js           # Port 8743, richtige MIME-Typen (.wasm/.webp), Cache aus
 ```
 
-dann `http://localhost:8743/index.html?desktop&dev` öffnen (macOS: Doppelklick
+dann `http://localhost:8743/index.html?k=000&desktop&dev` öffnen (macOS: Doppelklick
 auf `Start-Dev-Server.command`). Ein `python3 -m http.server` geht zur Not
 auch, liefert `.wasm` aber ohne MIME-Typ.
 
 * **`?desktop`** — Desktop-Testmodus ohne Kamera: Karte als Boden-Plane,
   Maus = Orbit/Zoom (wie der Lokal-Tuning-Prototyp). Zum Prüfen von
-  Choreographie/Verhalten am Rechner: `http://localhost:8743/?desktop`
+  Choreographie/Verhalten am Rechner: `http://localhost:8743/?k=000&desktop`
 * **`?debug`** — pinke Hilfslinien (Lauffeld + FACE_CAM-Kegel), kombinierbar:
-  `?desktop&debug`
+  `?k=000&desktop&debug`
 * **`?dev`** — Tuning-Panel (alle Regler live, localStorage-persistent,
   Presets, tuning.json-Export, Replay, Tracking-Feature-Toggles 1–10). Bewusst
   OHNE Theatre — bleibt auch am Handy übersichtlich.
 * **`?timeline`** — Theatre.js-Studio (visueller Keyframe-Editor, lädt das
-  Bundle vom CDN). Für Animations-Arbeit am Rechner: `?desktop&dev&timeline`.
+  Bundle vom CDN). Für Animations-Arbeit am Rechner: `?k=000&desktop&dev&timeline`.
 * **`?stats`** — Live-Diagnose am Handy: Tracking-/Gyro-Status, Jitter in mm,
   Gyro-Toggle, Build-Check, Engine-Variante. **`?nogyro`** — Gyro-Fusion
   komplett aus. **`?nosimd`** — Nicht-SIMD-Engine erzwingen.
@@ -103,13 +103,15 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=` gibt es seit
   Build 63 nicht mehr.)
 
-Flags sind frei kombinierbar (z. B. `?dev&stats` am Handy fürs Tracking-Tuning).
+Flags sind frei kombinierbar (z. B. `?k=000&dev&stats` am Handy fürs Tracking-Tuning).
+Ohne `?k` startet keine Karte (Auffang-Seite) — `000` steht in den Beispielen
+für die Kartennummer.
 
 ## Animationen / Timeline (Theatre.js)
 
 Autorisierte Animations-Beats werden visuell gekeyframed statt programmiert:
 
-1. `?desktop&dev&timeline` öffnen → Theatre-Studio erscheint (Outline links,
+1. `?k=000&desktop&dev&timeline` öffnen → Theatre-Studio erscheint (Outline links,
    Timeline unten). Objekt „Beats / Figur" animiert den `BeatRoot`-Wrapper
    (posX/Y/Z, rotY/Z, scale) — die reaktiven Behaviors (IdleWander, FACE_CAM)
    laufen unabhängig weiter und addieren sich dazu.

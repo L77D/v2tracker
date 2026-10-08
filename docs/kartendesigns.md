@@ -120,6 +120,7 @@ QR-Codes zeigen auf die Tunnel-Adresse, am Handy scannen, fertig. Nach jeder
 Änderung reicht Neu laden am Handy (der Dev-Server sendet `no-store`); die
 Tunnel-Adresse wechselt bei jedem Neustart von `cloudflared`.
 
-Am Rechner ohne Kamera: `http://localhost:8743/?desktop&dev&design=<id>`
+Am Rechner ohne Kamera: `http://localhost:8743/?k=000&desktop&dev&design=<id>`
 (Desktop-Modus nutzt das Target nicht, prüft aber die Auflösung der id und
-den Splash-Hinweis). Mit Webcam: `http://localhost:8743/?stats&design=<id>`.
+den Splash-Hinweis; `000` durch die eigene Kartennummer ersetzen — ohne `?k`
+kommt seit Build 74 nur die Auffang-Seite). Mit Webcam: `http://localhost:8743/?k=000&stats&design=<id>`.
