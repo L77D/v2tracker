@@ -55,12 +55,12 @@ import { el, finiteVec } from "./util.js";
 const params = new URLSearchParams(location.search);
 // (tools/build-lokal-prototyp.py patcht die Zeilen DESKTOP_MODE / DEV_MODE — Wortlaut halten)
 const DESKTOP_MODE = params.has("desktop");
-// Edition (Michael 2026-09-09): ?public = neutrale Fassung ohne Firmenlogo/
-// -name im Splash und ohne Link-Frage im Dialog (js/edition.js). Standard =
-// Firmenversion, damit gedruckte QR-Codes gültig bleiben. Der Parameter muss
-// auf allen Wegen erhalten bleiben (Neu laden, „Link kopieren" — beides
-// behält die Query).
-const PUBLIC_MODE = params.has("public");
+// Edition: Public-Fassung = Kartennummer mit angehängtem P (?k=000P, Build 75,
+// Michael 2026-10-08 — ersetzt das frühere Flag ?public). Ohne Firmenlogo/
+// -name im Splash und ohne Link-Frage im Dialog (js/edition.js). Bestimmt der
+// Kartenlader (resolved.publicMode); steht in der Query, bleibt also beim
+// Neuladen und bei „Link kopieren" erhalten.
+let PUBLIC_MODE = false;
 // Karte (Content) kommt seit Build 63 aus karten/<id>/daten.json + dialog.json (js/kartenLader.js,
 // ?k=<id>) und wird in boot() gesetzt — vorher statischer Import von
 // cards/elektroniker.js. `design` = gewähltes Kartenbild fürs Tracking (?design).
@@ -132,7 +132,8 @@ async function boot() {
   // Karte laden (?k=<id> gegen karten/katalog.json, Design per ?design=<id>).
   // Unbekannte Karte/Design: Hinweis in der Fehlerzeile des Splash, Button
   // bleibt aus — statt einer leeren Seite nach dem Klick (Target-404).
-  const resolved = await ladeKarte(params, { publicMode: PUBLIC_MODE });
+  const resolved = await ladeKarte(params);
+  PUBLIC_MODE = !!resolved.publicMode;
   // Ohne ?k startet keine Karte (Build 74): Auffang-Seite statt Splash —
   // Vorrang vor der Vorabprüfung, denn ohne Karte gibt es nichts zu starten.
   if (resolved.keineKarte) {

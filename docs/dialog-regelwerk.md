@@ -12,7 +12,7 @@ Mensch korrigiert, entscheidet und gibt frei.
 
 **Zwei Fassungen, ein Auftrag.** Karten werden von Betrieben in Auftrag
 gegeben; deshalb entsteht zuerst die **Firmenfassung**. Aus ihr wird die
-**neutrale Fassung** für öffentliche Einrichtungen abgeleitet (`?public` im
+**neutrale Fassung** für öffentliche Einrichtungen abgeleitet (`?k=<nr>P` im
 QR-Code) — ohne Logo, ohne Link, ohne Firmenbezüge. Beide haben zuerst einen
 neutralen Bildungsauftrag: Sie vermitteln **inhaltlich deckungsgleich den
 Beruf**. Die Firmenfassung darf zusätzlich den Betrieb und allgemeine
@@ -390,7 +390,7 @@ zu verweisen.
 
 **Alle anderen Texte** bekommen kein Public-Feld; sie dürfen dann auch nichts
 enthalten, was den Betrieb kenntlich macht. Die Link-Frage braucht keine
-neutrale Fassung — sie entfällt in `?public` ganz.
+neutrale Fassung — sie entfällt in der Public-Fassung (`?k=<nr>P`) ganz.
 
 **`firmenbegriffe`** ist die Liste der Wörter, die nur die Firmenfassung
 nennen darf: Standort, eigene Bezeichnungen (z. B. „Ausbildungswerkstatt
@@ -661,7 +661,7 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
 3. Karte in `karten/katalog.json` eintragen. Kartenbilder fürs Tracking:
    `docs/kartendesigns.md`.
 4. Prüfseite mit `?k=<id>` laufen lassen — keine Fehler.
-5. Am Handy durchspielen, Firmenfassung und `?public`.
+5. Am Handy durchspielen, Firmenfassung (`?k=<nr>`) und Public-Fassung (`?k=<nr>P`).
 
 ---
 

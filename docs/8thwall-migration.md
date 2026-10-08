@@ -370,6 +370,9 @@ optisch (WebP-Kanten, Kopf/Gesicht), Sprechblase mit Umlauten.
 
 ## 8. Editionen: Firma / Public (`?public`, Build 56, 2026-09-09)
 
+> Seit Build 75 (2026-10-08) heißt der Umschalter `?k=<nr>P` (Kartennummer mit
+> angehängtem P); das Flag `?public` gibt es nicht mehr. Der Rest gilt weiter.
+
 Zwei Fassungen derselben Karte: Firmenkunden (Logo/Firmenname im Splash,
 Link-Frage im Dialog) und Public (neutral). Umschalter ist das URL-Flag
 `?public` im QR-Code; Standard bleibt die Firmenversion, damit gedruckte

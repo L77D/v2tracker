@@ -24,14 +24,16 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
 - **`?stats`** zeigt die Zeile `Design: <id> · targets/<id>.json · <breiteMm> mm`;
   die Kopierzeile von „Messung 10 s" hat eine Spalte `design`.
 - **`karten.html`** — Übersicht: liest `karten/katalog.json` und je Karte die
-  `daten.json`, zeigt je Karte × Design Name, Link und QR-Code (Häkchen für
-  `stats`, `public`, `nosimd`). Beim ersten Design steht nur `?k=<karte>` im
-  Link, sonst zusätzlich `&design=<id>`. Die Links zeigen auf den Host, von dem
+  `daten.json`, zeigt je Karte × Fassung × Design Name, Link und QR-Code (Häkchen für
+  `stats`, `nosimd`). Beim Standard-Design der Fassung steht nur `?k=<karte>`
+  bzw. `?k=<karte>P` im Link, sonst zusätzlich `&design=<id>`. Fassung eines
+  Designs: Feld `"fassung": "firma" | "public"` (fehlt = firma); die
+  Public-Fassung nimmt ohne eigenes Design das erste Design. Die Links zeigen auf den Host, von dem
   die Seite geladen wurde — am Pages-Spiegel wie am Tunnel. QR-Erzeugung:
   `vendor/qrcode/qrcode.js` (qrcode-generator 2.0.4, MIT), kein CDN.
 - `?design` überlebt „Neu laden" und „Link kopieren" (beides behält die Query)
   und lässt sich mit allen anderen Flags kombinieren
-  (`?k=000&design=x&public&stats`).
+  (`?k=000P&design=x&stats`).
 
 ## Neues Design hinzufügen
 

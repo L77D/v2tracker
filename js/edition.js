@@ -1,11 +1,11 @@
 /* =============================================================================
-   DETAR — Edition der Karte: Firmenversion (Standard) oder Public (?public).
+   DETAR — Edition der Karte: Firmenversion (Standard) oder Public (?k=<nr>P).
 
    Michael 2026-09-09: Es gibt zwei Versionen einer Karte — für Firmenkunden
    (Logo/Firmenname im Splash, Link zur Ausbildungsseite im Dialog) und eine
    neutrale Public-Version ohne Firmenbezug. Der Unterschied steckt im
-   QR-Code: derselbe Link mit `?public` liefert die neutrale Fassung. Eine
-   Kartendatei.
+   QR-Code: die Kartennummer mit angehängtem P (?k=000P, seit Build 75; bis
+   Build 74 das Flag ?public) liefert die neutrale Fassung. Ein Kartenordner.
 
    prepareCard() liefert eine KOPIE der Karte für die gewählte Edition:
    • Fragen mit `branded: true` (heute: die Link-Frage) fliegen im Public-

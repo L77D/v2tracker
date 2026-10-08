@@ -32,11 +32,10 @@
 </head>
 <body>
   <h1>DETAR — Kartendesigns</h1>
-  <p class="sub">Quelle: <code>karten/katalog.json</code> + <code>karten/&lt;id&gt;/daten.json</code> (designs) · QR-Code scannen oder „Starten" tippen → App mit <code>?k=&lt;karte&gt;</code>; <code>&amp;design=&lt;design&gt;</code> nur bei einem anderen als dem ersten Design der Karte (kürzerer QR-Code).</p>
+  <p class="sub">Quelle: <code>karten/katalog.json</code> + <code>karten/&lt;id&gt;/daten.json</code> (designs) · QR-Code scannen oder „Starten" tippen → App mit <code>?k=&lt;karte&gt;</code> (Firmenfassung) bzw. <code>?k=&lt;karte&gt;P</code> (Public-Fassung); <code>&amp;design=&lt;design&gt;</code> nur bei einem anderen als dem Standard-Design der Fassung (kürzerer QR-Code).</p>
   <p class="flags">
     Zusatz-Flags im Link:
     <label><input type="checkbox" id="fStats" checked /> <code>stats</code> (Diagnose)</label>
-    <label><input type="checkbox" id="fPublic" /> <code>public</code> (Public-Edition)</label>
     <label><input type="checkbox" id="fNosimd" /> <code>nosimd</code></label>
   </p>
   <div id="error"></div>
@@ -53,7 +52,7 @@
       var base = location.href.replace(/[?#].*$/, "").replace(/karten\.html$/, "");
 
       function flags() {
-        var f = ["fStats", "fPublic", "fNosimd"];
+        var f = ["fStats", "fNosimd"];
         var out = [];
         for (var i = 0; i < f.length; i++) {
           var box = document.getElementById(f[i]);
@@ -63,8 +62,8 @@
       }
 
       function linkFor(k) {
-        // Erstes Design = Standard der App → kein &design= im Link (kürzerer QR)
-        var q = ["k=" + encodeURIComponent(k.karte)];
+        // Standard-Design der Fassung → kein &design= im Link (kürzerer QR)
+        var q = ["k=" + encodeURIComponent(k.karte) + (k.public ? "P" : "")];
         if (!k.erstes) q.push("design=" + encodeURIComponent(k.id));
         q = q.concat(flags());
         return base + "?" + q.join("&");
@@ -97,7 +96,7 @@
             "<h2></h2><p class='id'></p><canvas></canvas>" +
             "<p class='meta'></p><a class='start'>Starten</a><a class='url'></a>";
           el.querySelector("h2").textContent = k.name || k.id;
-          el.querySelector(".id").textContent = "?k=" + k.karte + (k.erstes ? "" : "&design=" + k.id) + " · Design " + k.id +
+          el.querySelector(".id").textContent = "?k=" + k.karte + (k.public ? "P" : "") + (k.erstes ? "" : "&design=" + k.id) + " · " + (k.public ? "Public" : "Firma") + " · Design " + k.id +
             (k.erstes ? " (Standard)" : "") + " · " + (k.target || "?") + " · " + (k.breiteMm || "?") + " mm";
           el.querySelector(".meta").textContent = k.notiz || "";
           var a = el.querySelector("a.start"); a.href = link;
@@ -141,11 +140,22 @@
             render();
           };
           holeJson("./karten/" + eintrag.id + "/daten.json", function (karte) {
+            // Je Fassung (Firma, Public) eine Kachel pro Design; Standard = erstes
+            // Design der Fassung. Ohne Public-Design nimmt die Public-Fassung das
+            // erste Design (wie js/kartenLader.js).
             var ds = karte.designs || [];
             proKarte[eintrag.id] = [];
-            for (var d = 0; d < ds.length; d++) proKarte[eintrag.id].push({
-              karte: eintrag.id, id: ds[d].id, erstes: d === 0, target: ds[d].target, breiteMm: ds[d].breiteMm,
-              name: (eintrag.name || eintrag.id) + " — " + (ds[d].name || ds[d].id), notiz: ds[d].notiz });
+            var fassungen = ["firma", "public"];
+            for (var f = 0; f < fassungen.length; f++) {
+              var eigene = [];
+              for (var d = 0; d < ds.length; d++) if ((ds[d].fassung || "firma") === fassungen[f]) eigene.push(ds[d]);
+              if (!eigene.length && fassungen[f] === "public" && ds.length) eigene = [ds[0]];
+              for (var e = 0; e < eigene.length; e++) proKarte[eintrag.id].push({
+                karte: eintrag.id, public: fassungen[f] === "public", id: eigene[e].id, erstes: e === 0,
+                target: eigene[e].target, breiteMm: eigene[e].breiteMm,
+                name: (eintrag.name || eintrag.id) + " — " + (fassungen[f] === "public" ? "Public — " : "") + (eigene[e].name || eigene[e].id),
+                notiz: eigene[e].notiz });
+            }
             fertig();
           }, function (msg) { zeigeFehler(msg); fertig(); });
         })(liste[j]);

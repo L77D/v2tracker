@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-08 · Build 74 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-08 · Build 75 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -61,7 +61,12 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
 
 Eine Karte, zwei Fassungen: **Firma** (Standard: Logo/Firmenname im Splash,
 Link-Frage „Zeig mir die Seite" im Thema „Wie man reinkommt") und **Public**
-per URL-Flag `?public` (QR-Code der neutralen Karte). `js/edition.js →
+per Kartennummer mit angehängtem P, `?k=000P` (auch `p`; Build 75, Michael
+2026-10-08 — ersetzt das Flag `?public`, das es nicht mehr gibt). Der
+Kartenlader erkennt das P, lädt denselben Ordner und wählt das erste Design mit
+`"fassung": "public"` (sonst das erste Design) — die Public-Karte ist ohne Logo
+gedruckt und hat ihr eigenes Erkennungsbild. Seriennummern (001.01) sind nur
+intern vermerkt und haben keinen Einfluss auf den Code. `js/edition.js →
 prepareCard()` liefert main.js eine Kopie der Karte: Fragen mit `branded: true`
 entfallen samt Ids in `initial`/`unlocks`; Textfelder mit Public-Fassung
 (`<feld>Public`: greeting.textPublic, labelPublic/textPublic, promptPublic,
@@ -74,8 +79,7 @@ jeder Text mit `{firma}` braucht die Public-Fassung (Regelwerk A9); `company`,
 blendet `#companyKicker` („bei") + `.company-box` aus — dort steht vorerst
 NICHTS (Michael 2026-09-09: Public-Splash wird noch gestaltet). `?stats` zeigt
 in der Karten-Zeile „PUBLIC"/„Firma". Keine zweite Kartendatei, kein zweites
-HTML. Der Parameter überlebt „Neu laden" und „Link kopieren" (preflight.js
-arbeitet am rohen Query-String, damit `?public` nicht zu `public=` wird).
+HTML. Die Fassung steht in `?k` und überlebt damit „Neu laden" und „Link kopieren".
 
 ## Engine und Karten (seit Build 63, 2026-10-06)
 
@@ -363,8 +367,8 @@ Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
 oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Pflicht — ohne: Auffang-Seite; Karte aus
 `karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
-`?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
-kein Test-Flag — steht im QR-Code der neutralen Karte) ·
+`?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?k=<nr>P` (Public-Edition, steht im
+QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
 `?preflight=aus` · Branch pruefstand: `?record`, `?replay`, `?metrics`.
 (`?res=` gibt es nur in `main`/MindAR.)

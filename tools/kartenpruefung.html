@@ -114,7 +114,7 @@ function zeige(titel, karte, optionen) {
     <div class="ergebnis ${ok ? "ok" : "nok"}">${esc(titel)}: ${ok ? "keine Fehler" : r.fehler.length + " Fehler"}${r.hinweise.length ? " · " + r.hinweise.length + " Hinweise" : ""}</div>
     <h2>Fehler</h2>${liste(r.fehler, "f")}
     <h2>Hinweise</h2>${liste(r.hinweise, "h")}
-    <h2>Lesefassung neutral (?public)</h2>
+    <h2>Lesefassung neutral (?k=…P)</h2>
     <p class="klein">Der komplette Dialog so, wie ihn eine Schule sieht. Vor der Freigabe einmal ganz lesen: Verrät irgendetwas den Betrieb? Verweist etwas auf eine Seite, die es hier nicht gibt?</p>
     <div class="lese">${leseHtml(karte, true, optionen.firma)}</div>
     <details><summary>Lesefassung Firma</summary><div class="lese">${leseHtml(karte, false, optionen.firma)}</div></details>

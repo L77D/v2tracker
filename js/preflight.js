@@ -91,8 +91,8 @@ export function showPreflightScreen(kind) {
   el("pfText").textContent = t.text;
   // Link ohne den Test-Parameter — das ist die Adresse, die der Nutzer im
   // Browser braucht. Bewusst am rohen Query-String gearbeitet, nicht über
-  // URLSearchParams: das würde wertlose Flags wie ?public zu „public="
-  // umschreiben (Edition-Flag, 2026-09-09).
+  // URLSearchParams: das würde wertlose Flags wie ?stats zu „stats="
+  // umschreiben.
   const u = new URL(location.href);
   const q = u.search.replace(/^\?/, "").split("&").filter((p) => p && !/^preflight(=|$)/.test(p)).join("&");
   const link = u.origin + u.pathname + (q ? "?" + q : "") + u.hash;

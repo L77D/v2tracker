@@ -21,7 +21,8 @@ dessen `main`).
 
 **Zwei Editionen pro Karte:** Firmenversion (Standard) mit Logo/Firmenname im
 Splash und Link zur Ausbildungsseite im Dialog, und die neutrale Public-
-Version über das URL-Flag **`?public`** (im QR-Code der Public-Karte): kein
+Version über die Kartennummer mit angehängtem P, **`?k=<nr>P`** (z. B. `?k=000P`, im
+QR-Code der Public-Karte, eigenes Erkennungsbild): kein
 Firmenblock im Splash, Fragen mit `branded: true` entfallen, Texte mit
 `{firma}` laufen in ihrer Public-Fassung (`textPublic` usw.) — der Betrieb wird
 dort nie genannt. Eine Kartendatei für beides (`js/edition.js`).
@@ -94,9 +95,9 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   Gyro-Toggle, Build-Check, Engine-Variante. **`?nogyro`** — Gyro-Fusion
   komplett aus. **`?nosimd`** — Nicht-SIMD-Engine erzwingen.
   **`?preflight=inapp|nocam|insecure|nowasm|nowebp`** — Hinweis-Bildschirme
-  der Vorabprüfung ansehen (nur Test). **`?public`** — Public-Edition (kein
-  Test-Flag, steht im QR-Code der neutralen Karte). **`?k=<id>`** — Karte
-  aus `karten/katalog.json` (ohne Parameter: Auffang-Seite, keine Karte).
+  der Vorabprüfung ansehen (nur Test). **`?k=<id>`** — Karte
+  aus `karten/katalog.json` (ohne Parameter: Auffang-Seite, keine Karte);
+  **`?k=<id>P`** (auch `p`) — Public-Edition derselben Karte.
   **`?design=<id>`** — Kartenbild (Design) der Karte aus `daten.json → designs`
   (ohne Parameter: das erste, heute `card`; Test-Design `tarn`). Übersicht mit
   QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=` gibt es seit
@@ -159,7 +160,7 @@ karten/<id>/
    ablegen; in `daten.json` die Kartendaten (`id`, `profession`, `company`, `companyLogo`,
    `companyNeutral`, `figur`, `designs`) anpassen. Firmenbezug nur über
    `company`, `{firma}` (höchstens zweimal, je mit Public-Fassung
-   `textPublic` usw.) und `branded: true` — dann funktioniert `?public` ohne
+   `textPublic` usw.) und `branded: true` — dann funktioniert `?k=<nr>P` ohne
    zweite Datei. Prüfen mit **`tools/kartenpruefung.html?k=<id>`** (über den
    Dev-Server oder den Testlink, kein Terminal). Pfade in `daten.json` gelten
    relativ zum Kartenordner.
@@ -175,7 +176,8 @@ karten/<id>/
 4. Kartenbild als 8th-Wall-Target erzeugen (s. u.), Dateien nach `targets/`,
    Eintrag in `designs` (`id`, `name`, `target`, `breiteMm`, `notiz`).
 5. Karte in `karten/katalog.json` eintragen (`id`, `name`, `aktiv: true`).
-   QR-Code: `…/?k=<id>` (Public-Edition: `…/?k=<id>&public`).
+   QR-Codes: `…/?k=<nr>` (Firma) und `…/?k=<nr>P` (Public). Public-Erkennungsbild =
+   Design mit `"fassung": "public"` in `daten.json`.
 6. Zeichen außerhalb des festen Schriftsatzes fallen auf die Systemschrift
    zurück — Prüfbefehl im Kopf von `tools/build-fonts.sh`.
 
@@ -224,7 +226,7 @@ css/question-menu.css Bottom-UI (Themen, Fragen-Karussell, Optionen, Weiter)
 js/main.js            Boot, Engine-Variante (SIMD/nicht-SIMD), 8th-Wall-Setup (Pipeline-Modul), Figur-Tap, Loop
 js/kartenLader.js     Karte laden (?k, ?design): Katalog, daten.json + dialog.json, Format-Prüfung, Pfade
 js/preflight.js       Vorabprüfung im Splash (In-App-Browser, HTTPS, Kamera-API, WASM, WebP)
-js/edition.js         Edition Firma/Public (?public): Karte filtern, Public-Texte, {firma} ersetzen
+js/edition.js         Edition Firma/Public (?k=<nr>P): Karte filtern, Public-Texte, {firma} ersetzen
 js/version.js         Build-Nummer (?stats vergleicht mit dem Live-Stand)
 js/util.js            gemeinsame Helfer (el, rand, normalizeAngle, finiteVec, progress)
 js/config.js          ALLE Tuning-Dashboards + tuning.json-Merge
