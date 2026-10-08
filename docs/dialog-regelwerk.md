@@ -1,11 +1,11 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 08.10.2026 (Build 68). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
+Stand 08.10.2026 (Build 69). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
 im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
 Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 **Kontrakt** geschrieben: Jede Regel ist prüfbar.
 
-Produktionsweg: **Erhebung (Faktenblatt + Interview) → Claude generiert den
+Produktionsweg: **Erhebung → Faktenblatt (+ Gesprächsabschrift) → Claude generiert den
 Dialogteil → Prüfseite → menschliche Korrektur → Freigabe durch den Betrieb →
 Einbau in `karten/<id>/karte.json`.** Es gibt keine schreibenden Autoren; der
 Mensch korrigiert, entscheidet und gibt frei.
@@ -168,7 +168,7 @@ oder lieber mit Maschinen?"
   planbar/jeden Tag anders, mit den Händen/im Kopf, drinnen/draußen,
   Menschen/Maschinen.
 - Gefunden wird die Achse im Interview: dort, wo zwei Leute im selben Beruf
-  verschieden antworten, was sie daran mögen (Interview Frage 9).
+  verschieden antworten, was sie daran mögen.
 - **Trägt der Beruf keine Achse, entfällt die Rückfrage** samt Zweigfragen.
 
 Aufbau — genau **eine** Variable, drei Optionen:
@@ -467,8 +467,9 @@ Feldregeln:
 
 # Teil B — Faktenblatt (Eingabe)
 
-Wird aus dem Kurzformular des Betriebs und dem Azubi-Interview gefüllt
-(`Kunde/DETAR_Erhebung.html` im Projektordner) oder aus einer öffentlichen
+Wird aus den Inhalten der Erhebung gefüllt (Liste:
+`Kunde/DETAR_Erhebung_Inhalte.md` im Projektordner; **wie** die Inhalte
+eingeholt werden, wird mit Studio2B abgestimmt) oder aus einer öffentlichen
 Ausschreibung übernommen. **Ohne dieses Blatt wird nicht generiert.**
 
 ```
