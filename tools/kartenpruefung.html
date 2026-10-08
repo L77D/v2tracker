@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DETAR Kartenprüfung</title>
+<!--
+  Prüft eine Kartendatei gegen das Regelwerk (docs/dialog-regelwerk.md, Teil C1).
+  Aufruf ohne Terminal: Start-Dev-Server.command doppelklicken, dann
+  http://localhost:8743/tools/kartenpruefung.html — oder auf dem Testlink
+  …/tools/kartenpruefung.html. ?k=<id> lädt karten/<id>/karte.json; ohne ?k
+  die Standardkarte. Alternativ den Dialogteil, den Claude ausgibt, unten
+  einfügen. Die Seitenzahl misst SpeechBubble.paginate() der App am echten Font.
+-->
+<style>
+  @font-face { font-family: "Jersey 10"; src: url("../assets/fonts/Jersey10-Regular.ttf") format("truetype"); }
+  :root { --bg: #f6f6f2; --fg: #171717; --muted: #666; --line: #d8d8d0; --rot: #c0262d; --gelb: #8a6d00; --gruen: #1d7a2f; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, -apple-system, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 8px; }
+  p.sub { color: var(--muted); margin: 0 0 20px; }
+  .zeile { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+  select, input, button, textarea { font: inherit; }
+  select, input { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  button { padding: 7px 14px; border: 0; border-radius: 6px; background: var(--fg); color: #fff; cursor: pointer; }
+  textarea { width: 100%; box-sizing: border-box; min-height: 140px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; font: 13px/1.4 ui-monospace, Menlo, monospace; }
+  details { margin: 12px 0; }
+  .ergebnis { padding: 12px 14px; border-radius: 8px; font-weight: 600; margin: 16px 0; }
+  .ok { background: #e3f3e6; color: var(--gruen); }
+  .nok { background: #fbe4e5; color: var(--rot); }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li.f { color: var(--rot); }
+  li.h { color: var(--gelb); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.n { text-align: right; white-space: nowrap; }
+  td.s2 { color: var(--gelb); font-weight: 600; }
+  td.s3 { color: var(--rot); font-weight: 700; }
+  .klein { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kartenprüfung</h1>
+  <p class="sub">Maschinelle Prüfpunkte aus dem Regelwerk (<code>docs/dialog-regelwerk.md</code>, Teil C1). Die inhaltlichen Punkte (C2) liest ein Mensch.</p>
+
+  <div class="zeile">
+    <label>Karte aus dem Repo <select id="karte"></select></label>
+    <button id="laden">Prüfen</button>
+  </div>
+  <details>
+    <summary>Oder: Dialogteil einfügen (Ausgabe von Claude)</summary>
+    <textarea id="eingabe" placeholder='{ "persona": {…}, "themen": […], "initial": […], "greeting": {…}, "asks": […], "questions": […], "reentry": {…} }'></textarea>
+    <div class="zeile">
+      <label>Firmenname <input id="firma" placeholder="z. B. Siemens"></label>
+      <button id="pruefen">Eingefügtes prüfen</button>
+    </div>
+  </details>
+
+  <div id="ausgabe"></div>
+</main>
+<script type="module">
+import * as THREE from "../vendor/three/three.module.js";
+import { SpeechBubble } from "../js/speechBubble.js";
+import { pruefeKarte, MAX_SEITEN } from "./kartenpruefung.js";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+// Dieselbe Sprechblase wie in der App, nur unsichtbar — paginate() misst am echten Font.
+await document.fonts.load('52px "Jersey 10"');
+const blase = new SpeechBubble({ BubbleRoot: new THREE.Group() }, null);
+const seiten = (text) => blase.paginate(text).length;
+
+const katalog = await fetch("../karten/katalog.json", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
+const params = new URLSearchParams(location.search);
+for (const k of katalog?.karten ?? []) {
+  const o = document.createElement("option");
+  o.value = k.id; o.textContent = k.name + " (" + k.id + ")";
+  $("karte").append(o);
+}
+$("karte").value = params.get("k") || katalog?.standard || "";
+
+function zeige(titel, karte, optionen) {
+  let r;
+  try { r = pruefeKarte(karte, { seiten, ...optionen }); }
+  catch (e) { $("ausgabe").innerHTML = `<div class="ergebnis nok">Prüfung abgebrochen: ${esc(e.message)}</div>`; return; }
+  const ok = r.fehler.length === 0;
+  const liste = (arr, cls) => arr.length ? `<ul>${arr.map((t) => `<li class="${cls}">${esc(t)}</li>`).join("")}</ul>` : "<p class='klein'>keine</p>";
+  const zeilen = r.texte.map((t) => {
+    const cls = t.seiten > MAX_SEITEN ? "s3" : t.seiten === 2 ? "s2" : "";
+    return `<tr><td>${esc(t.fassung)}</td><td>${esc(t.ort)}</td><td class="n">${t.zeichen}</td><td class="n ${cls}">${t.seiten ?? "?"}</td><td class="klein">${esc(t.text)}</td></tr>`;
+  }).join("");
+  $("ausgabe").innerHTML = `
+    <div class="ergebnis ${ok ? "ok" : "nok"}">${esc(titel)}: ${ok ? "keine Fehler" : r.fehler.length + " Fehler"}${r.hinweise.length ? " · " + r.hinweise.length + " Hinweise" : ""}</div>
+    <h2>Fehler</h2>${liste(r.fehler, "f")}
+    <h2>Hinweise</h2>${liste(r.hinweise, "h")}
+    <h2>Länge je Text</h2>
+    <p class="klein">Seiten in der Sprechblase, gemessen wie in der App. Ziel 1, höchstens ${MAX_SEITEN}.</p>
+    <table><thead><tr><th>Fassung</th><th>Stelle</th><th class="n">Zeichen</th><th class="n">Seiten</th><th>Text</th></tr></thead><tbody>${zeilen}</tbody></table>`;
+}
+
+async function ladeUndPruefe() {
+  const id = $("karte").value;
+  try {
+    const karte = await fetch(`../karten/${id}/karte.json`, { cache: "no-store" }).then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+    zeige("Karte „" + id + "“", karte, {});
+  } catch (e) {
+    $("ausgabe").innerHTML = `<div class="ergebnis nok">karten/${esc(id)}/karte.json nicht ladbar: ${esc(e.message)}</div>`;
+  }
+}
+
+$("laden").addEventListener("click", ladeUndPruefe);
+$("pruefen").addEventListener("click", () => {
+  let karte;
+  try { karte = JSON.parse($("eingabe").value); }
+  catch (e) { $("ausgabe").innerHTML = `<div class="ergebnis nok">Kein gültiges JSON: ${esc(e.message)}</div>`; return; }
+  zeige("Eingefügter Dialog", karte, { firma: $("firma").value });
+});
+if ($("karte").value) ladeUndPruefe();
+</script>
+</body>
+</html>

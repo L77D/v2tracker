@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-06 · Build 66 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-08 · Build 67 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -63,9 +63,14 @@ Eine Karte, zwei Fassungen: **Firma** (Standard: Logo/Firmenname im Splash,
 Link-Frage „Zeig mir die Seite" im Thema „Wie man reinkommt") und **Public**
 per URL-Flag `?public` (QR-Code der neutralen Karte). `js/edition.js →
 prepareCard()` liefert main.js eine Kopie der Karte: Fragen mit `branded: true`
-entfallen samt Ids in `initial`/`unlocks`; `{firma}` in Texten wird durch
-`card.company` bzw. `card.companyNeutral` („der Betrieb") ersetzt; `company`,
-`companyLogo`, `jobUrl` sind null; `card.edition` = "public". Splash: `body.public`
+entfallen samt Ids in `initial`/`unlocks`; Textfelder mit Public-Fassung
+(`<feld>Public`: greeting.textPublic, labelPublic/textPublic, promptPublic,
+labelPublic/replyPublic, rules[].textPublic — seit Build 67, Michael
+2026-10-08: „ganzer Text doppelt") laufen im Public-Modus in dieser Fassung;
+`{firma}` wird durch `card.company` ersetzt (Notnagel im Public-Modus:
+`card.companyNeutral`, „der Betrieb"). Regel: in Public nie den Betrieb nennen,
+jeder Text mit `{firma}` braucht die Public-Fassung (Regelwerk A9); `company`,
+`companyLogo` sind null; `card.edition` = "public". Splash: `body.public`
 blendet `#companyKicker` („bei") + `.company-box` aus — dort steht vorerst
 NICHTS (Michael 2026-09-09: Public-Splash wird noch gestaltet). `?stats` zeigt
 in der Karten-Zeile „PUBLIC"/„Firma". Keine zweite Kartendatei, kein zweites
@@ -124,15 +129,23 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
 
 ## Dialogsystem (seit Build 17, 2026-09-03)
 
-Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Prototyp
-`detar_dialog_v2.html` (Themenebene) ist die Referenz, die App portiert ihn 1:1.
+Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner (Begründungen);
+**Regelwerk für neue Karten: `docs/dialog-regelwerk.md`** (Build 67,
+2026-10-08, löst `Dialogsystem/DETAR_Dialog_Generierung.md` ab) — festes
+Raster (IDs, Themen, Freischaltungen, `initial` wie die Siemens-Karte), drei
+Rückfragen, Länge in Seiten (Ziel 1, max 2), `{firma}` max 2× mit
+Public-Fassung, `persona` als Feld, kein `quelle`. Vorbild:
+`karten/elektroniker-siemens/karte.json`. Prüfseite
+`tools/kartenpruefung.html` (+ `kartenpruefung.js`, reine Regeln) misst mit
+`SpeechBubble.paginate()` am echten Font — Prüfregeln dort und Regelwerk
+synchron halten.
 
 - `karten/elektroniker-siemens/karte.json` — Kartendatei (Siemens-Dialog,
-  PENNY-Figur/-Marker als Platzhalter; bis Build 62 `cards/elektroniker.js`). Felder: `themen`, `initial`, `greeting{tag,text}`,
+  PENNY-Figur/-Marker als Platzhalter; bis Build 62 `cards/elektroniker.js`). Felder: `persona{name,lehrjahr,haltung}` (nur Schreibvorgabe, App liest es nicht), `themen`, `initial`, `greeting{tag,text,textPublic}`,
   `asks[{trigger,prompt,options[{label,sets,unlocks,tag,reply}]}]`,
   `questions[{id,thema,label,text,tag,unlocks,requires,link,url,end}]`,
-  `reentry.rules`. Text darf `<marker> <gross> <leise> <knall>` tragen
-  (`<welle>`/`<zittern>` werden geparst, nicht bewegt — Canvas-Entscheidung).
+  `reentry.rules`, je Textfeld optional `<feld>Public`. Text darf `<marker> <gross> <leise> <knall>` tragen
+  (`<welle>`/`<zittern>` werden geparst, nicht bewegt — Canvas-Entscheidung; laut Regelwerk erlaubt).
 - `js/dialogEngine.js` — Zustand + Regeln (unlocked/asked/fresh/vars/asksDone/
   visits/view), kein DOM, kein 3D.
 - `js/cardController.js` — Ablauf: say() paginiert und blättert mit Weiter;

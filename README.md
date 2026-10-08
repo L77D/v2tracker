@@ -22,9 +22,9 @@ dessen `main`).
 **Zwei Editionen pro Karte:** Firmenversion (Standard) mit Logo/Firmenname im
 Splash und Link zur Ausbildungsseite im Dialog, und die neutrale Public-
 Version über das URL-Flag **`?public`** (im QR-Code der Public-Karte): kein
-Firmenblock im Splash, Fragen mit `branded: true` entfallen, `{firma}` in
-Texten wird neutral („der Betrieb"). Eine Kartendatei für beides
-(`js/edition.js`).
+Firmenblock im Splash, Fragen mit `branded: true` entfallen, Texte mit
+`{firma}` laufen in ihrer Public-Fassung (`textPublic` usw.) — der Betrieb wird
+dort nie genannt. Eine Kartendatei für beides (`js/edition.js`).
 
 **Engine und Karten getrennt (Build 63, 2026-10-06):** Die Engine
 (`index.html`, `js/`, `css/`, `assets/`, `vendor/`) liegt einmal zentral; jede
@@ -152,13 +152,15 @@ karten/<id>/
 1. Ordner `karten/elektroniker-siemens/` kopieren, neue `<id>` vergeben (kurz,
    Kleinbuchstaben, Bindestriche — steht im QR-Code und wird nie wieder
    geändert oder wiederverwendet).
-2. `karte.json` anpassen: Texte/Fragen/Rückfragen/Link (Datenmodell und Regeln:
-   `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner; Emotion-Tags aus dem
-   geschlossenen Vokabular, Highlight-Tags `<marker> <gross> <leise> <knall>`).
-   Firmenbezug nur über `company`, `companyLogo`, `companyNeutral`, `{firma}`
-   in Texten und `branded: true` an Fragen, die es nur in der Firmenversion
-   gibt — dann funktioniert `?public` ohne zweite Datei. Pfade in `karte.json`
-   gelten relativ zum Kartenordner.
+2. Dialog nach dem **Regelwerk `docs/dialog-regelwerk.md`** erzeugen (Claude
+   generiert den Dialogteil aus Faktenblatt + Interview) und in `karte.json`
+   einsetzen; Kopfdaten (`id`, `profession`, `company`, `companyLogo`,
+   `companyNeutral`, `figur`, `designs`) anpassen. Firmenbezug nur über
+   `company`, `{firma}` (höchstens zweimal, je mit Public-Fassung
+   `textPublic` usw.) und `branded: true` — dann funktioniert `?public` ohne
+   zweite Datei. Prüfen mit **`tools/kartenpruefung.html?k=<id>`** (über den
+   Dev-Server oder den Testlink, kein Terminal). Pfade in `karte.json` gelten
+   relativ zum Kartenordner.
 3. Figur in `figur/` austauschen: aus den 1024×1536-PNGs des Nano-Banana-
    Workflows (gleiche Slicing-Positionen = Figuren-Vorlage) WebP mit Alpha in
    768×1152 erzeugen (exakt 2:3 — Pivots in `rig.js` sind relativ; Qualität 85,
@@ -220,7 +222,7 @@ css/question-menu.css Bottom-UI (Themen, Fragen-Karussell, Optionen, Weiter)
 js/main.js            Boot, Engine-Variante (SIMD/nicht-SIMD), 8th-Wall-Setup (Pipeline-Modul), Figur-Tap, Loop
 js/kartenLader.js     Karte laden (?k, ?design): Katalog, karte.json, Format-Prüfung, Pfade
 js/preflight.js       Vorabprüfung im Splash (In-App-Browser, HTTPS, Kamera-API, WASM, WebP)
-js/edition.js         Edition Firma/Public (?public): Karte filtern, {firma} ersetzen
+js/edition.js         Edition Firma/Public (?public): Karte filtern, Public-Texte, {firma} ersetzen
 js/version.js         Build-Nummer (?stats vergleicht mit dem Live-Stand)
 js/util.js            gemeinsame Helfer (el, rand, normalizeAngle, finiteVec, progress)
 js/config.js          ALLE Tuning-Dashboards + tuning.json-Merge
@@ -255,11 +257,14 @@ karten.html           Übersicht Karte × Design mit QR-Codes (Umschalten am Han
 vendor/qrcode/        qrcode-generator (MIT) für karten.html
 vendor/8thwall/       Open-Source-8th-Wall-Engine, zugeschnitten (xr.js + xr-tracking.js, MIT, WASM-SIMD)
 vendor/8thwall-nosimd/ dieselbe Engine ohne WASM-SIMD (Fallback, main.js wählt automatisch)
+tools/kartenpruefung.html  Prüfseite für Kartendialoge (Regelwerk C1, Seiten am echten Font)
+tools/kartenpruefung.js    Prüfregeln dazu (ohne DOM)
 tools/build-fonts.sh  Font-Subset (pyftsubset, fester deutscher Zeichensatz) aus den Original-TTFs
 tools/dev-server.js   lokaler Dev-Server (Port 8743, MIME-Typen, no-store)
 tools/build-lokal-prototyp.py  Einzeldatei-Prototyp (patcht markierte Quelltextzeilen)
 vendor/three/         three.js 0.160, tree-shaken (tools/build-three.sh)
 docs/8thwall-migration.md  Umstieg MindAR → 8th Wall: Target-Erzeugung, Änderungen, Events
+docs/dialog-regelwerk.md   Regelwerk zur Dialog-Generierung (Raster, Rückfragen, Länge, Fassungen, Prüfliste)
 docs/kartendesigns.md      Kartendesigns: neues Design, Tracking-Vergleich, lokaler Test (cloudflared)
 ```
 

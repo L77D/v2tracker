@@ -1,11 +1,11 @@
 {
   "_hinweis": [
-    "Kartendatei (Inhalt für die Engine, kein Code). Aus cards/elektroniker.js übernommen am 2026-10-06 (Build 63), Dialog 1:1 aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026).",
+    "Kartendatei (Inhalt für die Engine, kein Code). Aus cards/elektroniker.js übernommen am 2026-10-06 (Build 63), Dialog aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026), am 2026-10-08 (Build 67) auf das Regelwerk docs/dialog-regelwerk.md gebracht — VORBILD für neue Karten.",
     "Figur und Marker sind PLATZHALTER (PENNY-Lagerlogistik-Assets), bis die Siemens-Figur produziert ist. Fachliche Angaben aus der Siemens-Stellenausschreibung (Stand 31.08.2026), Formulierungen ohne Arbeitgeber-Freigabe.",
-    "Datenmodell: Dialogsystem/DETAR_Dialogsystem.md, Abschnitt 4. Pfade (figur, vorschau, companyLogo, designs[].target) gelten relativ zu diesem Ordner.",
+    "Regeln für den Dialogteil (persona, themen, initial, greeting, asks, questions, reentry): docs/dialog-regelwerk.md. Prüfen: tools/kartenpruefung.html?k=elektroniker-siemens. Pfade (figur, vorschau, companyLogo, designs[].target) gelten relativ zu diesem Ordner.",
     "Emotion-Tags (geschlossenes Vokabular): neutral · winken · erklaeren · denken · bestaetigen · halten · schulterzucken · stolz · erschoepft · zeigen · zweihaendig. Hat figur.posen einen Eintrag mit genau diesem Namen, gilt er; sonst die Standard-Zuordnung in js/config.js → POSES; sonst idle.",
-    "Highlight-Tags im Text: <welle> <zittern> <knall> <marker> <gross> <leise> (welle/zittern werden geparst, aber nicht bewegt). {firma} wird je Edition ersetzt (js/edition.js).",
-    "REGEL Rückfragen: Die Reaktionen beschreiben den Berufsalltag, sie beurteilen nie die Person (DETAR_Dialogsystem.md 7.2). Themen sind über alle Karten identisch; initial = je Thema genau eine offene Frage zum Start."
+    "Highlight-Tags im Text: <welle> <zittern> <knall> <marker> <gross> <leise> (welle/zittern werden geparst, aber noch nicht bewegt). {firma} = Firmenname, höchstens zweimal; jeder Text mit {firma} trägt eine Public-Fassung im Feld <name>Public (z. B. textPublic) — in ?public wird der Betrieb nie genannt (js/edition.js).",
+    "REGEL Rückfragen: Die Reaktionen beschreiben den Berufsalltag, sie beurteilen nie die Person. Themen sind über alle Karten identisch; initial = je Thema genau eine offene Frage zum Start."
   ],
   "format": 1,
   "id": "elektroniker-siemens",
@@ -14,6 +14,11 @@
   "companyLogo": null,
   "companyNeutral": "der Betrieb",
   "idleReturnMs": 8000,
+  "persona": {
+    "name": "Jonas",
+    "lehrjahr": 2,
+    "haltung": "ruhig und direkt, erzählt aus der Werkstatt mit Gegenständen und Größen, ab und zu ein trockener Satz"
+  },
   "vorschau": "vorschau.jpg",
   "figur": {
     "posen": {
@@ -66,7 +71,8 @@
   ],
   "greeting": {
     "tag": "winken",
-    "text": "Hey! Ich bin Jonas, ich mache hier eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+    "text": "Hey! Ich bin Jonas, ich mache bei {firma} eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>.",
+    "textPublic": "Hey! Ich bin Jonas, ich mache hier eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
   },
   "asks": [
     {
@@ -120,12 +126,12 @@
         {
           "label": "So zwanzig",
           "tag": "schulterzucken",
-          "reply": "Deutlich mehr. Bei einem größeren Kasten sind es mehrere hundert — und jedes einzelne wird auf Länge geschnitten, an beiden Enden festgeschraubt und geprüft."
+          "reply": "Deutlich mehr. Bei einem größeren Kasten sind es mehrere hundert. Und jedes einzelne wird auf Länge geschnitten, an beiden Enden festgeschraubt und geprüft."
         },
         {
           "label": "Ein paar hundert",
           "tag": "bestaetigen",
-          "reply": "<knall>Genau.</knall> Und jedes einzelne wird auf Länge geschnitten, an beiden Enden festgeschraubt und geprüft — deshalb dauert so ein Kasten auch mehrere Tage."
+          "reply": "<knall>Genau.</knall> Jedes einzelne schneide ich auf Länge, schraube es an beiden Enden fest und prüfe es. Deshalb dauert so ein Kasten mehrere Tage."
         },
         {
           "label": "Tausende",
@@ -187,7 +193,7 @@
       "thema": "alltag",
       "label": "Was machst du hier eigentlich?",
       "tag": "erklaeren",
-      "text": "Ich baue Stromkästen — ungefähr so groß wie ein Kleiderschrank. Bei uns heißen die Schaltanlagen, und in einer Fabrik oder einem Krankenhaus läuft der ganze Strom da durch. Wir schrauben sie zusammen, ziehen die Kabel und prüfen alles, bevor sie rausgehen.",
+      "text": "Ich baue Stromkästen, so groß wie ein Kleiderschrank. Bei uns heißen sie Schaltanlagen. Durch die läuft der ganze Strom einer Fabrik. Wir schrauben sie zusammen, ziehen Kabel und prüfen alles.",
       "unlocks": [
         "tag_ablauf",
         "purpose"
@@ -219,7 +225,7 @@
       "thema": "beruf",
       "label": "Was muss ich dafür können?",
       "tag": "erklaeren",
-      "text": "Mittlere Reife reicht als Abschluss. Wichtiger ist, dass dir Physik und Mathe nicht komplett egal sind — und dass du sorgfältig arbeitest. Bei Strom ist Schludern <marker>keine Option</marker>.",
+      "text": "Mittlere Reife reicht als Abschluss. Wichtiger ist, dass dir Physik und Mathe nicht egal sind. Und dass du sorgfältig arbeitest — bei Strom ist Schludern <marker>keine Option</marker>.",
       "unlocks": [
         "geld",
         "bewerbung"
@@ -247,7 +253,7 @@
           "maschinen"
         ]
       },
-      "text": "Technischer als die meisten denken. Wenn der Kasten fertig ist, wird gemessen: Kommt überall Strom an, wo er hin soll — und nirgends, wo er nicht hin darf? Wenn etwas nicht stimmt, suchst du den Fehler, bis du ihn hast."
+      "text": "Technischer als die meisten denken. Wenn der Kasten fertig ist, messe ich: Kommt der Strom überall an, wo er hin soll? Und nirgends, wo er nicht hin darf? Stimmt was nicht, suche ich den Fehler, bis ich ihn hab."
     },
     {
       "id": "geld",
@@ -274,7 +280,7 @@
       "thema": "beruf",
       "label": "Und was kommt danach?",
       "tag": "stolz",
-      "text": "Dreieinhalb Jahre dauert die Ausbildung. Danach wirst du meistens übernommen, also fest angestellt — der Betrieb bildet aus, weil er Leute braucht, nicht weil es nett aussieht.",
+      "text": "Die Ausbildung dauert dreieinhalb Jahre. Danach wirst du meistens übernommen, also fest angestellt. Der Betrieb bildet aus, weil er Leute braucht — nicht, weil es nett aussieht.",
       "unlocks": [
         "bewerbung",
         "praktikum_wie"
@@ -285,7 +291,8 @@
       "thema": "wege",
       "label": "Wie bewirbt man sich?",
       "tag": "zeigen",
-      "text": "Online, über die Ausbildungsseite des Betriebs. Dort steht, welche Unterlagen gebraucht werden und wann welche Jahrgänge starten — das ändert sich, deshalb guckst du das besser direkt dort nach.",
+      "text": "Online, über die Ausbildungsseite von {firma}. Da steht, welche Unterlagen du brauchst und wann es losgeht. Das ändert sich, deshalb guckst du da am besten direkt nach.",
+      "textPublic": "Online, über die Ausbildungsseite des Betriebs. Da steht, welche Unterlagen du brauchst und wann es losgeht. Das ändert sich, deshalb guckst du da am besten direkt nach.",
       "unlocks": [
         "link"
       ]
