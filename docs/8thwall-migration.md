@@ -58,7 +58,7 @@ Antworten auf die Prompts:
 Nicht-interaktiv geht dasselbe per Pipe (so wurde das Target im Repo erzeugt):
 
 ```bash
-printf '%s\n' "/pfad/zur/karte.png" "" "" "karten/elektroniker-siemens/targets" "card" \
+printf '%s\n' "/pfad/zur/karte.png" "" "" "karten/000/targets" "card" \
   | OVERWRITE_FILES=true npx @8thwall/image-target-cli@latest
 ```
 

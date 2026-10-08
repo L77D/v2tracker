@@ -7,7 +7,7 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
 `?karte=<id>`; beides gibt es nicht mehr.)
 
 - **Liste:** `daten.json → designs` im Kartenordner, z. B.
-  `karten/elektroniker-siemens/daten.json`. Je Eintrag: `id` (steht in der
+  `karten/000/daten.json`. Je Eintrag: `id` (steht in der
   URL), `name` (Anzeigename), `target` (Pfad relativ zum Kartenordner, z. B.
   `targets/tarn.json`), `breiteMm` (physische Kartenbreite), `notiz` (frei).
 - **Dateien:** `karten/<karte>/targets/<id>.json` + `<id>_luminance.png`. Das
@@ -31,7 +31,7 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
   `vendor/qrcode/qrcode.js` (qrcode-generator 2.0.4, MIT), kein CDN.
 - `?design` überlebt „Neu laden" und „Link kopieren" (beides behält die Query)
   und lässt sich mit allen anderen Flags kombinieren
-  (`?k=elektroniker-siemens&design=x&public&stats`).
+  (`?k=000&design=x&public&stats`).
 
 ## Neues Design hinzufügen
 
@@ -43,7 +43,7 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
    z. B. `v3-blau`:
 
    ```bash
-   printf '%s\n' "/pfad/zur/karte_v3.png" "" "" "karten/elektroniker-siemens/targets" "v3-blau" \
+   printf '%s\n' "/pfad/zur/karte_v3.png" "" "" "karten/000/targets" "v3-blau" \
      | OVERWRITE_FILES=true npx @8thwall/image-target-cli@latest
    ```
 

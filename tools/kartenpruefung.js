@@ -12,7 +12,7 @@
 
    Kein DOM, kein 3D — reine Prüfregeln. Die festen Werte (Themen, Pflicht-
    fragen, Freischaltungen, Startfragen) sind die der Siemens-Karte
-   (karten/elektroniker-siemens/dialog.json), entschieden 2026-10-08.
+   (karten/000/dialog.json), entschieden 2026-10-08.
    ============================================================================= */
 import { prepareCard } from "../js/edition.js";
 

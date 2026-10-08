@@ -21,7 +21,7 @@ Firmenzusammenhänge nennen (A9), nie aber Angaben, die sich schnell ändern
 
 Begleitend:
 
-- **Vorbild:** `karten/elektroniker-siemens/dialog.json` (interner Prototyp) —
+- **Vorbild:** `karten/000/dialog.json` (interner Prototyp) —
   ein vollständiger Dialog im Zielzustand. Bei Widerspruch zwischen Regelwerk und Vorbild gewinnt
   das Regelwerk; dann wird das Vorbild angepasst.
 - **Prüfseite:** `tools/kartenpruefung.html` — prüft alle Punkte aus C1
@@ -651,7 +651,7 @@ Eine Karte besteht aus zwei Dateien (seit Build 72, 2026-10-08): `daten.json`
 (Kartendaten) und `dialog.json` (Dialog). Produktionskarten heißen nach ihrer
 Nummer: `karten/001/`, Aufruf `?k=001`.
 
-1. Ordner `karten/<nr>/` anlegen (Vorlage: `karten/elektroniker-siemens/`),
+1. Ordner `karten/<nr>/` anlegen (Vorlage: `karten/000/`),
    `daten.json` setzen: `format` (2), `id` (= Nummer), `profession`,
    `company`, `companyLogo`, `companyNeutral`, `idleReturnMs`, `figur`,
    `designs`, `vorschau`.
@@ -669,7 +669,7 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
 
 > Du erzeugst einen DETAR-Kartendialog. Halte dich ausschließlich an das
 > Regelwerk `docs/dialog-regelwerk.md`, an das folgende Faktenblatt und an die
-> Interview-Abschrift. Vorbild ist `karten/elektroniker-siemens/dialog.json`.
+> Interview-Abschrift. Vorbild ist `karten/000/dialog.json`.
 > Erfinde keine Fakten; wo du ohne Quelle einen Platzhalter setzt, markiere
 > ihn mit [Annahme] (A1). Schreib zuerst die Firmenfassung und ergänze dann je
 > Text die neutrale Fassung, wo A9 sie verlangt. Gib zuerst nur das JSON des Dialogteils aus

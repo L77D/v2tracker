@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-08 · Build 72 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-08 · Build 73 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -123,8 +123,9 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
   unverändert). Format 1 (karte.json) wird nicht mehr gelesen — es gab keine
   gedruckten Karten. **Produktionskarten heißen nach ihrer Nummer**
   (`karten/001/`, `?k=001`, kurze URLs); alles bisher Gebaute inkl.
-  `elektroniker-siemens` ist interner Prototyp.
-- Prototyp `karten/elektroniker-siemens/` (daten.json + dialog.json) = Inhalt von
+  der Siemens-Elektroniker ist interner Prototyp und heißt Karte `000` (Build 73,
+  vorher id `elektroniker-siemens`; Michael 2026-10-08).
+- Prototyp `karten/000/` (daten.json + dialog.json) = Inhalt von
   `cards/elektroniker.js` (Build 62) plus `_hinweis`, `format`, `id`,
   `figur`, `designs`, `vorschau` (alte id `siemens_elektroniker_betriebstechnik`);
   seit Build 67–70 aufs Regelwerk gebracht (Quelle: Siemens-Ausschreibung,
@@ -150,12 +151,12 @@ deckungsgleich ohne Logo/Link/Firmenbezüge; nichts, was sich schnell ändert
 (kein Gehalt — Pflichtfrage `geld` ersetzt durch `berufsschule`); keine
 Eigennamen aus dem Betrieb; `firmenbegriffe` (Liste in dialog.json) dürfen nur
 in Firmenfassungen stehen; Prüfseite zeigt die Lesefassung beider Fassungen. Build 70: Aussagen ohne Quelle tragen `[Annahme]` im Text (App zeigt die Marke; vor der Freigabe auflösen; zählt nicht zur Länge); Ziel eine Seite, Sinn auf der ersten Seite. Build 71: Schätzfrage mit vier Optionen (drei Schätzungen + „Keine Ahnung", 2×2-Raster). Vorbild:
-`karten/elektroniker-siemens/dialog.json`. Prüfseite
+`karten/000/dialog.json`. Prüfseite
 `tools/kartenpruefung.html` (+ `kartenpruefung.js`, reine Regeln) misst mit
 `SpeechBubble.paginate()` am echten Font — Prüfregeln dort und Regelwerk
 synchron halten.
 
-- `karten/elektroniker-siemens/dialog.json` — Dialog des Prototyps (Siemens-Dialog,
+- `karten/000/dialog.json` — Dialog des Prototyps (Siemens-Dialog,
   PENNY-Figur/-Marker als Platzhalter; bis Build 62 `cards/elektroniker.js`). Felder: `persona{name,lehrjahr,haltung}` und `firmenbegriffe[]` (nur für Regelwerk/Prüfseite, App liest sie nicht), `themen`, `initial`, `greeting{tag,text,textPublic}`,
   `asks[{trigger,prompt,options[{label,sets,unlocks,tag,reply}]}]`,
   `questions[{id,thema,label,text,tag,unlocks,requires,link,url,end}]`,
@@ -197,7 +198,7 @@ synchron halten.
 `?design`, s. „Engine und Karten"). Vorlage der Standard-Karte: beschnittene
 Demo-Karte 070926 (`Assets/September/demo_skat_070926_mind_cropped.png`,
 1346×2156 px, Aspekt 1,60 → `SCENE.cardAspect`, Szenen-Geometrie der Eck-
-Marker/Tap-Fläche). Desktop-Kartenbild: `karten/elektroniker-siemens/vorschau.jpg`
+Marker/Tap-Fläche). Desktop-Kartenbild: `karten/000/vorschau.jpg`
 (1200 px, aus der Druckdatei `Assets/September/demo_skat_070926.jpg`).
 Physische Breite fürs Tracking = `breiteMm` des Designs in daten.json (63 mm,
 Druckspezifikation 63 × 88 mm); `SCENE.cardWidth 0.059` ist nur noch die

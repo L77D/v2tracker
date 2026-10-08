@@ -150,10 +150,10 @@ karten/<id>/
   logo.webp         Firmenlogo (optional)
 ```
 
-1. Ordner `karten/elektroniker-siemens/` kopieren, als `<id>` die
+1. Ordner `karten/000/` kopieren, als `<id>` die
    Kartennummer vergeben (`001`, `002` … — kurze URL `?k=001`; steht im
    QR-Code und wird nie wieder geändert oder wiederverwendet).
-   `elektroniker-siemens` ist ein interner Prototyp.
+   `000` (Siemens Elektroniker) ist ein interner Prototyp.
 2. Dialog nach dem **Regelwerk `docs/dialog-regelwerk.md`** erzeugen (Claude
    generiert den Dialogteil aus Faktenblatt + Interview) und als `dialog.json`
    ablegen; in `daten.json` die Kartendaten (`id`, `profession`, `company`, `companyLogo`,
