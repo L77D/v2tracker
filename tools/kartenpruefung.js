@@ -47,6 +47,10 @@ export const MAX_ZUSATZ = 2;
 export const MIN_JE_THEMA = 3;
 export const MAX_FIRMA = 2;
 const UNBEKANNT = "unbekannt";
+// Markierung für Aussagen ohne Quelle (Regelwerk A1) — zählt nicht zur Länge
+export const ANNAHME = "[Annahme]";
+const ANNAHME_RE = /\s*\[Annahme\]/g;
+export const ohneAnnahme = (t) => String(t ?? "").replace(ANNAHME_RE, "");
 // Verweise auf Firmenbestandteile, die es in der neutralen Fassung nicht gibt
 const SEITE_FEHLER = /ausbildungsseite|webseite|website|homepage|internetseite/i;
 const SEITE_HINWEIS = /\bseite\b|\blink\b/i;
@@ -309,14 +313,26 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
     for (const s of textstellen(fassung)) {
       if (s.feld === "label") continue; // Beschriftungen stehen in Kacheln, nicht in der Blase
       const text = String(s.obj[s.feld] ?? "");
-      const zeichen = text.replace(/<[^>]*>/g, "").length;
-      const n = seiten ? seiten(text) : null;
+      const ohne = ohneAnnahme(text);
+      const zeichen = ohne.replace(/<[^>]*>/g, "").length;
+      const n = seiten ? seiten(ohne) : null;
       texte.push({ fassung: label, ort: s.ort, zeichen, seiten: n, text });
       if (n != null && n > MAX_SEITEN) F(label + " · " + s.ort + ": " + n + " Seiten (höchstens " + MAX_SEITEN + ").");
     }
   }
   const zwei = texte.filter((t) => t.fassung === "Firma" && t.seiten === 2).length;
-  if (zwei) H(zwei + " Texte brauchen 2 Seiten (Ziel ist 1).");
+  if (zwei) H(zwei + (zwei === 1 ? " Text braucht" : " Texte brauchen") + " 2 Seiten (Ziel ist 1; der Sinn muss auf der ersten Seite klar sein).");
+
+  /* --- Annahmen: Aussagen ohne Quelle, vor der Freigabe auflösen ---------- */
+  const annahmen = [];
+  for (const s of stellen) {
+    for (const feld of [s.feld, s.feld + "Public"]) {
+      const t = s.obj[feld];
+      const m = typeof t === "string" ? t.match(ANNAHME_RE) : null;
+      if (m) annahmen.push(s.ort + (feld.endsWith("Public") ? " (neutral)" : "") + (m.length > 1 ? " ×" + m.length : ""));
+    }
+  }
+  if (annahmen.length) H(annahmen.length + (annahmen.length === 1 ? " Text" : " Texte") + " mit [Annahme] — vor der Freigabe bestätigen oder ersetzen: " + annahmen.join(" · ") + ".");
 
   return { fehler, hinweise, texte };
 }

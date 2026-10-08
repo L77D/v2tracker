@@ -45,6 +45,7 @@
   .lese .wer { font-weight: 600; }
   .lese .opt { margin-left: 18px; }
   .lese .notiz { color: var(--muted); font-size: 13px; }
+  .annahme { color: var(--gelb); font-weight: 700; background: #fff6cc; padding: 0 3px; border-radius: 3px; }
 </style>
 </head>
 <body>
@@ -89,7 +90,7 @@ for (const k of katalog?.karten ?? []) {
 }
 $("karte").value = params.get("k") || katalog?.standard || "";
 
-const ohneTags = (t) => esc(String(t ?? "").replace(/<[^>]*>/g, ""));
+const ohneTags = (t) => esc(String(t ?? "").replace(/<[^>]*>/g, "")).replace(/\[Annahme\]/g, '<span class="annahme">[Annahme]</span>');
 function leseHtml(karte, publicMode, firma) {
   return lesefassung(karte, { publicMode, firma }).map((b) => {
     if (b.art === "thema") return `<h3>${esc(b.titel)}</h3>`;
@@ -118,7 +119,7 @@ function zeige(titel, karte, optionen) {
     <div class="lese">${leseHtml(karte, true, optionen.firma)}</div>
     <details><summary>Lesefassung Firma</summary><div class="lese">${leseHtml(karte, false, optionen.firma)}</div></details>
     <h2>Länge je Text</h2>
-    <p class="klein">Seiten in der Sprechblase, gemessen wie in der App. Ziel 1, höchstens ${MAX_SEITEN}.</p>
+    <p class="klein">Seiten in der Sprechblase, gemessen wie in der App. Ziel 1, höchstens ${MAX_SEITEN}. [Annahme] zählt nicht mit.</p>
     <table><thead><tr><th>Fassung</th><th>Stelle</th><th class="n">Zeichen</th><th class="n">Seiten</th><th>Text</th></tr></thead><tbody>${zeilen}</tbody></table>`;
 }
 

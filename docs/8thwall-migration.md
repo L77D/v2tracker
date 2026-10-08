@@ -17,7 +17,7 @@ Regeln, nach denen umgebaut wurde:
 3. **Lazy Start.** Die Engine wird erst im Klick auf „Scan starten" per Skript-
    Tag geladen (`loadEngine()`); Kamera erst mit `XR8.run()` danach. Der Splash
    war schon vorher da — neu ist, dass vor dem Klick kein Engine-Code läuft.
-4. **1:1.** Eine Seite = eine Karte = ein Target (`targets/8thwall/card.json`).
+4. **1:1.** Eine Seite = eine Karte = ein Target (heute `karten/<id>/targets/card.json`).
 5. **DSGVO / Selbst-Hosting.** Engine unter `vendor/8thwall/` im Repo, relative
    Pfade, kein CDN für 8th Wall, kein API-Key, keine Analytics. Die Engine-
    Quellen wurden auf Netzaufrufe geprüft (s. u.). three.js liegt seit
@@ -52,20 +52,20 @@ Antworten auf die Prompts:
 | `Enter the path to the image file:` | Pfad zum Kartenbild (Anführungszeichen/`~` erlaubt) |
 | `Select the image type:` | leer lassen = `flat` (Default) |
 | `Use default crop? [Y/n]` | leer lassen = Ja |
-| `Enter the output folder:` | z. B. `targets/8thwall` im Repo |
+| `Enter the output folder:` | z. B. `karten/<id>/targets` im Repo |
 | `Enter a name for the image target:` | `card` (main.js lädt `card.json`) |
 
 Nicht-interaktiv geht dasselbe per Pipe (so wurde das Target im Repo erzeugt):
 
 ```bash
-printf '%s\n' "/pfad/zur/karte.png" "" "" "targets/8thwall" "card" \
+printf '%s\n' "/pfad/zur/karte.png" "" "" "karten/elektroniker-siemens/targets" "card" \
   | OVERWRITE_FILES=true npx @8thwall/image-target-cli@latest
 ```
 
 ### Was herauskommt
 
 ```
-targets/8thwall/
+karten/<id>/targets/
   card.json            ← Target-Beschreibung (Crop, Typ, Pfade)
   card_luminance.png   ← 480×640 Graustufen — DAS lädt die Engine (Pflicht)
   card_thumbnail.png   ← 262×350 Vorschau (optional, im Repo behalten)
@@ -88,26 +88,27 @@ skaliert.
 
 **b) `imagePath` in der JSON ist eine URL relativ zur Seite**, fest
 `image-targets/<name>_luminance.png`. Damit der CLI-Ordner 1:1 nach
-`targets/8thwall/` kopiert werden kann, ignoriert `main.js → loadTargetData()`
+`karten/<id>/targets/` kopiert werden kann, ignoriert `main.js → loadTargetData()`
 dieses Feld und löst `resources.luminanceImage` **neben der JSON** auf. Die
 eingecheckte `card.json` trägt trotzdem den korrigierten Pfad, damit sie auch
 für sich stimmt. Zusätzlich setzt `main.js` zur Laufzeit `moveable: true`
 (Karte in der Hand) und `physicalWidthInMeters = breiteMm / 1000` aus dem
-Eintrag in `targets/8thwall/karten.json` (seit Build 57; 63 mm) — dadurch ist
+`breiteMm` des Designs in `karten/<id>/karte.json` (seit Build 63; Build 57–62 aus `targets/8thwall/karten.json`; 63 mm) — dadurch ist
 `detail.scale` metrisch. Die mm-Werte in `?stats` rechnen seit Build 61 mit
 derselben Kartenbreite (vorher fest 150 mm → Faktor 2,4 zu groß); die
 Figurgröße hängt davon NICHT ab.
 
 ### Neue Karte / neues Layout
 
-Seit Build 57 (2026-09-15) können mehrere Designs nebeneinander liegen und
-per `?karte=<id>` gewählt werden (`targets/8thwall/karten.json`,
-`docs/kartendesigns.md`); `physicalWidthInMeters` kommt seitdem aus dem
-`breiteMm` des Eintrags (Standard 63 mm), nicht mehr aus `SCENE.cardWidth`.
+Seit Build 63 (2026-10-06) liegen die Kartenbilder im Ordner der Karte
+(`karten/<id>/targets/`) und werden per `?design=<id>` gewählt (`designs` in
+`karte.json`, `docs/kartendesigns.md`; Build 57–62: `?karte=<id>` und
+`targets/8thwall/karten.json`). `physicalWidthInMeters` kommt aus dem
+`breiteMm` des Designs (Standard 63 mm), nicht aus `SCENE.cardWidth`.
 Das Standard-Target `card` ersetzen:
 
 1. Kartenbild wie oben durch die CLI schicken (Name `card`, Ordner
-   `targets/8thwall`, Dateien überschreiben).
+   `karten/<id>/targets`, Dateien überschreiben).
 2. `SCENE.cardAspect` in `js/config.js` auf Höhe/Breite der **ganzen Karte**
    setzen (Eck-Marker) — wie bisher.
 3. Alte MindAR-Dateien (`targets/card.mind`, `targets/old/*.mind`) werden von
@@ -290,7 +291,7 @@ fällt, bekommt eine verständliche Meldung statt einer leeren Seite. Jede
 | 3 | **Nicht-SIMD-Engine** `vendor/8thwall-nosimd/` (gleicher Monorepo-Commit 519b988, `--config=wasmrelease`, Trim-Patch). `main.js` wählt per `WebAssembly.validate` (Testmodul der Engine-eigenen Prüfung) — der Chunk `xr-tracking.js` lädt relativ zu `xr.js`, also automatisch die passende Variante. Preload des Kerns jetzt per JS in `boot()` (nur die gewählte Variante). `?nosimd` erzwingt den Fallback; `?stats` zeigt „Engine: …"; Konsole „8th Wall XR Version: 0.0.0.0s" (SIMD) / „0.0.0.0" (ohne). Mit wasmtime geprüft: SIMD-Variante ist ohne SIMD schon im Kern `xr.js` ungültig, nicht erst im Tracker. | WASM-SIMD (iOS 16.4 / Chrome 91) ist keine Pflicht mehr; ältere Geräte bekommen den langsameren Tracker statt eines Absturzes nach dem Klick. +1,4 MB gz im Repo, für das Gerät gleich groß. |
 | 4 | **Figur → WebP** 768×1152 (exakt 2:3), Qualität 85, Lanczos auf premultipliziertem Alpha. `rig.js` auf `.webp`, PNGs gelöscht, `dev-server.js` kennt `image/webp`. | 2124 KB → 156 KB (gz 2084 → 148 KB). Neues Gate: WebP mit Alpha = iOS 14 / Chrome 32 (Vorabprüfung fängt es). |
 | 5 | **Tracker-WASM als eigene Datei** — NICHT umgesetzt (s. 7.3). | — |
-| 6 | **Font-Subsetting** mit pyftsubset auf die Zeichen aus `cards/*.js`, `js/*.js`, `index.html`, `css/*.css` + Latin-1 + „“”‚‘’…–—→✅ (Liste `tools/font-subset-unicodes.txt`, Skript `tools/build-fonts.sh`, Original-TTFs nicht im Repo). TTF bleibt TTF, OFL-Texte bleiben, Hinting entfernt (iOS/macOS und Android/Skia werten TrueType-Instruktionen nicht aus; Outlines identisch). | Jersey 10 76,6 → 18,5 KB (gz 26,9 → 7,0), Silkscreen 32,2 → 13,9 KB (gz 11,6 → 4,9). |
+| 6 | **Font-Subsetting** mit pyftsubset auf die Zeichen aus `cards/*.js`, `js/*.js`, `index.html`, `css/*.css` + Latin-1 + „“”‚‘’…–—→✅ (Liste `tools/font-subset-unicodes.txt`, Skript `tools/build-fonts.sh`, Original-TTFs nicht im Repo; seit Build 64 ersetzt durch einen festen deutschen Zeichensatz, unabhängig von Kartentexten). TTF bleibt TTF, OFL-Texte bleiben, Hinting entfernt (iOS/macOS und Android/Skia werten TrueType-Instruktionen nicht aus; Outlines identisch). | Jersey 10 76,6 → 18,5 KB (gz 26,9 → 7,0), Silkscreen 32,2 → 13,9 KB (gz 11,6 → 4,9). |
 | 7 | **Versionierung/Bundle** — offen gelassen (s. 7.4). | — |
 
 Zusätzlich: CSS `inset: 0` überall mit Vier-Seiten-Fallback (`inset` erst ab

@@ -1,6 +1,6 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 08.10.2026 (Build 69). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
+Stand 08.10.2026 (Build 70). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
 im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
 Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 **Kontrakt** geschrieben: Jede Regel ist prüfbar.
@@ -46,12 +46,20 @@ Kartenbilder gehören **nicht** dazu — sie kommen aus der Produktion.
 Eingaben sind **ausschließlich**: dieses Dokument, das ausgefüllte Faktenblatt
 (Teil B) und, falls vorhanden, die Abschrift des Azubi-Interviews.
 
-**Nichts erfinden.** Jede prüfbare Aussage — Zahl, Dauer, Abschluss,
-Tätigkeit, Ort — stammt aus Faktenblatt oder Interview. Fehlt eine Angabe,
-wird die betroffene Antwort ohne sie geschrieben oder gekürzt, und die Lücke
-steht im **Prüfbericht** nach dem JSON (siehe Aufrufmuster). Erfahrungszeilen
-der Figur („das ist der Teil, der wirklich müde macht") behaupten nichts
-Prüfbares und sind erlaubt.
+**Nichts erfinden, Annahmen kennzeichnen.** Jede prüfbare Aussage — Zahl,
+Dauer, Größe, Uhrzeit, Ort, Tätigkeit, Ablauf — stammt aus Faktenblatt oder
+Gesprächsabschrift. Wo das Material fehlt und Claude eine Aussage trotzdem als
+Platzhalter setzt, steht direkt dahinter **`[Annahme]`**, vor dem
+Satzzeichen: `Einmal die Woche Berufsschule [Annahme]: …`
+
+- `[Annahme]` bleibt im Text, bis die Aussage bestätigt (Marke löschen) oder
+  ersetzt ist. Die App zeigt die Marke an — gewollt, solange die Karte ein
+  Entwurf ist. Vor der Freigabe beim Betrieb steht keine Marke mehr im Dialog.
+- Nicht markiert werden Meinungen und Ratschläge der Figur („Ein Praktikum
+  sagt mehr als jede Broschüre") und die erfundene Persona.
+- Die Prüfseite listet alle Marken auf und zählt sie bei der Länge nicht mit.
+- Jede Lücke steht zusätzlich im **Prüfbericht** nach dem JSON (siehe
+  Aufrufmuster).
 
 ## A2. Persona
 
@@ -242,7 +250,9 @@ Die Sprechblase fasst fünf Zeilen; längerer Text wird in **Seiten** geteilt,
 der Nutzer blättert mit Weiter. Gezählt wird in Seiten, nicht in Zeichen —
 die Prüfseite misst genau wie die App.
 
-- **Ziel: eine Seite. Höchstens zwei.** Drei Seiten sind ein Fehler.
+- **Ziel: eine Seite. Höchstens zwei.** Der Sinn muss auf der ersten Seite
+  klar sein; zwei Seiten sind die Ausnahme, aber kein Fehler. Drei Seiten
+  sind ein Fehler. Gekürzt wird, wo inhaltlich nichts verloren geht.
 - Eine Seite fasst etwa **90–110 Zeichen**. Die App teilt am **Satzende**:
   Ein Satz, der nicht mehr auf die laufende Seite passt, beginnt eine neue.
   Ein einzelner Satz über ~100 Zeichen wird mitten im Satz geteilt.
@@ -584,7 +594,8 @@ Geprüft wird:
       → Hinweis zum Nachlesen.
 - [ ] Mindestens drei Fragen je Thema, in beiden Fassungen (ohne Zweige).
 - [ ] Kein Text länger als zwei Seiten, in beiden Fassungen (zwei Seiten →
-      Hinweis, Ziel ist eine).
+      Hinweis, Ziel ist eine; `[Annahme]` zählt nicht mit).
+- [ ] Alle `[Annahme]`-Marken werden als Hinweis aufgelistet.
 
 ## C2. Inhaltlich — liest ein Mensch
 
@@ -615,6 +626,8 @@ Betrieb? Verweist etwas auf eine Seite, die es dort nicht gibt?
 - [ ] Ist jede prüfbare Aussage durch Faktenblatt oder Interview gedeckt?
 
 ## C3. Freigabe beim Betrieb
+
+Vorher: keine `[Annahme]` mehr im Dialog — jede ist bestätigt oder ersetzt.
 
 Zweispaltig vorlegen:
 
@@ -647,7 +660,8 @@ Ohne diese Trennung stehen nach der zweiten Runde wieder „Betriebsmittel" und
 > Du erzeugst einen DETAR-Kartendialog. Halte dich ausschließlich an das
 > Regelwerk `docs/dialog-regelwerk.md`, an das folgende Faktenblatt und an die
 > Interview-Abschrift. Vorbild ist `karten/elektroniker-siemens/karte.json`.
-> Erfinde keine Fakten. Schreib zuerst die Firmenfassung und ergänze dann je
+> Erfinde keine Fakten; wo du ohne Quelle einen Platzhalter setzt, markiere
+> ihn mit [Annahme] (A1). Schreib zuerst die Firmenfassung und ergänze dann je
 > Text die neutrale Fassung, wo A9 sie verlangt. Gib zuerst nur das JSON des Dialogteils aus
 > (Ausgabekontrakt A11). Danach folgt ein **Prüfbericht** mit drei Teilen:
 > (1) jede Angabe, die gefehlt hat, und wie du damit umgegangen bist;

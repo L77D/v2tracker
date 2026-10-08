@@ -1,7 +1,7 @@
 {
   "_hinweis": [
     "Kartendatei (Inhalt für die Engine, kein Code). Aus cards/elektroniker.js übernommen am 2026-10-06 (Build 63), Dialog aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026), am 2026-10-08 (Build 67) auf das Regelwerk docs/dialog-regelwerk.md gebracht — VORBILD für neue Karten.",
-    "Figur und Marker sind PLATZHALTER (PENNY-Lagerlogistik-Assets), bis die Siemens-Figur produziert ist. Fachliche Angaben aus der Siemens-Stellenausschreibung (Stand 31.08.2026), Formulierungen ohne Arbeitgeber-Freigabe.",
+    "Figur und Marker sind PLATZHALTER (PENNY-Lagerlogistik-Assets), bis die Siemens-Figur produziert ist. Quelle der Fachangaben: Siemens-Stellenausschreibung (Elektroniker/in für Betriebstechnik, Frankfurt, abgerufen 2026-10-08). Alles, was dort nicht steht, ist mit [Annahme] markiert (Regelwerk A1) und muss vor der Freigabe bestätigt oder ersetzt werden. Formulierungen ohne Arbeitgeber-Freigabe.",
     "Regeln für den Dialogteil (persona, firmenbegriffe, themen, initial, greeting, asks, questions, reentry): docs/dialog-regelwerk.md. Prüfen: tools/kartenpruefung.html?k=elektroniker-siemens. Pfade (figur, vorschau, companyLogo, designs[].target) gelten relativ zu diesem Ordner.",
     "Emotion-Tags (geschlossenes Vokabular): neutral · winken · erklaeren · denken · bestaetigen · halten · schulterzucken · stolz · erschoepft · zeigen · zweihaendig. Hat figur.posen einen Eintrag mit genau diesem Namen, gilt er; sonst die Standard-Zuordnung in js/config.js → POSES; sonst idle.",
     "Highlight-Tags im Text: <welle> <zittern> <knall> <marker> <gross> <leise> (welle/zittern werden geparst, aber noch nicht bewegt). Zwei Fassungen: Firmenfassung (Standard) und neutrale Fassung (?public, ohne Logo, Link und Firmenbezüge). Texte mit {firma}, einem Firmenbegriff oder einem Verweis auf Seite/Link tragen die neutrale Fassung im Feld <name>Public (z. B. textPublic); alle anderen Texte gelten für beide (js/edition.js).",
@@ -93,7 +93,7 @@
             "reden"
           ],
           "tag": "schulterzucken",
-          "reply": "Verstehe. Reden gehört hier schon dazu — im Team ständig. Den größten Teil des Tages hast du aber Werkzeug in der Hand, nicht Leute vor dir."
+          "reply": "Verstehe. Im Team wird ständig geredet. Den Großteil des Tages hast du aber Werkzeug in der Hand, nicht Leute vor dir [Annahme]."
         },
         {
           "label": "Eher mit Maschinen",
@@ -104,7 +104,7 @@
             "technik"
           ],
           "tag": "bestaetigen",
-          "reply": "Kenn ich. Der Tag geht fast komplett für den Kasten drauf — geredet wird vor allem mit den zwei Leuten, mit denen man dransteht."
+          "reply": "Kenn ich. Der Tag geht fast komplett für den Kasten drauf — geredet wird vor allem mit den zwei Leuten, mit denen man dransteht [Annahme]."
         },
         {
           "label": "Weiß ich noch nicht",
@@ -127,17 +127,17 @@
         {
           "label": "So zwanzig",
           "tag": "schulterzucken",
-          "reply": "Deutlich mehr. Bei einem größeren Kasten sind es mehrere hundert. Und jedes einzelne wird auf Länge geschnitten, an beiden Enden festgeschraubt und geprüft."
+          "reply": "Deutlich mehr: ein paar hundert [Annahme]. Jedes wird auf Länge geschnitten, festgeschraubt und geprüft."
         },
         {
           "label": "Ein paar hundert",
           "tag": "bestaetigen",
-          "reply": "<knall>Genau.</knall> Jedes einzelne schneide ich auf Länge, schraube es an beiden Enden fest und prüfe es. Deshalb dauert so ein Kasten mehrere Tage."
+          "reply": "<knall>Genau.</knall> Jedes wird geschnitten, festgeschraubt und geprüft. Deshalb dauert ein Kasten mehrere Tage [Annahme]."
         },
         {
           "label": "Tausende",
           "tag": "schulterzucken",
-          "reply": "So viele dann doch nicht. Ein paar hundert bei einem größeren Kasten — aber jedes davon geht einzeln durch meine Hände."
+          "reply": "So viele dann doch nicht. Ein paar hundert bei einem größeren Kasten [Annahme] — aber jedes davon geht einzeln durch meine Hände."
         }
       ]
     },
@@ -194,7 +194,7 @@
       "thema": "alltag",
       "label": "Was machst du hier eigentlich?",
       "tag": "erklaeren",
-      "text": "Ich baue Stromkästen, so groß wie ein Kleiderschrank. Bei uns heißen sie Schaltanlagen. Durch die läuft der ganze Strom einer Fabrik. Wir schrauben sie zusammen, ziehen Kabel und prüfen alles.",
+      "text": "Ich baue Schaltanlagen — Stromkästen, so groß wie ein Kleiderschrank [Annahme]. Ich schraube sie zusammen, ziehe Kabel und prüfe alles.",
       "unlocks": [
         "tag_ablauf",
         "purpose"
@@ -205,7 +205,7 @@
       "thema": "beruf",
       "label": "Wem hilft das, was du baust?",
       "tag": "stolz",
-      "text": "Die Kästen gehen in Krankenhäuser, Wasserwerke, Fabriken. Wenn der Strom da ankommt, merkt das keiner — wenn er wegbleibt, merken es <marker>alle sofort</marker>. Dafür sorgen wir.",
+      "text": "Die Kästen gehen in Fabriken, Krankenhäuser und Wasserwerke [Annahme]. Fällt dort der Strom aus, merken es <marker>alle sofort</marker>.",
       "unlocks": [
         "anstrengend"
       ]
@@ -215,7 +215,7 @@
       "thema": "alltag",
       "label": "Wie sieht dein Tag aus?",
       "tag": "erklaeren",
-      "text": "Halb sieben in der Werkstatt, kurz besprechen, wer was macht, dann geht's an den Kasten. Vormittags wird meistens geschraubt, nachmittags gemessen. Einmal die Woche Berufsschule.",
+      "text": "Um halb sieben geht's los: kurz besprechen, dann an den Kasten [Annahme]. Vormittags schrauben, nachmittags messen [Annahme].",
       "unlocks": [
         "anstrengend",
         "berufsschule"
@@ -226,7 +226,7 @@
       "thema": "beruf",
       "label": "Was muss ich dafür können?",
       "tag": "erklaeren",
-      "text": "Ich hatte Mittlere Reife, das reicht bei uns. Wichtiger ist, dass dir Physik und Mathe nicht egal sind. Und dass du sorgfältig arbeitest — bei Strom ist Schludern <marker>keine Option</marker>.",
+      "text": "Bei uns brauchst du Mittlere Reife. Physik und Mathe sollten dir liegen. Und: Bei Strom ist Schludern <marker>keine Option</marker>.",
       "unlocks": [
         "berufsschule",
         "bewerbung"
@@ -242,7 +242,7 @@
           "menschen"
         ]
       },
-      "text": "Im Team dauernd — wir bauen ja zu zweit oder zu dritt an einem Kasten. Was fehlt, sind die Leute, für die wir das bauen: Die sehe ich fast nie."
+      "text": "Im Team dauernd, wir bauen zu zweit oder zu dritt an einem Kasten [Annahme]. Die Leute, für die wir bauen, sehe ich aber fast nie [Annahme]."
     },
     {
       "id": "technik",
@@ -254,14 +254,14 @@
           "maschinen"
         ]
       },
-      "text": "Technischer als die meisten denken. Wenn der Kasten fertig ist, messe ich: Kommt der Strom überall an, wo er hin soll? Und nirgends, wo er nicht hin darf? Stimmt was nicht, suche ich den Fehler, bis ich ihn hab."
+      "text": "Technischer als gedacht. Ist der Kasten fertig, messe ich, ob der Strom überall richtig ankommt. Stimmt was nicht, suche ich den Fehler."
     },
     {
       "id": "berufsschule",
       "thema": "beruf",
       "label": "Was lernst du in der Berufsschule?",
       "tag": "erklaeren",
-      "text": "Einmal die Woche bin ich in der Berufsschule. Da lerne ich, wie Strom und Schaltungen funktionieren, und rechne viel. Dazu kommen Deutsch und Sozialkunde, wie in der normalen Schule.",
+      "text": "Einmal die Woche Berufsschule [Annahme]: Strom, Schaltungen, viel Rechnen. Dazu Deutsch und Sozialkunde [Annahme].",
       "unlocks": [
         "danach"
       ]
@@ -271,7 +271,7 @@
       "thema": "alltag",
       "label": "Was ist daran anstrengend?",
       "tag": "erschoepft",
-      "text": "<zittern>Stehen.</zittern> Den ganzen Tag. Und im Sommer ist es in der Halle warm. Das Prüfen am Schluss braucht Geduld, da darf nichts übersehen werden — das ist der Teil, der wirklich müde macht.",
+      "text": "Den ganzen Tag <zittern>stehen</zittern>, im Sommer in einer warmen Halle [Annahme]. Am meisten schlaucht das Prüfen: Da darf nichts durchrutschen [Annahme].",
       "unlocks": [
         "danach"
       ]
@@ -281,7 +281,7 @@
       "thema": "beruf",
       "label": "Und was kommt danach?",
       "tag": "stolz",
-      "text": "Die Ausbildung dauert dreieinhalb Jahre, am Ende steht eine Prüfung. Danach arbeitest du als Elektroniker. Oder du lernst weiter, zum Beispiel zum Meister.",
+      "text": "Die Ausbildung dauert dreieinhalb Jahre. Danach arbeitest du als Elektroniker — oder lernst weiter, zum Beispiel zum Techniker.",
       "unlocks": [
         "bewerbung",
         "praktikum_wie"
@@ -292,8 +292,8 @@
       "thema": "wege",
       "label": "Wie bewirbt man sich?",
       "tag": "zeigen",
-      "text": "Online, über die Ausbildungsseite von {firma}. Da steht, welche Unterlagen du brauchst und wann es losgeht. Das ändert sich, deshalb guckst du da am besten direkt nach.",
-      "textPublic": "Du bewirbst dich direkt bei den Betrieben, meistens online. Was sie von dir sehen wollen, steht in ihrer Ausschreibung.",
+      "text": "Online, über die Ausbildungsseite von {firma}. Da steht, was du brauchst und wann es losgeht.",
+      "textPublic": "Du bewirbst dich direkt bei den Betrieben, meistens online. Was sie sehen wollen, steht in der Ausschreibung.",
       "unlocks": [
         "link"
       ]
@@ -303,7 +303,7 @@
       "thema": "wege",
       "label": "Was sollte ich jetzt schon tun?",
       "tag": "erklaeren",
-      "text": "Ehrlich? Ein Praktikum. Zwei Wochen in einer Werkstatt sagen dir mehr als jede Broschüre. Und guck dir in Physik den Teil mit Strom und Spannung genauer an, den brauchst du wirklich.",
+      "text": "Ein Praktikum — zwei Wochen Werkstatt sagen mehr als jede Broschüre. Und in Physik bei Strom gut aufpassen.",
       "unlocks": [
         "praktikum_wie"
       ]
@@ -313,7 +313,7 @@
       "thema": "wege",
       "label": "Wie kommt man an ein Praktikum?",
       "tag": "erklaeren",
-      "text": "Zwei Wege. Entweder über die Schule, die haben feste Praktikumswochen und meistens auch Adressen. Oder du fragst direkt: kurze Mail an den Betrieb, mit Name, Klasse, wann du Zeit hast und warum ausgerechnet der Beruf.",
+      "text": "Über die Schule, die hat feste Praktikumswochen [Annahme]. Oder per Mail an den Betrieb: Name, Klasse, Zeitraum, warum der Beruf.",
       "unlocks": [
         "praktikum_was"
       ]
@@ -323,7 +323,7 @@
       "thema": "wege",
       "label": "Und was bringt mir das?",
       "tag": "stolz",
-      "text": "In zwei Wochen siehst du den Alltag: wie laut es ist, wie schnell gearbeitet wird, wie die Leute miteinander reden. Selber machen darfst du wenig, aber du merkst ziemlich schnell, ob dich das anzieht oder nervt. Ich hab so gemerkt, dass ich das <welle>will</welle>."
+      "text": "Du siehst den echten Alltag: wie laut es ist, wie gearbeitet wird. Selbst machen darfst du wenig [Annahme], aber du merkst, ob's dich packt."
     },
     {
       "id": "link",
