@@ -30,8 +30,8 @@ dort nie genannt. Eine Kartendatei für beides (`js/edition.js`).
 (`index.html`, `js/`, `css/`, `assets/`, `vendor/`) liegt einmal zentral; jede
 Karte ist ein reiner Daten-Ordner `karten/<id>/` ohne Code — Kartendaten
 (`daten.json`), Dialog (`dialog.json`), Figurenbilder, Kartenbilder fürs Tracking, Desktop-Vorschau.
-Welche Karte läuft, steht im QR-Code: **`?k=<id>`** (ohne Parameter die
-Standard-Karte aus `karten/katalog.json`). Ein Engine-Update gilt sofort für
+Welche Karte läuft, steht im QR-Code: **`?k=<id>`** (ohne Parameter startet keine
+Karte, sondern eine Auffang-Seite: „Scanne deine Karte“). Ein Engine-Update gilt sofort für
 alle Karten; eine neue Karte fasst die Engine nicht an.
 
 **Kein LLM, keine externe API, kein CDN im Live-Code** (einzige Ausnahme: das
@@ -96,7 +96,7 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   **`?preflight=inapp|nocam|insecure|nowasm|nowebp`** — Hinweis-Bildschirme
   der Vorabprüfung ansehen (nur Test). **`?public`** — Public-Edition (kein
   Test-Flag, steht im QR-Code der neutralen Karte). **`?k=<id>`** — Karte
-  aus `karten/katalog.json` (ohne Parameter: Standard-Karte).
+  aus `karten/katalog.json` (ohne Parameter: Auffang-Seite, keine Karte).
   **`?design=<id>`** — Kartenbild (Design) der Karte aus `daten.json → designs`
   (ohne Parameter: das erste, heute `card`; Test-Design `tarn`). Übersicht mit
   QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=` gibt es seit
@@ -252,7 +252,7 @@ js/devPanel.js        ?dev: Regler für alle Dashboards, Toggles 1–10, Presets
 js/timeline.js        ?timeline: Theatre.js-Studio (CDN)
 js/desktopMode.js     ?desktop: Karte als Boden-Plane, Maus-Orbit (nur per Flag geladen)
 js/phoneFrame.js      Smartphone-Rahmen für den Desktop-Modus
-karten/katalog.json   Liste aller Karten + Standard-Karte (?k)
+karten/katalog.json   Liste aller Karten (?k)
 karten/<id>/          eine Karte: daten.json (Daten, Figur, Designs), dialog.json, figur/, targets/, vorschau.jpg
 assets/               nur Geteiltes: UI-Grafiken, Logos, Fonts (Subset)
 karten.html           Übersicht Karte × Design mit QR-Codes (Umschalten am Handy)

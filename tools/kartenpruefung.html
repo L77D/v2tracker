@@ -9,7 +9,7 @@
   Aufruf ohne Terminal: Start-Dev-Server.command doppelklicken, dann
   http://localhost:8743/tools/kartenpruefung.html — oder auf dem Testlink
   …/tools/kartenpruefung.html. ?k=<id> lädt karten/<id>/daten.json + dialog.json; ohne ?k
-  die Standardkarte. Alternativ den Dialogteil, den Claude ausgibt, unten
+  die erste Karte des Katalogs. Alternativ den Dialogteil, den Claude ausgibt, unten
   einfügen. Die Seitenzahl misst SpeechBubble.paginate() der App am echten Font.
 -->
 <style>
@@ -88,7 +88,7 @@ for (const k of katalog?.karten ?? []) {
   o.value = k.id; o.textContent = k.name + " (" + k.id + ")";
   $("karte").append(o);
 }
-$("karte").value = params.get("k") || katalog?.standard || "";
+$("karte").value = params.get("k") || katalog?.karten?.[0]?.id || "";
 
 const ohneTags = (t) => esc(String(t ?? "").replace(/<[^>]*>/g, "")).replace(/\[Annahme\]/g, '<span class="annahme">[Annahme]</span>');
 function leseHtml(karte, publicMode, firma) {

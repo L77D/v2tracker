@@ -7,8 +7,10 @@
    Kartenbildern fürs Tracking (targets/) und Desktop-Vorschau. Seit Build 72
    (Michael 2026-10-08) zwei Dateien statt einer karte.json; Produktionskarten
    heißen nach ihrer Nummer (karten/001/ → ?k=001, kurze URLs).
-   Welche Karte läuft, steht im QR-Code: ?k=<id> (ohne = "standard" aus
-   karten/katalog.json), das Kartenbild per ?design=<id> (ohne = erstes Design
+   Welche Karte läuft, steht im QR-Code: ?k=<id>. Ohne ?k startet KEINE Karte
+   (Michael 2026-10-08, Build 74) — main.js zeigt dann die Auffang-Seite;
+   einzige Ausnahme ist der Lokal-Prototyp (Doppelklick, keine URL-Parameter),
+   der die erste aktive Karte des Katalogs nimmt. das Kartenbild per ?design=<id> (ohne = erstes Design
    der Karte). Pro Sitzung genau eine Karte und ein Target.
 
    FORMAT: daten.json trägt "format" (Nummer des Aufbaus; 2 = daten.json +
@@ -38,7 +40,8 @@ async function holeJson(url) {
 
 /* Karte laden und für die Edition vorbereiten. Liefert
    { card, design } oder { error, ids, hinweis?, beruf? } (boot() zeigt dann den Hinweis im
-   Splash, Start-Button bleibt aus — wie bisher bei unbekanntem Design). */
+   Splash, Start-Button bleibt aus — wie bisher bei unbekanntem Design) oder
+   { keineKarte: true } ohne ?k (Auffang-Seite). */
 export async function ladeKarte(params, { publicMode = false } = {}) {
   let katalog;
   try { katalog = await holeJson(KATALOG_URL); }
@@ -47,7 +50,8 @@ export async function ladeKarte(params, { publicMode = false } = {}) {
   const ids = liste.filter((k) => k.aktiv !== false).map((k) => k.id);
   const kartenHinweis = " (Parameter ?k, Katalog: " + KATALOG_URL.slice(2) + ")";
 
-  const id = params.get("k") || katalog?.standard;
+  const id = params.get("k") || (window.__LOKAL ? ids[0] : null);
+  if (!id) return { keineKarte: true, ids };
   const eintrag = liste.find((k) => k.id === id);
   if (!eintrag) return { error: "Unbekannte Karte „" + id + "“", ids, hinweis: kartenHinweis };
   if (eintrag.aktiv === false) return { error: "Karte „" + id + "“ ist nicht mehr verfügbar", ids, hinweis: kartenHinweis };

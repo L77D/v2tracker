@@ -137,6 +137,16 @@
          unten — kein ES-Modul-Support. Befüllt von js/preflight.js bzw. dem
          Inline-Skript; sichtbar über body.preflight-blocked. Der Start-Button
          bleibt in diesem Fall deaktiviert. -->
+    <!-- Auffang-Seite (Build 74, Michael 2026-10-08): ohne ?k startet keine
+         Karte — wer die App ohne QR-Code öffnet, landet hier
+         (body.keine-karte, gesetzt von js/main.js). -->
+    <div class="perm-screen" id="auffangScreen">
+      <p class="perm-title px-title">Scanne deine Karte</p>
+      <p class="perm-text">Diese Seite öffnest du über den QR-Code auf einer Karte von Dein Erster Tag.
+        Halte die Kamera deines Handys auf den QR-Code und tippe auf den Link.</p>
+      <p class="perm-text perm-text--small">Du hast keine Karte? Frag in deiner Schule oder am Messestand danach.</p>
+    </div>
+
     <div class="perm-screen pf-screen" id="preflightScreen">
       <p class="perm-title px-title" id="pfTitle">Bitte im Browser öffnen</p>
       <p class="perm-text" id="pfText"></p>

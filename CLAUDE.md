@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-08 · Build 73 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-08 · Build 74 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -85,7 +85,7 @@ jede **Karte** ist ein reiner Daten-Ordner ohne Code. Engine-Update = einmal
 hochladen, alle Karten nutzen es.
 
 ```
-karten/katalog.json            {standard, karten:[{id, name, aktiv}]}
+karten/katalog.json            {karten:[{id, name, aktiv}]}
 karten/<id>/daten.json         "format": 2 · profession · company · companyLogo · figur · designs · vorschau
 karten/<id>/dialog.json        persona · firmenbegriffe · themen · initial · greeting · asks · questions · reentry
 karten/<id>/figur/*.webp       Körper je Pose, Kopf, Gesichter
@@ -93,7 +93,10 @@ karten/<id>/targets/<d>.json + <d>_luminance.png   (image-target-cli)
 karten/<id>/vorschau.jpg       Kartenbild für ?desktop
 ```
 
-- `js/kartenLader.js → ladeKarte()`: `?k=<id>` (ohne = `katalog.standard`),
+- `js/kartenLader.js → ladeKarte()`: `?k=<id>` (ohne → `{keineKarte}` → main.js zeigt die
+  **Auffang-Seite** `#auffangScreen` via `body.keine-karte`, Build 74, Michael
+  2026-10-08: ohne ?k startet keine Karte; Ausnahme Lokal-Prototyp = erste
+  aktive Karte),
   `?design=<id>` (ohne = erstes Design der Karte), prüft `format`
   (`KARTEN_FORMAT`, ältere Formate dort übersetzen), macht Pfade aus
   daten.json (figur, vorschau, companyLogo, designs[].target) relativ zum
@@ -358,7 +361,7 @@ Gyro-Rate; Knöpfe Fall F0–F4 · „Messung 10 s" → Kopieren (Tabellenzeile)
 „Log ↓" (JSON); Anleitung `docs/handheld-jitter-analyse.md` Abschnitt e · Cam+PR, Build-Check,
 Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
-oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Karte aus
+oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Pflicht — ohne: Auffang-Seite; Karte aus
 `karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
 kein Test-Flag — steht im QR-Code der neutralen Karte) ·

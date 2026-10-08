@@ -457,6 +457,8 @@ body.public #companyKicker, body.public .company-box { display: none; }
 body.camera-denied #permScreen { display: flex; }
 /* Vorabprüfung (2026-09-09): gleicher Baukasten, eigener Schalter */
 body.preflight-blocked #preflightScreen { display: flex; }
+/* Auffang-Seite (Build 74): ohne ?k keine Karte — derselbe Baukasten */
+body.keine-karte #auffangScreen { display: flex; }
 .perm-title {
   font-family: var(--d-font);
   font-size: 40px;

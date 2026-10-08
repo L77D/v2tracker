@@ -1,6 +1,5 @@
 {
-  "_hinweis": "Katalog aller Karten (2026-10-06, Build 63). Die App wählt per ?k=<id> den Ordner karten/<id>/ und lädt dessen daten.json + dialog.json (seit Build 72); ohne ?k gilt \"standard\". Kartenbilder (Designs, ?design=<id>) stehen in der daten.json. aktiv: false = Karte zurückgezogen (Hinweis statt Start). Ids nie umbenennen oder wiederverwenden — sie stehen in gedruckten QR-Codes.",
-  "standard": "000",
+  "_hinweis": "Katalog aller Karten (2026-10-06, Build 63). Die App wählt per ?k=<id> den Ordner karten/<id>/ und lädt dessen daten.json + dialog.json (seit Build 72); ohne ?k startet keine Karte (Auffang-Seite, seit Build 74). Kartenbilder (Designs, ?design=<id>) stehen in der daten.json. aktiv: false = Karte zurückgezogen (Hinweis statt Start). Ids nie umbenennen oder wiederverwenden — sie stehen in gedruckten QR-Codes.",
   "karten": [
     { "id": "000", "name": "Elektroniker/in für Betriebstechnik (Siemens) — interner Prototyp", "aktiv": true }
   ]

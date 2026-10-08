@@ -133,6 +133,13 @@ async function boot() {
   // Unbekannte Karte/Design: Hinweis in der Fehlerzeile des Splash, Button
   // bleibt aus — statt einer leeren Seite nach dem Klick (Target-404).
   const resolved = await ladeKarte(params, { publicMode: PUBLIC_MODE });
+  // Ohne ?k startet keine Karte (Build 74): Auffang-Seite statt Splash —
+  // Vorrang vor der Vorabprüfung, denn ohne Karte gibt es nichts zu starten.
+  if (resolved.keineKarte) {
+    document.body.classList.add("keine-karte");
+    console.warn("DETAR: kein ?k — Auffang-Seite. Bekannte Karten:", resolved.ids.join(", "));
+    return;
+  }
   if (blocked) {
     el("cardName").textContent = resolved.card?.profession ?? resolved.beruf ?? "";
     showPreflightScreen(blocked);
