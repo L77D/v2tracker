@@ -6,8 +6,8 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
 `main` bleibt unberührt. (Bis Build 62: `targets/8thwall/karten.json` und
 `?karte=<id>`; beides gibt es nicht mehr.)
 
-- **Liste:** `karte.json → designs` im Kartenordner, z. B.
-  `karten/elektroniker-siemens/karte.json`. Je Eintrag: `id` (steht in der
+- **Liste:** `daten.json → designs` im Kartenordner, z. B.
+  `karten/elektroniker-siemens/daten.json`. Je Eintrag: `id` (steht in der
   URL), `name` (Anzeigename), `target` (Pfad relativ zum Kartenordner, z. B.
   `targets/tarn.json`), `breiteMm` (physische Kartenbreite), `notiz` (frei).
 - **Dateien:** `karten/<karte>/targets/<id>.json` + `<id>_luminance.png`. Das
@@ -24,7 +24,7 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
 - **`?stats`** zeigt die Zeile `Design: <id> · targets/<id>.json · <breiteMm> mm`;
   die Kopierzeile von „Messung 10 s" hat eine Spalte `design`.
 - **`karten.html`** — Übersicht: liest `karten/katalog.json` und je Karte die
-  `karte.json`, zeigt je Karte × Design Name, Link und QR-Code (Häkchen für
+  `daten.json`, zeigt je Karte × Design Name, Link und QR-Code (Häkchen für
   `stats`, `public`, `nosimd`). Beim ersten Design steht nur `?k=<karte>` im
   Link, sonst zusätzlich `&design=<id>`. Die Links zeigen auf den Host, von dem
   die Seite geladen wurde — am Pages-Spiegel wie am Tunnel. QR-Erzeugung:
@@ -52,7 +52,7 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
 3. **Zwei Dateien behalten:** `v3-blau.json` und `v3-blau_luminance.png`.
    `_thumbnail.png`, `_cropped.png` und `_original.png` löschen — die App
    braucht sie nicht (nicht einchecken).
-4. **Eintrag in `designs`** der `karte.json`, hinten anhängen:
+4. **Eintrag in `designs`** der `daten.json`, hinten anhängen:
 
    ```json
    { "id": "v3-blau", "name": "V3 blau", "target": "targets/v3-blau.json", "breiteMm": 63, "notiz": "Export 2026-10-06, Figma Seite X" }

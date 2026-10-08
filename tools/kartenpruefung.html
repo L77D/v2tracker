@@ -8,7 +8,7 @@
   Prüft eine Kartendatei gegen das Regelwerk (docs/dialog-regelwerk.md, Teil C1).
   Aufruf ohne Terminal: Start-Dev-Server.command doppelklicken, dann
   http://localhost:8743/tools/kartenpruefung.html — oder auf dem Testlink
-  …/tools/kartenpruefung.html. ?k=<id> lädt karten/<id>/karte.json; ohne ?k
+  …/tools/kartenpruefung.html. ?k=<id> lädt karten/<id>/daten.json + dialog.json; ohne ?k
   die Standardkarte. Alternativ den Dialogteil, den Claude ausgibt, unten
   einfügen. Die Seitenzahl misst SpeechBubble.paginate() der App am echten Font.
 -->
@@ -126,10 +126,12 @@ function zeige(titel, karte, optionen) {
 async function ladeUndPruefe() {
   const id = $("karte").value;
   try {
-    const karte = await fetch(`../karten/${id}/karte.json`, { cache: "no-store" }).then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+    const hole = (datei) => fetch(`../karten/${id}/${datei}`, { cache: "no-store" }).then((r) => { if (!r.ok) throw new Error(datei + ": HTTP " + r.status); return r.json(); });
+    const [daten, dialog] = await Promise.all([hole("daten.json"), hole("dialog.json")]);
+    const karte = { ...dialog, ...daten };
     zeige("Karte „" + id + "“", karte, {});
   } catch (e) {
-    $("ausgabe").innerHTML = `<div class="ergebnis nok">karten/${esc(id)}/karte.json nicht ladbar: ${esc(e.message)}</div>`;
+    $("ausgabe").innerHTML = `<div class="ergebnis nok">karten/${esc(id)}/ (daten.json + dialog.json) nicht ladbar: ${esc(e.message)}</div>`;
   }
 }
 

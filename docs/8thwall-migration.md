@@ -93,7 +93,7 @@ dieses Feld und löst `resources.luminanceImage` **neben der JSON** auf. Die
 eingecheckte `card.json` trägt trotzdem den korrigierten Pfad, damit sie auch
 für sich stimmt. Zusätzlich setzt `main.js` zur Laufzeit `moveable: true`
 (Karte in der Hand) und `physicalWidthInMeters = breiteMm / 1000` aus dem
-`breiteMm` des Designs in `karten/<id>/karte.json` (seit Build 63; Build 57–62 aus `targets/8thwall/karten.json`; 63 mm) — dadurch ist
+`breiteMm` des Designs in `karten/<id>/daten.json` (seit Build 72; Build 63–71 `karte.json`; Build 57–62 aus `targets/8thwall/karten.json`; 63 mm) — dadurch ist
 `detail.scale` metrisch. Die mm-Werte in `?stats` rechnen seit Build 61 mit
 derselben Kartenbreite (vorher fest 150 mm → Faktor 2,4 zu groß); die
 Figurgröße hängt davon NICHT ab.
@@ -102,7 +102,7 @@ Figurgröße hängt davon NICHT ab.
 
 Seit Build 63 (2026-10-06) liegen die Kartenbilder im Ordner der Karte
 (`karten/<id>/targets/`) und werden per `?design=<id>` gewählt (`designs` in
-`karte.json`, `docs/kartendesigns.md`; Build 57–62: `?karte=<id>` und
+`daten.json`, seit Build 72; davor `karte.json`; `docs/kartendesigns.md`; Build 57–62: `?karte=<id>` und
 `targets/8thwall/karten.json`). `physicalWidthInMeters` kommt aus dem
 `breiteMm` des Designs (Standard 63 mm), nicht aus `SCENE.cardWidth`.
 Das Standard-Target `card` ersetzen:

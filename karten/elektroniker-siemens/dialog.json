@@ -1,55 +1,17 @@
 {
   "_hinweis": [
-    "Kartendatei (Inhalt für die Engine, kein Code). Aus cards/elektroniker.js übernommen am 2026-10-06 (Build 63), Dialog aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026), am 2026-10-08 (Build 67) auf das Regelwerk docs/dialog-regelwerk.md gebracht — VORBILD für neue Karten.",
-    "Figur und Marker sind PLATZHALTER (PENNY-Lagerlogistik-Assets), bis die Siemens-Figur produziert ist. Quelle der Fachangaben: Siemens-Stellenausschreibung (Elektroniker/in für Betriebstechnik, Frankfurt, abgerufen 2026-10-08). Alles, was dort nicht steht, ist mit [Annahme] markiert (Regelwerk A1) und muss vor der Freigabe bestätigt oder ersetzt werden. Formulierungen ohne Arbeitgeber-Freigabe.",
-    "Regeln für den Dialogteil (persona, firmenbegriffe, themen, initial, greeting, asks, questions, reentry): docs/dialog-regelwerk.md. Prüfen: tools/kartenpruefung.html?k=elektroniker-siemens. Pfade (figur, vorschau, companyLogo, designs[].target) gelten relativ zu diesem Ordner.",
+    "Dialog der Karte (Regeln: docs/dialog-regelwerk.md, Prüfen: tools/kartenpruefung.html?k=elektroniker-siemens). Die Kartendaten stehen daneben in daten.json. Dialog aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026), am 2026-10-08 (Build 67) aufs Regelwerk gebracht.",
+    "Quelle der Fachangaben: Siemens-Stellenausschreibung (Elektroniker/in für Betriebstechnik, Frankfurt, abgerufen 2026-10-08). Alles, was dort nicht steht, ist mit [Annahme] markiert (Regelwerk A1) und muss vor der Freigabe bestätigt oder ersetzt werden. Formulierungen ohne Arbeitgeber-Freigabe.",
     "Emotion-Tags (geschlossenes Vokabular): neutral · winken · erklaeren · denken · bestaetigen · halten · schulterzucken · stolz · erschoepft · zeigen · zweihaendig. Hat figur.posen einen Eintrag mit genau diesem Namen, gilt er; sonst die Standard-Zuordnung in js/config.js → POSES; sonst idle.",
     "Highlight-Tags im Text: <welle> <zittern> <knall> <marker> <gross> <leise> (welle/zittern werden geparst, aber noch nicht bewegt). Zwei Fassungen: Firmenfassung (Standard) und neutrale Fassung (?public, ohne Logo, Link und Firmenbezüge). Texte mit {firma}, einem Firmenbegriff oder einem Verweis auf Seite/Link tragen die neutrale Fassung im Feld <name>Public (z. B. textPublic); alle anderen Texte gelten für beide (js/edition.js).",
     "REGEL Rückfragen: Die Reaktionen beschreiben den Berufsalltag, sie beurteilen nie die Person. Themen sind über alle Karten identisch; initial = je Thema genau eine offene Frage zum Start."
   ],
-  "format": 1,
-  "id": "elektroniker-siemens",
-  "profession": "Elektroniker/in für Betriebstechnik",
-  "company": "Siemens",
-  "companyLogo": null,
-  "companyNeutral": "der Betrieb",
-  "idleReturnMs": 8000,
   "persona": {
     "name": "Jonas",
     "lehrjahr": 2,
     "haltung": "ruhig und direkt, erzählt aus der Werkstatt mit Gegenständen und Größen, ab und zu ein trockener Satz"
   },
   "firmenbegriffe": [],
-  "vorschau": "vorschau.jpg",
-  "figur": {
-    "posen": {
-      "idle": "figur/body_idle.webp",
-      "affirm": "figur/body_react_affirm.webp",
-      "think": "figur/body_react_think.webp"
-    },
-    "kopf": "figur/head.webp",
-    "gesicht": {
-      "neutral": "figur/face_neutral.webp",
-      "blink": "figur/face_blink.webp",
-      "talk": "figur/face_talk.webp"
-    }
-  },
-  "designs": [
-    {
-      "id": "card",
-      "name": "Demo-Karte 070926 (aktueller Stand)",
-      "target": "targets/card.json",
-      "breiteMm": 63,
-      "notiz": "Quelle Assets/September/demo_skat_070926_mind_cropped.png (1346×2156), image-target-cli 1.0.0, Standard-Crop 3:4 zentriert, 2026-09-09"
-    },
-    {
-      "id": "tarn",
-      "name": "Tarnmuster S/W 150926",
-      "target": "targets/tarn.json",
-      "breiteMm": 63,
-      "notiz": "Hochkontrast-Pixelmuster, Upload Michael 2026-09-15 (744×1039, Aspekt 1,397 = 63×88 mm), image-target-cli 1.0.0, Standard-Crop 3:4 zentriert"
-    }
-  ],
   "themen": [
     {
       "id": "alltag",
@@ -175,24 +137,6 @@
       ]
     }
   ],
-  "reentry": {
-    "rules": [
-      {
-        "ifVisit": 4,
-        "tag": "schulterzucken",
-        "text": "Du schon wieder — langsam kenn ich dich."
-      },
-      {
-        "ifVisit": 3,
-        "tag": "bestaetigen",
-        "text": "Na, doch noch was offen?"
-      },
-      {
-        "tag": "bestaetigen",
-        "text": "Ah, da bist du ja wieder. Frag ruhig."
-      }
-    ]
-  },
   "questions": [
     {
       "id": "was",
@@ -347,5 +291,23 @@
       "end": true,
       "text": "Alles klar. Mach's gut — und viel Erfolg bei dem, was du dann machst!"
     }
-  ]
+  ],
+  "reentry": {
+    "rules": [
+      {
+        "ifVisit": 4,
+        "tag": "schulterzucken",
+        "text": "Du schon wieder — langsam kenn ich dich."
+      },
+      {
+        "ifVisit": 3,
+        "tag": "bestaetigen",
+        "text": "Na, doch noch was offen?"
+      },
+      {
+        "tag": "bestaetigen",
+        "text": "Ah, da bist du ja wieder. Frag ruhig."
+      }
+    ]
+  }
 }

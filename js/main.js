@@ -61,7 +61,7 @@ const DESKTOP_MODE = params.has("desktop");
 // auf allen Wegen erhalten bleiben (Neu laden, „Link kopieren" — beides
 // behält die Query).
 const PUBLIC_MODE = params.has("public");
-// Karte (Content) kommt seit Build 63 aus karten/<id>/karte.json (js/kartenLader.js,
+// Karte (Content) kommt seit Build 63 aus karten/<id>/daten.json + dialog.json (js/kartenLader.js,
 // ?k=<id>) und wird in boot() gesetzt — vorher statischer Import von
 // cards/elektroniker.js. `design` = gewähltes Kartenbild fürs Tracking (?design).
 let card = null;
@@ -451,7 +451,7 @@ async function loadTargetData() {
   const lum = data.resources?.luminanceImage;
   data.imagePath = new URL(lum || data.imagePath, base).href;
   // Karte liegt in der Hand → beweglich (kein „static target"). Physische
-  // Breite = Kartenbreite des Designs in karte.json (breiteMm, Standard
+  // Breite = Kartenbreite des Designs in daten.json (breiteMm, Standard
   // 63 mm laut Druckspezifikation; bis Build 56 SCENE.cardWidth = 59 mm):
   // damit ist detail.scale metrisch; die Figur hängt davon nicht ab
   // (Anchor-Einheit = Kartenbreite, s. Kopfkommentar).

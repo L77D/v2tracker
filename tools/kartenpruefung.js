@@ -3,7 +3,7 @@
    docs/dialog-regelwerk.md (Teil C1). Läuft in tools/kartenpruefung.html.
 
    pruefeKarte(karte, { seiten }) → { fehler: [...], hinweise: [...], texte: [...] }
-     karte   ganze karte.json ODER nur der Dialogteil (themen, initial,
+     karte   ganze Karte (daten.json + dialog.json zusammengeführt) ODER nur dialog.json (themen, initial,
              persona, greeting, asks, questions, reentry) — so, wie Claude ihn
              nach dem Regelwerk ausgibt. `company` darf fehlen; dann wird der
              Firmenname aus `optionen.firma` genommen (Eingabefeld der Seite).
@@ -12,7 +12,7 @@
 
    Kein DOM, kein 3D — reine Prüfregeln. Die festen Werte (Themen, Pflicht-
    fragen, Freischaltungen, Startfragen) sind die der Siemens-Karte
-   (karten/elektroniker-siemens/karte.json), entschieden 2026-10-08.
+   (karten/elektroniker-siemens/dialog.json), entschieden 2026-10-08.
    ============================================================================= */
 import { prepareCard } from "../js/edition.js";
 

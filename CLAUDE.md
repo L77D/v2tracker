@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-08 · Build 71 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-08 · Build 72 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -86,7 +86,8 @@ hochladen, alle Karten nutzen es.
 
 ```
 karten/katalog.json            {standard, karten:[{id, name, aktiv}]}
-karten/<id>/karte.json         "format": 1 · Dialog · figur · designs · vorschau
+karten/<id>/daten.json         "format": 2 · profession · company · companyLogo · figur · designs · vorschau
+karten/<id>/dialog.json        persona · firmenbegriffe · themen · initial · greeting · asks · questions · reentry
 karten/<id>/figur/*.webp       Körper je Pose, Kopf, Gesichter
 karten/<id>/targets/<d>.json + <d>_luminance.png   (image-target-cli)
 karten/<id>/vorschau.jpg       Kartenbild für ?desktop
@@ -95,14 +96,14 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
 - `js/kartenLader.js → ladeKarte()`: `?k=<id>` (ohne = `katalog.standard`),
   `?design=<id>` (ohne = erstes Design der Karte), prüft `format`
   (`KARTEN_FORMAT`, ältere Formate dort übersetzen), macht Pfade aus
-  karte.json (figur, vorschau, companyLogo, designs[].target) relativ zum
+  daten.json (figur, vorschau, companyLogo, designs[].target) relativ zum
   Kartenordner absolut, ruft `prepareCard()` (Edition). Unbekannte Karte/
   Design/`aktiv: false` → Hinweis in `#errorBox`, Button bleibt aus. Alles per
   `fetch` mit `no-store`. `?karte=` gibt es nicht mehr (Michael 2026-10-06:
   komplett auf `?k=`).
 - Pro Sitzung genau EINE Karte und EIN Target. Karten-Ids nie umbenennen oder
   wiederverwenden (stehen in gedruckten QR-Codes).
-- **Figur** (`figur` in karte.json): `posen {name: bild}` (`idle` Pflicht) →
+- **Figur** (`figur` in daten.json): `posen {name: bild}` (`idle` Pflicht) →
   `rig.js` baut je Pose ein Körper-Sprite (`nodes.bodies[name]`), `kopf`,
   `gesicht {neutral, blink, talk}`. Maße/Pivots in `rig.js` = Figuren-Vorlage
   (gleiche Leinwand 1024×1536 für alle Figuren). Posenwahl
@@ -111,12 +112,19 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
   hat → sonst idle.
 - **Designs** (seit Build 57: mehrere Kartenbilder derselben Karte, heute
   `card` + `tarn`): `designs[{id, name, target, breiteMm, notiz}]` in
-  karte.json. `physicalWidthInMeters` = `breiteMm/1000` (Standard 63 mm,
+  daten.json. `physicalWidthInMeters` = `breiteMm/1000` (Standard 63 mm,
   Druckspezifikation) — NICHT `SCENE.cardWidth` (Szenen-Einheit 0.059).
   `?stats` zeigt „Design: id · targets/<d>.json · mm". Übersicht mit QR-Codes:
   `karten.html` (Karte × Design, QR aus `vendor/qrcode/`). Neues Design + Tracking-
   Vergleich der Designs + lokaler Test: `docs/kartendesigns.md`.
-- Kartendatei `karten/elektroniker-siemens/karte.json` = Inhalt von
+- **Zwei Dateien statt karte.json (Build 72, Michael 2026-10-08):** `daten.json`
+  (Kartendaten, trägt `format: 2`) + `dialog.json` (Dialog); der Kartenlader holt
+  beide und führt sie zu einem Kartenobjekt zusammen (Rest der Engine
+  unverändert). Format 1 (karte.json) wird nicht mehr gelesen — es gab keine
+  gedruckten Karten. **Produktionskarten heißen nach ihrer Nummer**
+  (`karten/001/`, `?k=001`, kurze URLs); alles bisher Gebaute inkl.
+  `elektroniker-siemens` ist interner Prototyp.
+- Prototyp `karten/elektroniker-siemens/` (daten.json + dialog.json) = Inhalt von
   `cards/elektroniker.js` (Build 62) plus `_hinweis`, `format`, `id`,
   `figur`, `designs`, `vorschau` (alte id `siemens_elektroniker_betriebstechnik`);
   seit Build 67–70 aufs Regelwerk gebracht (Quelle: Siemens-Ausschreibung,
@@ -140,14 +148,14 @@ Public-Fassung, `persona` als Feld, kein `quelle`. Build 68 (Michael
 2026-10-08): Firmenfassung entsteht zuerst, neutrale Fassung inhaltlich
 deckungsgleich ohne Logo/Link/Firmenbezüge; nichts, was sich schnell ändert
 (kein Gehalt — Pflichtfrage `geld` ersetzt durch `berufsschule`); keine
-Eigennamen aus dem Betrieb; `firmenbegriffe` (Liste in karte.json) dürfen nur
+Eigennamen aus dem Betrieb; `firmenbegriffe` (Liste in dialog.json) dürfen nur
 in Firmenfassungen stehen; Prüfseite zeigt die Lesefassung beider Fassungen. Build 70: Aussagen ohne Quelle tragen `[Annahme]` im Text (App zeigt die Marke; vor der Freigabe auflösen; zählt nicht zur Länge); Ziel eine Seite, Sinn auf der ersten Seite. Build 71: Schätzfrage mit vier Optionen (drei Schätzungen + „Keine Ahnung", 2×2-Raster). Vorbild:
-`karten/elektroniker-siemens/karte.json`. Prüfseite
+`karten/elektroniker-siemens/dialog.json`. Prüfseite
 `tools/kartenpruefung.html` (+ `kartenpruefung.js`, reine Regeln) misst mit
 `SpeechBubble.paginate()` am echten Font — Prüfregeln dort und Regelwerk
 synchron halten.
 
-- `karten/elektroniker-siemens/karte.json` — Kartendatei (Siemens-Dialog,
+- `karten/elektroniker-siemens/dialog.json` — Dialog des Prototyps (Siemens-Dialog,
   PENNY-Figur/-Marker als Platzhalter; bis Build 62 `cards/elektroniker.js`). Felder: `persona{name,lehrjahr,haltung}` und `firmenbegriffe[]` (nur für Regelwerk/Prüfseite, App liest sie nicht), `themen`, `initial`, `greeting{tag,text,textPublic}`,
   `asks[{trigger,prompt,options[{label,sets,unlocks,tag,reply}]}]`,
   `questions[{id,thema,label,text,tag,unlocks,requires,link,url,end}]`,
@@ -191,7 +199,7 @@ Demo-Karte 070926 (`Assets/September/demo_skat_070926_mind_cropped.png`,
 1346×2156 px, Aspekt 1,60 → `SCENE.cardAspect`, Szenen-Geometrie der Eck-
 Marker/Tap-Fläche). Desktop-Kartenbild: `karten/elektroniker-siemens/vorschau.jpg`
 (1200 px, aus der Druckdatei `Assets/September/demo_skat_070926.jpg`).
-Physische Breite fürs Tracking = `breiteMm` des Designs in karte.json (63 mm,
+Physische Breite fürs Tracking = `breiteMm` des Designs in daten.json (63 mm,
 Druckspezifikation 63 × 88 mm); `SCENE.cardWidth 0.059` ist nur noch die
 Szenen-Einheit (worldRoot-Skalierung). Die Figur ist relativ zur Kartenbreite
 definiert. (MindAR-Target `card.mind`, Compiler-Skript, `targets/old/`: nur
@@ -336,7 +344,7 @@ Delta vor) als Prediction + Verlust-Brücke.
   gibt es hier nicht mehr.
 - `CHOREO.tapDebounceMs 120` · `tapMaxPx 6` · `tapMaxMs 400` (Tap-Erkennung,
   main.js) · `idleReturnMs 5500` als Fallback — die Karte (`idleReturnMs` in
-  karte.json, heute 8000) hat Vorrang.
+  daten.json, heute 8000) hat Vorrang.
 - Feature-Toggles 1–10 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock, Nr. 10 =
   Schwerkraft-Schiedsrichter (Pose-Flip).
 
@@ -350,7 +358,7 @@ Gyro-Rate; Knöpfe Fall F0–F4 · „Messung 10 s" → Kopieren (Tabellenzeile)
 Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
 oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Karte aus
-`karten/katalog.json`) · `?design=<id>` (Kartenbild aus karte.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
+`karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?public` (Public-Edition,
 kein Test-Flag — steht im QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
@@ -419,7 +427,7 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
 - iOS: Gyro-Permission MUSS in der Start-Geste angefragt werden (vor allen
   awaits); Safari cached JS aggressiv → Build-Check in ?stats nutzen. Achtung:
   Safari cached JEDE Datei einzeln (Pages: max-age 600) — `version.js` kann
-  frisch sein, während ein anderes Modul noch alt ist (karte.json/katalog.json
+  frisch sein, während ein anderes Modul noch alt ist (daten.json/dialog.json/katalog.json
   holt der Kartenlader seit Build 63 mit no-store). `?stats` zeigt deshalb seit
   Build 33 auch die geladene Karte (id, Fragenzahl, Link-Frage). Einzelne
   Datei erzwingen: ihre URL direkt in Safari öffnen, dann die App neu laden.

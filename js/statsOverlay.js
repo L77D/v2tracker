@@ -298,7 +298,7 @@ export class StatsOverlay {
       // max-age 600), ein frischer Build kann eine alte Karte mitschleppen.
       `Karte: ${this.env?.card?.id ?? "—"} · ${this.env?.card?.edition === "public" ? "PUBLIC" : "Firma"} · ${this.env?.card?.questions?.length ?? "?"} Fragen` +
       `${this.env?.card?.questions?.some((q) => q.link) ? " · Link-Frage" : ""}\n` +
-      // Kartendesign (2026-09-15; seit Build 63 aus karte.json → designs,
+      // Kartendesign (2026-09-15; seit Build 72 aus daten.json → designs,
       // gewählt per ?design): id, Target-Datei im Kartenordner und die
       // physische Breite, die als physicalWidthInMeters an die Engine ging.
       `Design: ${this.env?.design?.id ?? "—"} · ${this.env?.design?.target ?? "—"} · ${this.env?.design?.breiteMm ?? "—"} mm`;

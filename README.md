@@ -28,8 +28,8 @@ dort nie genannt. Eine Kartendatei für beides (`js/edition.js`).
 
 **Engine und Karten getrennt (Build 63, 2026-10-06):** Die Engine
 (`index.html`, `js/`, `css/`, `assets/`, `vendor/`) liegt einmal zentral; jede
-Karte ist ein reiner Daten-Ordner `karten/<id>/` ohne Code — Dialog
-(`karte.json`), Figurenbilder, Kartenbilder fürs Tracking, Desktop-Vorschau.
+Karte ist ein reiner Daten-Ordner `karten/<id>/` ohne Code — Kartendaten
+(`daten.json`), Dialog (`dialog.json`), Figurenbilder, Kartenbilder fürs Tracking, Desktop-Vorschau.
 Welche Karte läuft, steht im QR-Code: **`?k=<id>`** (ohne Parameter die
 Standard-Karte aus `karten/katalog.json`). Ein Engine-Update gilt sofort für
 alle Karten; eine neue Karte fasst die Engine nicht an.
@@ -37,7 +37,7 @@ alle Karten; eine neue Karte fasst die Engine nicht an.
 **Kein LLM, keine externe API, kein CDN im Live-Code** (einzige Ausnahme: das
 Theatre.js-Studio unter dem Dev-Flag `?timeline` lädt sein Bundle von jsDelivr)
 — alle Inhalte sind autorisiert und
-liegen als Daten im Repo (`karten/<id>/karte.json`). Laufzeit-Abhängigkeiten liegen komplett im Repo:
+liegen als Daten im Repo (`karten/<id>/daten.json` + `dialog.json`). Laufzeit-Abhängigkeiten liegen komplett im Repo:
 three.js 0.160 als schlankes Bundle (`vendor/three/`, tree-shaken auf die
 genutzten Klassen) + die zugeschnittene 8th-Wall-Engine (`vendor/8thwall/`).
 Nach dem Klick geht kein Byte an Dritte. Schlank seit Branch `v2tracker-lean`
@@ -97,7 +97,7 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   der Vorabprüfung ansehen (nur Test). **`?public`** — Public-Edition (kein
   Test-Flag, steht im QR-Code der neutralen Karte). **`?k=<id>`** — Karte
   aus `karten/katalog.json` (ohne Parameter: Standard-Karte).
-  **`?design=<id>`** — Kartenbild (Design) der Karte aus `karte.json → designs`
+  **`?design=<id>`** — Kartenbild (Design) der Karte aus `daten.json → designs`
   (ohne Parameter: das erste, heute `card`; Test-Design `tarn`). Übersicht mit
   QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=` gibt es seit
   Build 63 nicht mehr.)
@@ -142,24 +142,26 @@ Eine Karte = ein Ordner, die Engine bleibt unangetastet:
 
 ```
 karten/<id>/
-  karte.json        Dialog + Figur + Designs ("format": 1)
+  daten.json        Beruf, Firma, Logo, Figur, Designs, Vorschau ("format": 2)
+  dialog.json       Dialog (Regelwerk docs/dialog-regelwerk.md)
   figur/            body_idle.webp (Pflicht) + weitere Posen, head.webp, face_*.webp
   targets/          <design>.json + <design>_luminance.png (image-target-cli)
   vorschau.jpg      Kartenbild für ?desktop (optional)
   logo.webp         Firmenlogo (optional)
 ```
 
-1. Ordner `karten/elektroniker-siemens/` kopieren, neue `<id>` vergeben (kurz,
-   Kleinbuchstaben, Bindestriche — steht im QR-Code und wird nie wieder
-   geändert oder wiederverwendet).
+1. Ordner `karten/elektroniker-siemens/` kopieren, als `<id>` die
+   Kartennummer vergeben (`001`, `002` … — kurze URL `?k=001`; steht im
+   QR-Code und wird nie wieder geändert oder wiederverwendet).
+   `elektroniker-siemens` ist ein interner Prototyp.
 2. Dialog nach dem **Regelwerk `docs/dialog-regelwerk.md`** erzeugen (Claude
-   generiert den Dialogteil aus Faktenblatt + Interview) und in `karte.json`
-   einsetzen; Kopfdaten (`id`, `profession`, `company`, `companyLogo`,
+   generiert den Dialogteil aus Faktenblatt + Interview) und als `dialog.json`
+   ablegen; in `daten.json` die Kartendaten (`id`, `profession`, `company`, `companyLogo`,
    `companyNeutral`, `figur`, `designs`) anpassen. Firmenbezug nur über
    `company`, `{firma}` (höchstens zweimal, je mit Public-Fassung
    `textPublic` usw.) und `branded: true` — dann funktioniert `?public` ohne
    zweite Datei. Prüfen mit **`tools/kartenpruefung.html?k=<id>`** (über den
-   Dev-Server oder den Testlink, kein Terminal). Pfade in `karte.json` gelten
+   Dev-Server oder den Testlink, kein Terminal). Pfade in `daten.json` gelten
    relativ zum Kartenordner.
 3. Figur in `figur/` austauschen: aus den 1024×1536-PNGs des Nano-Banana-
    Workflows (gleiche Slicing-Positionen = Figuren-Vorlage) WebP mit Alpha in
@@ -184,7 +186,7 @@ Hinweis statt einer Fehlerseite).
 
 Ein Design = ein Kartenbild einer Karte. Weitere Designs derselben Karte (z. B.
 das Test-Design `tarn`) liegen daneben in `karten/<id>/targets/` und stehen in
-`designs` der `karte.json`; Aufruf per `?design=<id>`. Schritt für Schritt inkl. Tracking-Vergleich
+`designs` der `daten.json`; Aufruf per `?design=<id>`. Schritt für Schritt inkl. Tracking-Vergleich
 der Designs und lokalem Test über cloudflared: `docs/kartendesigns.md`.
 
 Das Standard-Target `card` der Elektroniker-Karte ist aus dem beschnittenen
@@ -196,7 +198,7 @@ Kartenbild erzeugt (`Assets/September/demo_skat_070926_mind_cropped.png`,
    Abschnitt 1)
 2. `<name>.json` und `<name>_luminance.png` nach `karten/<id>/targets/` legen
    und einchecken (Thumbnail, `_cropped`/`_original` braucht die App nicht)
-3. Physische Breite = `breiteMm` des Designs in `karte.json` (Standard 63 mm;
+3. Physische Breite = `breiteMm` des Designs in `daten.json` (Standard 63 mm;
    `SCENE.cardAspect` in `js/config.js` ist nur die Szenen-Geometrie der
    Eck-Marker; bei anderem Kartenformat mit anpassen)
 
@@ -220,7 +222,7 @@ index.html            Splash (DU SCANNST … START) + AR-Container + Overlays
 css/app.css           Tokens, Splash, Support-Zeilen, Suchrahmen, Karte-verloren-Hinweis, Hinweis-Screens
 css/question-menu.css Bottom-UI (Themen, Fragen-Karussell, Optionen, Weiter)
 js/main.js            Boot, Engine-Variante (SIMD/nicht-SIMD), 8th-Wall-Setup (Pipeline-Modul), Figur-Tap, Loop
-js/kartenLader.js     Karte laden (?k, ?design): Katalog, karte.json, Format-Prüfung, Pfade
+js/kartenLader.js     Karte laden (?k, ?design): Katalog, daten.json + dialog.json, Format-Prüfung, Pfade
 js/preflight.js       Vorabprüfung im Splash (In-App-Browser, HTTPS, Kamera-API, WASM, WebP)
 js/edition.js         Edition Firma/Public (?public): Karte filtern, Public-Texte, {firma} ersetzen
 js/version.js         Build-Nummer (?stats vergleicht mit dem Live-Stand)
@@ -251,7 +253,7 @@ js/timeline.js        ?timeline: Theatre.js-Studio (CDN)
 js/desktopMode.js     ?desktop: Karte als Boden-Plane, Maus-Orbit (nur per Flag geladen)
 js/phoneFrame.js      Smartphone-Rahmen für den Desktop-Modus
 karten/katalog.json   Liste aller Karten + Standard-Karte (?k)
-karten/<id>/          eine Karte: karte.json (Dialog, Figur, Designs), figur/, targets/, vorschau.jpg
+karten/<id>/          eine Karte: daten.json (Daten, Figur, Designs), dialog.json, figur/, targets/, vorschau.jpg
 assets/               nur Geteiltes: UI-Grafiken, Logos, Fonts (Subset)
 karten.html           Übersicht Karte × Design mit QR-Codes (Umschalten am Handy)
 vendor/qrcode/        qrcode-generator (MIT) für karten.html

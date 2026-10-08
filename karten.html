@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DETAR — Kartendesigns</title>
   <!-- Übersicht der Kartendesigns (2026-09-15; seit Build 63 aus karten/katalog.json
-       + karten/<id>/karte.json → designs): zeigt je Karte × Design Name, Link und
+       + karten/<id>/daten.json → designs): zeigt je Karte × Design Name, Link und
        QR-Code auf index.html?k=<karte>[&design=<design>], damit
        man am Handy zwischen Varianten springen kann. Die Links zeigen auf DIESEN
        Host (GitHub-Pages-Spiegel oder cloudflared-Tunnel) — so stimmen die
@@ -32,7 +32,7 @@
 </head>
 <body>
   <h1>DETAR — Kartendesigns</h1>
-  <p class="sub">Quelle: <code>karten/katalog.json</code> + <code>karten/&lt;id&gt;/karte.json</code> (designs) · QR-Code scannen oder „Starten" tippen → App mit <code>?k=&lt;karte&gt;</code>; <code>&amp;design=&lt;design&gt;</code> nur bei einem anderen als dem ersten Design der Karte (kürzerer QR-Code).</p>
+  <p class="sub">Quelle: <code>karten/katalog.json</code> + <code>karten/&lt;id&gt;/daten.json</code> (designs) · QR-Code scannen oder „Starten" tippen → App mit <code>?k=&lt;karte&gt;</code>; <code>&amp;design=&lt;design&gt;</code> nur bei einem anderen als dem ersten Design der Karte (kürzerer QR-Code).</p>
   <p class="flags">
     Zusatz-Flags im Link:
     <label><input type="checkbox" id="fStats" checked /> <code>stats</code> (Diagnose)</label>
@@ -125,7 +125,7 @@
       }
       function zeigeFehler(msg) { errEl.textContent += msg + "\n"; }
 
-      // Katalog → je aktive Karte deren karte.json → je Design eine Kachel
+      // Katalog → je aktive Karte deren daten.json → je Design eine Kachel
       holeJson("./karten/katalog.json", function (katalog) {
         var liste = [];
         var all = katalog.karten || [];
@@ -140,7 +140,7 @@
             for (var n = 0; n < liste.length; n++) karten = karten.concat(proKarte[liste[n].id] || []);
             render();
           };
-          holeJson("./karten/" + eintrag.id + "/karte.json", function (karte) {
+          holeJson("./karten/" + eintrag.id + "/daten.json", function (karte) {
             var ds = karte.designs || [];
             proKarte[eintrag.id] = [];
             for (var d = 0; d < ds.length; d++) proKarte[eintrag.id].push({

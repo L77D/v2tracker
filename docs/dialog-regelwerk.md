@@ -7,7 +7,7 @@ Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 
 Produktionsweg: **Erhebung → Faktenblatt (+ Gesprächsabschrift) → Claude generiert den
 Dialogteil → Prüfseite → menschliche Korrektur → Freigabe durch den Betrieb →
-Einbau in `karten/<id>/karte.json`.** Es gibt keine schreibenden Autoren; der
+Einbau als `karten/<nr>/dialog.json`.** Es gibt keine schreibenden Autoren; der
 Mensch korrigiert, entscheidet und gibt frei.
 
 **Zwei Fassungen, ein Auftrag.** Karten werden von Betrieben in Auftrag
@@ -21,8 +21,8 @@ Firmenzusammenhänge nennen (A9), nie aber Angaben, die sich schnell ändern
 
 Begleitend:
 
-- **Vorbild:** `karten/elektroniker-siemens/karte.json` — eine vollständige
-  Karte im Zielzustand. Bei Widerspruch zwischen Regelwerk und Vorbild gewinnt
+- **Vorbild:** `karten/elektroniker-siemens/dialog.json` (interner Prototyp) —
+  ein vollständiger Dialog im Zielzustand. Bei Widerspruch zwischen Regelwerk und Vorbild gewinnt
   das Regelwerk; dann wird das Vorbild angepasst.
 - **Prüfseite:** `tools/kartenpruefung.html` — prüft alle Punkte aus C1
   automatisch und misst die Seiten wie die App (Aufruf in Teil C).
@@ -647,12 +647,17 @@ Ohne diese Trennung stehen nach der zweiten Runde wieder „Betriebsmittel" und
 
 # Einbau
 
-1. Ordner `karten/<id>/` anlegen (Vorlage: `karten/elektroniker-siemens/`),
-   Kopfdaten in `karte.json` setzen: `format`, `id`, `profession`, `company`,
-   `companyLogo`, `companyNeutral`, `idleReturnMs`, `figur`, `designs`,
-   `vorschau`.
-2. Den geprüften Dialogteil einsetzen (ersetzt `persona`, `firmenbegriffe`,
-   `themen`, `initial`, `greeting`, `asks`, `questions`, `reentry`).
+Eine Karte besteht aus zwei Dateien (seit Build 72, 2026-10-08): `daten.json`
+(Kartendaten) und `dialog.json` (Dialog). Produktionskarten heißen nach ihrer
+Nummer: `karten/001/`, Aufruf `?k=001`.
+
+1. Ordner `karten/<nr>/` anlegen (Vorlage: `karten/elektroniker-siemens/`),
+   `daten.json` setzen: `format` (2), `id` (= Nummer), `profession`,
+   `company`, `companyLogo`, `companyNeutral`, `idleReturnMs`, `figur`,
+   `designs`, `vorschau`.
+2. Den geprüften Dialogteil als `dialog.json` daneben legen (`persona`,
+   `firmenbegriffe`, `themen`, `initial`, `greeting`, `asks`, `questions`,
+   `reentry`).
 3. Karte in `karten/katalog.json` eintragen. Kartenbilder fürs Tracking:
    `docs/kartendesigns.md`.
 4. Prüfseite mit `?k=<id>` laufen lassen — keine Fehler.
@@ -664,7 +669,7 @@ Ohne diese Trennung stehen nach der zweiten Runde wieder „Betriebsmittel" und
 
 > Du erzeugst einen DETAR-Kartendialog. Halte dich ausschließlich an das
 > Regelwerk `docs/dialog-regelwerk.md`, an das folgende Faktenblatt und an die
-> Interview-Abschrift. Vorbild ist `karten/elektroniker-siemens/karte.json`.
+> Interview-Abschrift. Vorbild ist `karten/elektroniker-siemens/dialog.json`.
 > Erfinde keine Fakten; wo du ohne Quelle einen Platzhalter setzt, markiere
 > ihn mit [Annahme] (A1). Schreib zuerst die Firmenfassung und ergänze dann je
 > Text die neutrale Fassung, wo A9 sie verlangt. Gib zuerst nur das JSON des Dialogteils aus

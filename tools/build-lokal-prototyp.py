@@ -45,7 +45,7 @@ for dp, _, files in os.walk(os.path.join(ROOT, "assets")):
 
 # --- Karten (seit Build 63: karten/<id>/ statt cards/ + assets/character) ------
 # Bilder als data:-URIs unter "./karten/…" (rig.js/desktopMode.js holen sie über
-# __asset), JSON (katalog.json, karte.json) als Objekte in window.__JSON (fetch geht
+# __asset), JSON (katalog.json, daten.json, dialog.json) als Objekte in window.__JSON (fetch geht
 # unter file:// nicht). targets/ bleibt draußen — der Prototyp läuft nur im
 # Desktop-Modus und braucht kein Tracking-Target.
 karten_json = {}

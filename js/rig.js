@@ -45,7 +45,7 @@ const FACE_Y0 = -0.11886690574041192;
 const FACE_Z0 = 0.002275570500326991;
 
 /* Baut das komplette Rig unter `parent` und liefert alle Knoten zurück.
-   `figur` kommt aus der Karte (karte.json → figur, Pfade vom Kartenlader
+   `figur` kommt aus der Karte (daten.json → figur, Pfade vom Kartenlader
    absolut gemacht): posen {name: bild} — je Pose ein Körper-Sprite unter
    nodes.bodies[name], "idle" ist Pflicht —, kopf, gesicht {neutral, blink, talk}.
    Maße und Pivots unten sind die Figuren-Vorlage (für alle Karten gleich). */
