@@ -1,6 +1,6 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 08.10.2026 (Build 70). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
+Stand 08.10.2026 (Build 71). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
 im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
 Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 **Kontrakt** geschrieben: Jede Regel ist prüfbar.
@@ -156,10 +156,12 @@ Freischaltungen fügen nur hinzu, sie nehmen nie etwas weg.
 
 ## A5. Die drei Rückfragen
 
-Die Figur fragt dreimal zurück. Jede Rückfrage hat **drei Optionen**, und jede
-Option braucht eine Reaktion (`reply`). Keine Antwort ist falsch; eine Option,
-die nichts preisgibt („Weiß ich noch nicht"), ist immer dabei und hat keinen
-Nachteil.
+Die Figur fragt dreimal zurück. Jede Option braucht eine Reaktion (`reply`).
+Keine Antwort ist falsch; eine Option, die nichts preisgibt („Weiß ich noch
+nicht", „Keine Ahnung"), ist immer dabei und hat keinen Nachteil. Die
+steuernde Rückfrage und die Abschiedsfrage haben **drei** Optionen, die
+Schätzfrage **vier** (drei Schätzungen und „Keine Ahnung"; das Menü zeigt vier
+Kacheln auf einer Seite).
 
 ### 1. Steuernde Rückfrage — `trigger: { "afterAnswers": 1 }`
 
@@ -200,8 +202,9 @@ goldrichtig". Keine Wertung durch die Hintertür („nur", „immerhin",
 ### 2. Schätzfrage — `trigger: { "afterAnswers": 3 }`
 
 Die Schätzfrage ist **didaktisch wichtig** und gehört auf jede Karte. Sie
-braucht eine richtige Antwort aus Faktenblatt oder Interview und drei
-Optionen. Erlaubte Arten:
+braucht eine richtige Antwort aus Faktenblatt oder Interview und **vier
+Optionen: drei Schätzungen und „Keine Ahnung"** (Wortlaut fest, immer an
+letzter Stelle). Erlaubte Arten der drei Schätzungen:
 
 | Art | Beispiel | Optionen |
 |---|---|---|
@@ -210,8 +213,9 @@ Optionen. Erlaubte Arten:
 | **Wo landet es?** | „Wohin geht das, was ich baue?" | drei Orte oder Abnehmer, einer stimmt |
 | **Womit arbeite ich?** | „Was habe ich am häufigsten in der Hand?" | drei Gegenstände, einer stimmt |
 
-- **Jede Reaktion nennt die richtige Antwort.** Eine falsche Schätzung wird
-  korrigiert, nicht kommentiert — kein „da hast du dich vertan".
+- **Jede Reaktion nennt die richtige Antwort**, auch die auf „Keine Ahnung".
+  Eine falsche Schätzung wird korrigiert, nicht kommentiert — kein „da hast du
+  dich vertan".
 - Die Schätzfrage setzt keine Variable und schaltet nichts frei.
 - **Trägt keine der vier Arten, wird eine neue Art gesucht**, die demselben
   Muster folgt (eine richtige Antwort, zwei plausible falsche, Auflösung in
@@ -440,7 +444,7 @@ Ausgabe ist ein JSON-Objekt mit genau diesen Feldern, danach der Prüfbericht
         { "label": "…", "sets": { "neigung": "maschinen" }, "unlocks": ["technik"], "tag": "…", "reply": "…" },
         { "label": "Weiß ich noch nicht", "sets": { "neigung": "unbekannt" }, "tag": "…", "reply": "…" }
       ] },
-    { "id": "quiz", "trigger": { "afterAnswers": 3 }, "tag": "denken", "prompt": "…", "options": [ /* 3 */ ] },
+    { "id": "quiz", "trigger": { "afterAnswers": 3 }, "tag": "denken", "prompt": "…", "options": [ /* 3 Schätzungen + „Keine Ahnung" */ ] },
     { "id": "fazit", "trigger": { "onExit": true }, "tag": "denken", "prompt": "…",
       "options": [ { "label": "…", "unlocks": ["praktikum_wie"], "tag": "…", "reply": "…" }, /* 2 weitere */ ] }
   ],
@@ -577,7 +581,8 @@ Geprüft wird:
 - [ ] Steuernde Rückfrage (falls vorhanden): `afterAnswers: 1`, eine Variable,
       drei Optionen, genau einmal `unbekannt` ohne Freischaltung, je Pol genau
       eine Zweigfrage mit passendem `requires`.
-- [ ] Schätzfrage: `afterAnswers: 3`, drei Optionen, setzt und schaltet nichts
+- [ ] Schätzfrage: `afterAnswers: 3`, vier Optionen (genau eine „Keine
+      Ahnung"), setzt und schaltet nichts
       (fehlt sie → Hinweis, Begründung nötig).
 - [ ] Abschiedsfrage: `onExit`, drei Optionen, eine schaltet `praktikum_wie`
       frei.

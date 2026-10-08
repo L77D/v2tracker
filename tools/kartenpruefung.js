@@ -217,7 +217,8 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
   if (quiz.length === 0) H("Keine Schätzfrage — nur in Ausnahmefällen zulässig; Begründung gehört in den Prüfbericht.");
   if (quiz.length > 1) F("Höchstens eine Schätzfrage (afterAnswers: 3).");
   for (const a of quiz) {
-    if ((a.options ?? []).length !== 3) F("Die Schätzfrage „" + a.id + "“ braucht drei Optionen.");
+    if ((a.options ?? []).length !== 4) F("Die Schätzfrage „" + a.id + "“ braucht vier Optionen: drei Schätzungen und „Keine Ahnung“.");
+    if ((a.options ?? []).filter((o) => /^keine ahnung$/i.test(String(o.label ?? "").trim())).length !== 1) F("Die Schätzfrage „" + a.id + "“ braucht genau eine Option „Keine Ahnung“.");
     if ((a.options ?? []).some((o) => o.sets || (o.unlocks ?? []).length)) F("Die Schätzfrage setzt nichts und schaltet nichts frei.");
   }
   if (fazit.length !== 1) F("Genau eine Abschiedsfrage (onExit) ist Pflicht.");

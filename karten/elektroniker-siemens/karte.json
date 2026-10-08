@@ -138,6 +138,11 @@
           "label": "Tausende",
           "tag": "schulterzucken",
           "reply": "So viele dann doch nicht. Ein paar hundert bei einem größeren Kasten [Annahme] — aber jedes davon geht einzeln durch meine Hände."
+        },
+        {
+          "label": "Keine Ahnung",
+          "tag": "schulterzucken",
+          "reply": "Ein paar hundert [Annahme]. Und jedes einzelne wird auf Länge geschnitten, festgeschraubt und geprüft."
         }
       ]
     },
