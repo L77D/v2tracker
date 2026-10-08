@@ -38,6 +38,13 @@
   td.s2 { color: var(--gelb); font-weight: 600; }
   td.s3 { color: var(--rot); font-weight: 700; }
   .klein { color: var(--muted); font-size: 13px; }
+  .lese { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 18px 16px; }
+  .lese h3 { font-size: 15px; margin: 18px 0 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .lese h3:first-child { border-top: 0; }
+  .lese p { margin: 4px 0 10px; }
+  .lese .wer { font-weight: 600; }
+  .lese .opt { margin-left: 18px; }
+  .lese .notiz { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -63,7 +70,7 @@
 <script type="module">
 import * as THREE from "../vendor/three/three.module.js";
 import { SpeechBubble } from "../js/speechBubble.js";
-import { pruefeKarte, MAX_SEITEN } from "./kartenpruefung.js";
+import { pruefeKarte, lesefassung, MAX_SEITEN } from "./kartenpruefung.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
@@ -82,6 +89,16 @@ for (const k of katalog?.karten ?? []) {
 }
 $("karte").value = params.get("k") || katalog?.standard || "";
 
+const ohneTags = (t) => esc(String(t ?? "").replace(/<[^>]*>/g, ""));
+function leseHtml(karte, publicMode, firma) {
+  return lesefassung(karte, { publicMode, firma }).map((b) => {
+    if (b.art === "thema") return `<h3>${esc(b.titel)}</h3>`;
+    const notiz = b.notiz ? ` <span class="notiz">(${esc(b.notiz)})</span>` : "";
+    if (b.art === "frage") return `<p><span class="wer">▸ ${esc(b.titel)}</span>${notiz}<br>${ohneTags(b.text)}</p>`;
+    if (b.art === "option") return `<p class="opt"><span class="wer">→ ${esc(b.titel)}</span><br>${ohneTags(b.text)}</p>`;
+    return `<p><span class="wer">${esc(b.titel)}:</span> ${ohneTags(b.text)}${notiz}</p>`;
+  }).join("");
+}
 function zeige(titel, karte, optionen) {
   let r;
   try { r = pruefeKarte(karte, { seiten, ...optionen }); }
@@ -96,6 +113,10 @@ function zeige(titel, karte, optionen) {
     <div class="ergebnis ${ok ? "ok" : "nok"}">${esc(titel)}: ${ok ? "keine Fehler" : r.fehler.length + " Fehler"}${r.hinweise.length ? " · " + r.hinweise.length + " Hinweise" : ""}</div>
     <h2>Fehler</h2>${liste(r.fehler, "f")}
     <h2>Hinweise</h2>${liste(r.hinweise, "h")}
+    <h2>Lesefassung neutral (?public)</h2>
+    <p class="klein">Der komplette Dialog so, wie ihn eine Schule sieht. Vor der Freigabe einmal ganz lesen: Verrät irgendetwas den Betrieb? Verweist etwas auf eine Seite, die es hier nicht gibt?</p>
+    <div class="lese">${leseHtml(karte, true, optionen.firma)}</div>
+    <details><summary>Lesefassung Firma</summary><div class="lese">${leseHtml(karte, false, optionen.firma)}</div></details>
     <h2>Länge je Text</h2>
     <p class="klein">Seiten in der Sprechblase, gemessen wie in der App. Ziel 1, höchstens ${MAX_SEITEN}.</p>
     <table><thead><tr><th>Fassung</th><th>Stelle</th><th class="n">Zeichen</th><th class="n">Seiten</th><th>Text</th></tr></thead><tbody>${zeilen}</tbody></table>`;

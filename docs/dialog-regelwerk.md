@@ -1,6 +1,6 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 08.10.2026 (Build 67). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
+Stand 08.10.2026 (Build 68). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
 im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
 Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 **Kontrakt** geschrieben: Jede Regel ist prüfbar.
@@ -9,6 +9,15 @@ Produktionsweg: **Erhebung (Faktenblatt + Interview) → Claude generiert den
 Dialogteil → Prüfseite → menschliche Korrektur → Freigabe durch den Betrieb →
 Einbau in `karten/<id>/karte.json`.** Es gibt keine schreibenden Autoren; der
 Mensch korrigiert, entscheidet und gibt frei.
+
+**Zwei Fassungen, ein Auftrag.** Karten werden von Betrieben in Auftrag
+gegeben; deshalb entsteht zuerst die **Firmenfassung**. Aus ihr wird die
+**neutrale Fassung** für öffentliche Einrichtungen abgeleitet (`?public` im
+QR-Code) — ohne Logo, ohne Link, ohne Firmenbezüge. Beide haben zuerst einen
+neutralen Bildungsauftrag: Sie vermitteln **inhaltlich deckungsgleich den
+Beruf**. Die Firmenfassung darf zusätzlich den Betrieb und allgemeine
+Firmenzusammenhänge nennen (A9), nie aber Angaben, die sich schnell ändern
+(A10).
 
 Begleitend:
 
@@ -28,7 +37,9 @@ Begleitend:
 ## A1. Auftrag und Eingaben
 
 Erzeuge den **Dialogteil** einer Karte als JSON nach dem Ausgabekontrakt (A11):
-`persona`, `themen`, `initial`, `greeting`, `asks`, `questions`, `reentry`.
+`persona`, `firmenbegriffe`, `themen`, `initial`, `greeting`, `asks`,
+`questions`, `reentry`. Erst die Firmenfassung schreiben, dann jeden Text
+prüfen, ob er eine neutrale Fassung braucht (A9).
 Kopfdaten (`id`, `profession`, `company`, `companyLogo`), Figur und
 Kartenbilder gehören **nicht** dazu — sie kommen aus der Produktion.
 
@@ -83,10 +94,10 @@ Rolle, ID und Thema nicht.
 | `anstrengend` | alltag | Was hart, unbequem oder langweilig ist |
 | `purpose` | beruf | Wem die Arbeit nützt, was ohne sie passieren würde |
 | `koennen` | beruf | Voraussetzungen: Abschluss, Fächer, Eigenschaften |
-| `geld` | beruf | Vergütung und Rahmenbedingungen |
+| `berufsschule` | beruf | Was man in der Berufsschule lernt und wie oft man dort ist |
 | `danach` | beruf | Dauer der Ausbildung, wie es danach weitergeht |
 | `jetzt_tun` | wege | Was man jetzt schon tun kann |
-| `bewerbung` | wege | Wie man sich bewirbt — ohne Termine, mit Verweis auf die Seite |
+| `bewerbung` | wege | Wie man sich bewirbt — ohne Termine; Firmenfassung verweist auf die Seite, neutrale Fassung erklärt allgemein |
 | `praktikum_wie` | wege | Wie man an ein Praktikum kommt |
 | `praktikum_was` | wege | Was ein Praktikum zeigt |
 | `link` | wege | Öffnet die Ausbildungsseite (Firmenfassung) |
@@ -120,11 +131,11 @@ Ausstieg. Die Freischaltungen sind fest:
 
 ```
 was           → tag_ablauf, purpose
-tag_ablauf    → anstrengend, geld
+tag_ablauf    → anstrengend, berufsschule
 anstrengend   → danach
 purpose       → anstrengend
-koennen       → geld, bewerbung
-geld          → danach
+koennen       → berufsschule, bewerbung
+berufsschule  → danach
 danach        → bewerbung, praktikum_wie
 jetzt_tun     → praktikum_wie
 bewerbung     → link
@@ -186,7 +197,7 @@ Optionen. Erlaubte Arten:
 
 | Art | Beispiel | Optionen |
 |---|---|---|
-| **Zahl schätzen** | „Wie viele Kabel stecken in so einem Kasten?" | deutlich zu niedrig · richtig · deutlich zu hoch |
+| **Zahl schätzen** | „Wie viele Kabel stecken in so einem Kasten?" — nur Zahlen, die lange gelten, nie Geld | deutlich zu niedrig · richtig · deutlich zu hoch |
 | **Was gehört dazu?** | „Was davon mache ich NICHT?" | drei Tätigkeiten, eine gehört nicht zum Beruf |
 | **Wo landet es?** | „Wohin geht das, was ich baue?" | drei Orte oder Abnehmer, einer stimmt |
 | **Womit arbeite ich?** | „Was habe ich am häufigsten in der Hand?" | drei Gegenstände, einer stimmt |
@@ -241,6 +252,29 @@ die Prüfseite misst genau wie die App.
 - Gilt für alle Texte in der Sprechblase: Begrüßung, Antworten, Rückfragen,
   Reaktionen, Wiedereinstieg — in beiden Fassungen.
 
+### Allgemein verständliche Sprache
+
+Jedes Wort muss eine Achtklässlerin ohne Vorwissen verstehen.
+
+- **Keine Eigennamen aus dem Betrieb:** keine Produktnamen,
+  Typenbezeichnungen, Programm- oder Abteilungsnamen und keine Abkürzungen
+  („SIVACON", „SPE", „E-Werkstatt 2"). Stattdessen beschreiben, was es ist:
+  „Schaltanlage" statt „SIVACON-Anlage", „unsere Ausbildungswerkstatt" statt
+  „SPE".
+- **Fachbegriffe** nur nach den Sprachregeln unten: höchstens einer pro
+  Antwort, im selben Satz erklärt.
+- **Firmenzusammenhänge** nennt die Firmenfassung in Alltagssprache: den Ort
+  („in Erlangen"), die Branche, wofür das Produkt gebraucht wird („Anlagen für
+  Krankenhäuser"). Wie der Betrieb seine Dinge intern nennt, gehört nicht
+  dazu.
+- **Betriebseigenes als eigene Erfahrung:** Was nur in diesem Betrieb gilt
+  (Arbeitsbeginn, Voraussetzungen, was gebaut wird), sagt die Figur als ihre
+  Erfahrung („Ich hatte Mittlere Reife, das reicht bei uns"), nicht als Regel
+  des Berufs — sonst liest es sich in der neutralen Fassung falsch.
+
+**Probe:** Könnte die Schülerin den Satz einem Freund nacherzählen, ohne ein
+Wort nachzuschlagen?
+
 ### Sprachregeln
 
 Die Figur ist Azubi und erzählt aus ihrem Tag — sie erklärt nicht das
@@ -289,30 +323,45 @@ geschrieben wie HTML: `Bei Strom ist Schludern <marker>keine Option</marker>.`
 | Tag | Wirkung |
 |---|---|
 | `marker` | gelbe Schrift mit Unterstrich |
-| `gross` | größere Schrift (Zahlen, Beträge) |
+| `gross` | größere Schrift (Zahlen) |
 | `leise` | blasser, wie beiläufig gesagt |
 | `knall` | ploppt beim Erscheinen auf |
 | `welle` | erlaubt; wird erst sichtbar, sobald der Renderer Bewegung kann |
 | `zittern` | erlaubt; wird erst sichtbar, sobald der Renderer Bewegung kann |
 
-- Höchstens **eine** Hervorhebung pro Antwort (Ausnahme: zwei Beträge mit
+- Höchstens **eine** Hervorhebung pro Antwort (Ausnahme: zwei Zahlen mit
   `gross` in derselben Antwort).
 - Jedes Tag wird geschlossen; Tags werden nicht verschachtelt.
 
-## A9. Firmenname und die zwei Fassungen
+## A9. Firmenfassung und neutrale Fassung
 
-Jede Karte läuft in zwei Fassungen aus **einer** Datei: der **Firmenfassung**
-(Standard) und der **Public-Fassung** (`?public` im QR-Code, ohne Firmenbezug).
+Beide Fassungen stehen in **einer** Datei. Die meisten Texte gelten für beide.
+Nur wo die Firmenfassung den Betrieb kenntlich macht, steht die neutrale
+Fassung als **ganzer zweiter Text** daneben.
 
-- Der Betrieb wird nur über den Platzhalter **`{firma}`** genannt, **nie**
-  ausgeschrieben. Die App setzt in der Firmenfassung den Namen ein.
-- **Höchstens zweimal** `{firma}` pro Karte (Vorbild: Begrüßung und
-  Bewerbung).
-- **In der Public-Fassung wird der Betrieb nie genannt.** Jeder Text mit
-  `{firma}` trägt deshalb eine zweite, ganze Fassung im Feld `<feld>Public`,
-  ohne `{firma}`:
+**Was die Firmenfassung zusätzlich hat:**
 
-| Ort | Feld | Public-Feld |
+- den Firmennamen — nur über den Platzhalter **`{firma}`**, nie
+  ausgeschrieben, **höchstens zweimal** pro Karte (Vorbild: Begrüßung und
+  Bewerbung);
+- allgemeine Firmenzusammenhänge in Alltagssprache (Ort, Branche, wofür das
+  Produkt gebraucht wird, A7);
+- die Link-Frage (`branded: true`) und Verweise auf die Ausbildungsseite.
+
+**Was die neutrale Fassung hat:** nichts davon. Kein Logo, kein Link, kein
+Firmenname, kein Firmenbegriff, kein Verweis auf eine Seite des Betriebs. Sie
+vermittelt den Beruf mit denselben Inhalten.
+
+**Wann ein Text eine neutrale Fassung braucht** — wenn er
+
+- `{firma}` enthält,
+- einen Begriff aus `firmenbegriffe` enthält, oder
+- auf die Ausbildungsseite, „die Seite" oder den Link verweist.
+
+Dann trägt er ein zweites Feld `<feld>Public` ohne diesen Bezug, mit
+demselben Inhalt:
+
+| Ort | Feld | neutrale Fassung |
 |---|---|---|
 | Begrüßung | `greeting.text` | `greeting.textPublic` |
 | Frage | `label`, `text` | `labelPublic`, `textPublic` |
@@ -320,18 +369,30 @@ Jede Karte läuft in zwei Fassungen aus **einer** Datei: der **Firmenfassung**
 | Option | `label`, `reply` | `labelPublic`, `replyPublic` |
 | Wiedereinstieg | `text` | `textPublic` |
 
-  Beispiel: `"text": "Online, über die Ausbildungsseite von {firma}. …"` ·
-  `"textPublic": "Online, über die Ausbildungsseite des Betriebs. …"`
-- Texte ohne `{firma}` gelten für beide Fassungen und bekommen **kein**
-  Public-Feld.
-- Die Public-Fassung muss für sich stehen: keine Link-Frage (entfällt
-  automatisch), kein Verweis auf „die Seite, die ich dir gleich zeige", und
-  jedes Thema behält mindestens drei Fragen.
+Beispiel: `"text": "Online, über die Ausbildungsseite von {firma}. …"` ·
+`"textPublic": "Du bewirbst dich direkt bei den Betrieben, meistens online. …"`
+— die neutrale Fassung erklärt allgemein, wie es läuft, ohne auf eine Seite
+zu verweisen.
+
+**Alle anderen Texte** bekommen kein Public-Feld; sie dürfen dann auch nichts
+enthalten, was den Betrieb kenntlich macht. Die Link-Frage braucht keine
+neutrale Fassung — sie entfällt in `?public` ganz.
+
+**`firmenbegriffe`** ist die Liste der Wörter, die nur die Firmenfassung
+nennen darf: Standort, eigene Bezeichnungen (z. B. „Ausbildungswerkstatt
+Erlangen"). Der Firmenname zählt automatisch dazu. Die Liste kommt aus dem
+Faktenblatt; Claude ergänzt jeden Firmenbegriff, den es selbst verwendet. Die
+Liste darf leer sein. Produkt- und Programmnamen stehen nicht darin — die
+kommen nach A7 gar nicht vor.
 
 ## A10. Verbote (hart)
 
-1. **Keine Termine, Fristen, Jahrgänge oder Veranstaltungen.** Immer auf die
-   Seite verweisen: „steht auf der Ausbildungsseite".
+1. **Nichts, was sich schnell ändert:** keine Vergütung oder Gehälter, keine
+   Urlaubstage, Zusatzleistungen, Übernahmequoten, Termine, Fristen,
+   Jahrgänge oder Veranstaltungen. Ziel der Karte ist Berufsorientierung. Wo
+   Veränderliches gefragt ist, verweist die **Firmenfassung** auf die
+   Ausbildungsseite („steht auf der Ausbildungsseite"); die neutrale Fassung
+   erklärt allgemein, ohne Verweis.
 2. **Keine Werbung.** Keine Aufforderung zur Bewerbung, kein Anpreisen des
    Betriebs, keine Superlative. Die Figur informiert über den Beruf.
 3. **Keine erfundenen Fakten** (A1).
@@ -344,6 +405,8 @@ Jede Karte läuft in zwei Fassungen aus **einer** Datei: der **Firmenfassung**
 7. **Keine personenbezogene Abfrage** — kein Alter, keine Klassenstufe, kein
    Name, keine Schule.
 8. **Kein ausgeschriebener Firmenname** — nur `{firma}` (A9).
+9. **Keine Eigennamen aus dem Betrieb** — keine Produkt-, Programm- oder
+   Abteilungsnamen, keine Abkürzungen (A7).
 
 ## A11. Ausgabekontrakt
 
@@ -353,6 +416,7 @@ Ausgabe ist ein JSON-Objekt mit genau diesen Feldern, danach der Prüfbericht
 ```jsonc
 {
   "persona": { "name": "…", "lehrjahr": 2, "haltung": "…" },
+  "firmenbegriffe": ["…"],
   "themen": [ /* fest, siehe A3 */ ],
   "initial": ["was", "koennen", "jetzt_tun", "ende"],
 
@@ -413,21 +477,29 @@ BERUF
   Betrieb (Name, wird nur als {firma} verwendet) und Standort (Ort reicht):
   Dauer der Ausbildung:
 
+FIRMENBEGRIFFE (nur Firmenfassung)
+  Standort, eigene Bezeichnungen, die die Figur nennen darf
+  (z. B. „Ausbildungswerkstatt Erlangen") — keine Produkt- oder Programmnamen
+
 TÄTIGKEITEN (in Alltagssprache, 3–5 Stichpunkte)
   – was wird konkret gemacht
   – womit (Werkzeuge, Geräte, Materialien)
   – wo (Halle, Baustelle, Büro, draußen)
 
 EIN ARBEITSTAG
-  Beginn, grober Ablauf, Feierabend, Berufsschultage
+  Beginn, grober Ablauf, Feierabend
+
+BERUFSSCHULE
+  Wie oft (Tage pro Woche oder Block), was dort gelernt wird
 
 VORAUSSETZUNGEN
   Schulabschluss:
   wichtige Fächer:
   Eigenschaften, die wirklich zählen:
 
-ZAHLEN (mindestens zwei, werden wörtlich genannt)
-  z. B. Vergütung je Lehrjahr, Urlaubstage, Stückzahlen, Entfernungen, Gewichte
+ZAHLEN (mindestens zwei, werden wörtlich genannt — nur solche, die lange gelten)
+  z. B. Stückzahlen, Größen, Entfernungen, Gewichte, Temperaturen
+  NICHT: Vergütung, Urlaubstage, Zusatzleistungen, Übernahmequoten
 
 MATERIAL FÜR DIE SCHÄTZFRAGE (mindestens eins)
   – eine Zahl, die Leute beeindruckt (Stück, Meter, Kilo, Grad …)
@@ -446,7 +518,7 @@ HARTE SEITE (Pflichtfeld)
   Was ist anstrengend, langweilig oder unbequem?
 
 DANACH
-  Übernahme, typische nächste Schritte
+  Abschluss, typische nächste Schritte im Beruf (Weiterbildung, Einsatzbereiche)
 
 PRAKTIKUM
   Möglich ab welcher Klasse (falls bekannt), an wen man sich wendet (Funktion)
@@ -455,8 +527,9 @@ LINK
   URL der Ausbildungs- oder Berufsseite
 
 NICHT ANFRAGEN
-  Bewerbungsfristen, Starttermine, Kontaktpersonen, Kampagnen — diese Angaben
-  gehören nicht in den Dialog und veralten.
+  Vergütung, Leistungen, Übernahme, Bewerbungsfristen, Starttermine,
+  Kontaktpersonen, Kampagnen, Produktnamen — diese Angaben gehören nicht in
+  den Dialog und veralten.
 ```
 
 ---
@@ -477,7 +550,8 @@ einmal von der Person, die korrigiert.
 
 Die Seite prüft eine Karte aus dem Repo (Auswahl oben, `?k=<id>`) oder einen
 eingefügten Dialogteil (Ausgabe von Claude, Firmenname daneben eintragen). Sie
-meldet **Fehler** (müssen weg) und **Hinweise** (ansehen) und zeigt für jeden
+meldet **Fehler** (müssen weg) und **Hinweise** (ansehen), zeigt die
+**Lesefassung** beider Fassungen (der komplette Dialog am Stück) und für jeden
 Text die Seitenzahl in beiden Fassungen.
 
 Geprüft wird:
@@ -499,14 +573,23 @@ Geprüft wird:
 - [ ] Wiedereinstieg: letzte Regel ohne Bedingung (weniger als drei → Hinweis).
 - [ ] Jeder `tag` aus dem Vokabular; Auszeichnung nur aus A8, geschlossen,
       nicht verschachtelt.
-- [ ] `{firma}` höchstens zweimal; jeder Text mit `{firma}` hat eine
-      Public-Fassung; keine Public-Fassung enthält `{firma}`; der Firmenname
-      steht nirgends ausgeschrieben.
+- [ ] `firmenbegriffe` vorhanden (Liste, darf leer sein).
+- [ ] `{firma}` höchstens zweimal; jeder Text mit `{firma}` hat eine neutrale
+      Fassung; der Firmenname steht nirgends ausgeschrieben.
+- [ ] Was die neutrale Fassung zeigt (gemeinsame Texte und `…Public`), enthält
+      kein `{firma}`, keinen Firmenbegriff und keinen Verweis auf eine Seite
+      des Betriebs („Seite"/„Link" → Hinweis).
+- [ ] Kein Geld, kein Gehalt (Fehler); Urlaub, Übernahme, Leistungen, Fristen
+      → Hinweis zum Nachlesen.
 - [ ] Mindestens drei Fragen je Thema, in beiden Fassungen (ohne Zweige).
 - [ ] Kein Text länger als zwei Seiten, in beiden Fassungen (zwei Seiten →
       Hinweis, Ziel ist eine).
 
 ## C2. Inhaltlich — liest ein Mensch
+
+**Pflicht vor der Freigabe:** die **Lesefassung neutral** auf der Prüfseite
+einmal ganz lesen — so sieht die Schule die Karte. Verrät irgendetwas den
+Betrieb? Verweist etwas auf eine Seite, die es dort nicht gibt?
 
 - [ ] Kommt ein Datum, eine Frist oder ein Jahrgang vor?
 - [ ] Steht irgendwo ein Urteil darüber, ob der Beruf zum Nutzer passt?
@@ -522,8 +605,12 @@ Geprüft wird:
 - [ ] Klingt eine Zeile nach Werbung, Broschüre oder Personalabteilung?
 - [ ] Ich-Form und Präsens durchgehend? Klingt alles nach **einer** Person
       (`persona.haltung`)?
-- [ ] Liest sich die Public-Fassung natürlich, ohne Lücke, wo der Betrieb
-      stand?
+- [ ] Liest sich die neutrale Fassung natürlich, ohne Lücke, wo der Betrieb
+      stand — und sagt sie inhaltlich dasselbe wie die Firmenfassung?
+- [ ] Steht Betriebseigenes als eigene Erfahrung der Figur da, nicht als Regel
+      des Berufs?
+- [ ] Gibt es ein Wort aus dem Betrieb, das eine Schülerin nicht kennt
+      (Produkt-, Programmname, Abkürzung)?
 - [ ] Ist jede prüfbare Aussage durch Faktenblatt oder Interview gedeckt?
 
 ## C3. Freigabe beim Betrieb
@@ -545,8 +632,8 @@ Ohne diese Trennung stehen nach der zweiten Runde wieder „Betriebsmittel" und
    Kopfdaten in `karte.json` setzen: `format`, `id`, `profession`, `company`,
    `companyLogo`, `companyNeutral`, `idleReturnMs`, `figur`, `designs`,
    `vorschau`.
-2. Den geprüften Dialogteil einsetzen (ersetzt `persona`, `themen`, `initial`,
-   `greeting`, `asks`, `questions`, `reentry`).
+2. Den geprüften Dialogteil einsetzen (ersetzt `persona`, `firmenbegriffe`,
+   `themen`, `initial`, `greeting`, `asks`, `questions`, `reentry`).
 3. Karte in `karten/katalog.json` eintragen. Kartenbilder fürs Tracking:
    `docs/kartendesigns.md`.
 4. Prüfseite mit `?k=<id>` laufen lassen — keine Fehler.
@@ -559,7 +646,8 @@ Ohne diese Trennung stehen nach der zweiten Runde wieder „Betriebsmittel" und
 > Du erzeugst einen DETAR-Kartendialog. Halte dich ausschließlich an das
 > Regelwerk `docs/dialog-regelwerk.md`, an das folgende Faktenblatt und an die
 > Interview-Abschrift. Vorbild ist `karten/elektroniker-siemens/karte.json`.
-> Erfinde keine Fakten. Gib zuerst nur das JSON des Dialogteils aus
+> Erfinde keine Fakten. Schreib zuerst die Firmenfassung und ergänze dann je
+> Text die neutrale Fassung, wo A9 sie verlangt. Gib zuerst nur das JSON des Dialogteils aus
 > (Ausgabekontrakt A11). Danach folgt ein **Prüfbericht** mit drei Teilen:
 > (1) jede Angabe, die gefehlt hat, und wie du damit umgegangen bist;
 > (2) die gewählte Achse und die Art der Schätzfrage mit kurzer Begründung —

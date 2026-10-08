@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-08 · Build 67 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-08 · Build 68 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen ?public + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -134,14 +134,19 @@ Definition: `Dialogsystem/DETAR_Dialogsystem.md` im Projektordner (Begründungen
 2026-10-08, löst `Dialogsystem/DETAR_Dialog_Generierung.md` ab) — festes
 Raster (IDs, Themen, Freischaltungen, `initial` wie die Siemens-Karte), drei
 Rückfragen, Länge in Seiten (Ziel 1, max 2), `{firma}` max 2× mit
-Public-Fassung, `persona` als Feld, kein `quelle`. Vorbild:
+Public-Fassung, `persona` als Feld, kein `quelle`. Build 68 (Michael
+2026-10-08): Firmenfassung entsteht zuerst, neutrale Fassung inhaltlich
+deckungsgleich ohne Logo/Link/Firmenbezüge; nichts, was sich schnell ändert
+(kein Gehalt — Pflichtfrage `geld` ersetzt durch `berufsschule`); keine
+Eigennamen aus dem Betrieb; `firmenbegriffe` (Liste in karte.json) dürfen nur
+in Firmenfassungen stehen; Prüfseite zeigt die Lesefassung beider Fassungen. Vorbild:
 `karten/elektroniker-siemens/karte.json`. Prüfseite
 `tools/kartenpruefung.html` (+ `kartenpruefung.js`, reine Regeln) misst mit
 `SpeechBubble.paginate()` am echten Font — Prüfregeln dort und Regelwerk
 synchron halten.
 
 - `karten/elektroniker-siemens/karte.json` — Kartendatei (Siemens-Dialog,
-  PENNY-Figur/-Marker als Platzhalter; bis Build 62 `cards/elektroniker.js`). Felder: `persona{name,lehrjahr,haltung}` (nur Schreibvorgabe, App liest es nicht), `themen`, `initial`, `greeting{tag,text,textPublic}`,
+  PENNY-Figur/-Marker als Platzhalter; bis Build 62 `cards/elektroniker.js`). Felder: `persona{name,lehrjahr,haltung}` und `firmenbegriffe[]` (nur für Regelwerk/Prüfseite, App liest sie nicht), `themen`, `initial`, `greeting{tag,text,textPublic}`,
   `asks[{trigger,prompt,options[{label,sets,unlocks,tag,reply}]}]`,
   `questions[{id,thema,label,text,tag,unlocks,requires,link,url,end}]`,
   `reentry.rules`, je Textfeld optional `<feld>Public`. Text darf `<marker> <gross> <leise> <knall>` tragen

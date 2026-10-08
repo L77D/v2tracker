@@ -2,9 +2,9 @@
   "_hinweis": [
     "Kartendatei (Inhalt für die Engine, kein Code). Aus cards/elektroniker.js übernommen am 2026-10-06 (Build 63), Dialog aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026), am 2026-10-08 (Build 67) auf das Regelwerk docs/dialog-regelwerk.md gebracht — VORBILD für neue Karten.",
     "Figur und Marker sind PLATZHALTER (PENNY-Lagerlogistik-Assets), bis die Siemens-Figur produziert ist. Fachliche Angaben aus der Siemens-Stellenausschreibung (Stand 31.08.2026), Formulierungen ohne Arbeitgeber-Freigabe.",
-    "Regeln für den Dialogteil (persona, themen, initial, greeting, asks, questions, reentry): docs/dialog-regelwerk.md. Prüfen: tools/kartenpruefung.html?k=elektroniker-siemens. Pfade (figur, vorschau, companyLogo, designs[].target) gelten relativ zu diesem Ordner.",
+    "Regeln für den Dialogteil (persona, firmenbegriffe, themen, initial, greeting, asks, questions, reentry): docs/dialog-regelwerk.md. Prüfen: tools/kartenpruefung.html?k=elektroniker-siemens. Pfade (figur, vorschau, companyLogo, designs[].target) gelten relativ zu diesem Ordner.",
     "Emotion-Tags (geschlossenes Vokabular): neutral · winken · erklaeren · denken · bestaetigen · halten · schulterzucken · stolz · erschoepft · zeigen · zweihaendig. Hat figur.posen einen Eintrag mit genau diesem Namen, gilt er; sonst die Standard-Zuordnung in js/config.js → POSES; sonst idle.",
-    "Highlight-Tags im Text: <welle> <zittern> <knall> <marker> <gross> <leise> (welle/zittern werden geparst, aber noch nicht bewegt). {firma} = Firmenname, höchstens zweimal; jeder Text mit {firma} trägt eine Public-Fassung im Feld <name>Public (z. B. textPublic) — in ?public wird der Betrieb nie genannt (js/edition.js).",
+    "Highlight-Tags im Text: <welle> <zittern> <knall> <marker> <gross> <leise> (welle/zittern werden geparst, aber noch nicht bewegt). Zwei Fassungen: Firmenfassung (Standard) und neutrale Fassung (?public, ohne Logo, Link und Firmenbezüge). Texte mit {firma}, einem Firmenbegriff oder einem Verweis auf Seite/Link tragen die neutrale Fassung im Feld <name>Public (z. B. textPublic); alle anderen Texte gelten für beide (js/edition.js).",
     "REGEL Rückfragen: Die Reaktionen beschreiben den Berufsalltag, sie beurteilen nie die Person. Themen sind über alle Karten identisch; initial = je Thema genau eine offene Frage zum Start."
   ],
   "format": 1,
@@ -19,6 +19,7 @@
     "lehrjahr": 2,
     "haltung": "ruhig und direkt, erzählt aus der Werkstatt mit Gegenständen und Größen, ab und zu ein trockener Satz"
   },
+  "firmenbegriffe": [],
   "vorschau": "vorschau.jpg",
   "figur": {
     "posen": {
@@ -217,7 +218,7 @@
       "text": "Halb sieben in der Werkstatt, kurz besprechen, wer was macht, dann geht's an den Kasten. Vormittags wird meistens geschraubt, nachmittags gemessen. Einmal die Woche Berufsschule.",
       "unlocks": [
         "anstrengend",
-        "geld"
+        "berufsschule"
       ]
     },
     {
@@ -225,9 +226,9 @@
       "thema": "beruf",
       "label": "Was muss ich dafür können?",
       "tag": "erklaeren",
-      "text": "Mittlere Reife reicht als Abschluss. Wichtiger ist, dass dir Physik und Mathe nicht egal sind. Und dass du sorgfältig arbeitest — bei Strom ist Schludern <marker>keine Option</marker>.",
+      "text": "Ich hatte Mittlere Reife, das reicht bei uns. Wichtiger ist, dass dir Physik und Mathe nicht egal sind. Und dass du sorgfältig arbeitest — bei Strom ist Schludern <marker>keine Option</marker>.",
       "unlocks": [
-        "geld",
+        "berufsschule",
         "bewerbung"
       ]
     },
@@ -256,11 +257,11 @@
       "text": "Technischer als die meisten denken. Wenn der Kasten fertig ist, messe ich: Kommt der Strom überall an, wo er hin soll? Und nirgends, wo er nicht hin darf? Stimmt was nicht, suche ich den Fehler, bis ich ihn hab."
     },
     {
-      "id": "geld",
+      "id": "berufsschule",
       "thema": "beruf",
-      "label": "Was verdient man dabei?",
-      "tag": "bestaetigen",
-      "text": "Im ersten Jahr <gross>1.261 Euro</gross> im Monat, im vierten <gross>1.466</gross>. Dazu 30 Tage Urlaub und 50 Euro im Monat auf so eine Guthabenkarte. Klingt erstmal viel für die Schule, ist es auch.",
+      "label": "Was lernst du in der Berufsschule?",
+      "tag": "erklaeren",
+      "text": "Einmal die Woche bin ich in der Berufsschule. Da lerne ich, wie Strom und Schaltungen funktionieren, und rechne viel. Dazu kommen Deutsch und Sozialkunde, wie in der normalen Schule.",
       "unlocks": [
         "danach"
       ]
@@ -280,7 +281,7 @@
       "thema": "beruf",
       "label": "Und was kommt danach?",
       "tag": "stolz",
-      "text": "Die Ausbildung dauert dreieinhalb Jahre. Danach wirst du meistens übernommen, also fest angestellt. Der Betrieb bildet aus, weil er Leute braucht — nicht, weil es nett aussieht.",
+      "text": "Die Ausbildung dauert dreieinhalb Jahre, am Ende steht eine Prüfung. Danach arbeitest du als Elektroniker. Oder du lernst weiter, zum Beispiel zum Meister.",
       "unlocks": [
         "bewerbung",
         "praktikum_wie"
@@ -292,7 +293,7 @@
       "label": "Wie bewirbt man sich?",
       "tag": "zeigen",
       "text": "Online, über die Ausbildungsseite von {firma}. Da steht, welche Unterlagen du brauchst und wann es losgeht. Das ändert sich, deshalb guckst du da am besten direkt nach.",
-      "textPublic": "Online, über die Ausbildungsseite des Betriebs. Da steht, welche Unterlagen du brauchst und wann es losgeht. Das ändert sich, deshalb guckst du da am besten direkt nach.",
+      "textPublic": "Du bewirbst dich direkt bei den Betrieben, meistens online. Was sie von dir sehen wollen, steht in ihrer Ausschreibung.",
       "unlocks": [
         "link"
       ]

@@ -25,11 +25,11 @@ export const THEMEN = [
 // Pflichtfragen: Thema und Mindest-Freischaltungen (feste Topologie)
 export const PFLICHT = {
   was:           { thema: "alltag", unlocks: ["tag_ablauf", "purpose"] },
-  tag_ablauf:    { thema: "alltag", unlocks: ["anstrengend", "geld"] },
+  tag_ablauf:    { thema: "alltag", unlocks: ["anstrengend", "berufsschule"] },
   anstrengend:   { thema: "alltag", unlocks: ["danach"] },
   purpose:       { thema: "beruf",  unlocks: ["anstrengend"] },
-  koennen:       { thema: "beruf",  unlocks: ["geld", "bewerbung"] },
-  geld:          { thema: "beruf",  unlocks: ["danach"] },
+  koennen:       { thema: "beruf",  unlocks: ["berufsschule", "bewerbung"] },
+  berufsschule:  { thema: "beruf",  unlocks: ["danach"] },
   danach:        { thema: "beruf",  unlocks: ["bewerbung", "praktikum_wie"] },
   jetzt_tun:     { thema: "wege",   unlocks: ["praktikum_wie"] },
   bewerbung:     { thema: "wege",   unlocks: ["link"] },
@@ -47,6 +47,12 @@ export const MAX_ZUSATZ = 2;
 export const MIN_JE_THEMA = 3;
 export const MAX_FIRMA = 2;
 const UNBEKANNT = "unbekannt";
+// Verweise auf Firmenbestandteile, die es in der neutralen Fassung nicht gibt
+const SEITE_FEHLER = /ausbildungsseite|webseite|website|homepage|internetseite/i;
+const SEITE_HINWEIS = /\bseite\b|\blink\b/i;
+// Angaben, die sich schnell ändern (Regelwerk A10) — Fehler bzw. Hinweis
+const WANDEL_FEHLER = /€|\beuro\b|gehalt|vergütung|\blohn\b/i;
+const WANDEL_HINWEIS = /verdien|urlaub|übernomm|übernahme|prämie|zuschuss|frist|bewerbungsschluss/i;
 
 /* Alle Textstellen der Karte mit Ort, Feldname und Objekt. */
 function textstellen(k) {
@@ -54,8 +60,10 @@ function textstellen(k) {
   const add = (ort, obj, feld) => { if (obj && obj[feld] != null) out.push({ ort, obj, feld }); };
   if (k.greeting) add("Begrüßung", k.greeting, "text");
   for (const q of k.questions ?? []) {
+    const n = out.length;
     add("Frage " + q.id + " · Beschriftung", q, "label");
     add("Frage " + q.id, q, "text");
+    if (q.branded) for (let i = n; i < out.length; i++) out[i].nurFirma = true; // gibt es nur in der Firmenfassung
   }
   for (const a of k.asks ?? []) {
     add("Rückfrage " + a.id, a, "prompt");
@@ -93,9 +101,10 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
   const byId = new Map();
 
   /* --- Pflichtfelder --------------------------------------------------- */
-  for (const feld of ["themen", "initial", "persona", "greeting", "asks", "questions", "reentry"]) {
+  for (const feld of ["themen", "initial", "persona", "firmenbegriffe", "greeting", "asks", "questions", "reentry"]) {
     if (k[feld] == null) F("Feld „" + feld + "“ fehlt.");
   }
+  if (k.firmenbegriffe != null && !Array.isArray(k.firmenbegriffe)) F("firmenbegriffe muss eine Liste sein (darf leer sein).");
   const p = k.persona;
   if (p && (!p.name || !p.lehrjahr || !p.haltung)) F("persona braucht name, lehrjahr und haltung.");
 
@@ -251,25 +260,40 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
     }
   }
 
-  /* --- Firmenname -------------------------------------------------------- */
+  /* --- Firmenname, Firmenbegriffe, Verweise, schnell veraltende Angaben ---
+     Gemeinsame Texte (ohne Public-Fassung) und Public-Fassungen erscheinen in
+     der neutralen Fassung — dort darf nichts den Betrieb kenntlich machen. */
   const name = (k.company ?? firma ?? "").trim();
+  const begriffe = [name, ...(Array.isArray(k.firmenbegriffe) ? k.firmenbegriffe : [])]
+    .map((b) => String(b ?? "").trim()).filter((b) => b.length > 1);
+  const findeBegriff = (t) => begriffe.find((b) => t.toLowerCase().includes(b.toLowerCase()));
   let firmaZahl = 0;
   for (const s of stellen) {
     const orig = String(s.obj[s.feld] ?? "");
     const pub = s.obj[s.feld + "Public"];
     const n = (orig.match(/\{firma\}/g) ?? []).length;
     firmaZahl += n;
-    if (n && pub == null) F(s.ort + ": enthält {firma}, aber keine Public-Fassung (" + s.feld + "Public).");
-    if (pub != null && /\{firma\}/.test(pub)) F(s.ort + ": die Public-Fassung darf {firma} nicht enthalten.");
-    if (name && name.length > 1) {
-      const re = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-      if (re.test(orig)) F(s.ort + ": Firmenname „" + name + "“ steht im Text — stattdessen {firma} schreiben.");
-      if (pub != null && re.test(pub)) F(s.ort + ": Firmenname „" + name + "“ steht in der Public-Fassung.");
+    if (name && orig.toLowerCase().includes(name.toLowerCase())) F(s.ort + ": Firmenname „" + name + "“ ausgeschrieben — stattdessen {firma} schreiben.");
+    for (const t of [orig, pub]) {
+      if (typeof t !== "string") continue;
+      if (WANDEL_FEHLER.test(t)) F(s.ort + ": nennt Geld oder Gehalt — Angaben, die sich schnell ändern, gehören nicht in die Karte.");
+      else if (WANDEL_HINWEIS.test(t)) H(s.ort + ": prüfen, ob hier etwas steht, das sich schnell ändert (Urlaub, Übernahme, Leistungen, Fristen).");
     }
-    if (pub != null && !n) H(s.ort + ": hat eine Public-Fassung, obwohl {firma} nicht vorkommt.");
+    if (s.nurFirma) continue; // Link-Frage: gibt es nur in der Firmenfassung
+    if (n && pub == null) F(s.ort + ": enthält {firma}, aber keine neutrale Fassung (" + s.feld + "Public).");
+    const neutral = pub != null ? String(pub) : orig; // was die neutrale Fassung zeigt
+    const wo = s.ort + (pub != null ? " (neutrale Fassung)" : " (gilt für beide Fassungen)");
+    if (/\{firma\}/.test(neutral)) F(wo + ": darf {firma} nicht enthalten.");
+    const b = findeBegriff(neutral);
+    if (b) F(wo + ": „" + b + "“ ist ein Firmenbegriff — neutral formulieren oder eine neutrale Fassung (" + s.feld + "Public) ergänzen.");
+    if (SEITE_FEHLER.test(neutral)) F(wo + ": verweist auf eine Seite des Betriebs — die neutrale Fassung hat keine.");
+    else if (SEITE_HINWEIS.test(neutral)) H(wo + ": „Seite“/„Link“ — prüfen, ob das auf die Ausbildungsseite verweist.");
+    if (pub != null && !n && !findeBegriff(orig) && !SEITE_FEHLER.test(orig) && !SEITE_HINWEIS.test(orig)) {
+      H(s.ort + ": hat eine neutrale Fassung, obwohl die Firmenfassung keinen Firmenbezug erkennen lässt.");
+    }
   }
   if (firmaZahl > MAX_FIRMA) F("{firma} steht " + firmaZahl + "-mal in der Firmenfassung — höchstens " + MAX_FIRMA + ".");
-  if (!name) H("Kein Firmenname bekannt — die Prüfung auf ausgeschriebene Firmennamen entfällt.");
+  if (!name) H("Kein Firmenname bekannt — die Prüfung auf den ausgeschriebenen Firmennamen entfällt.");
 
   /* --- Belegung je Thema und Länge, je Fassung --------------------------- */
   const texte = [];
@@ -295,4 +319,31 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
   if (zwei) H(zwei + " Texte brauchen 2 Seiten (Ziel ist 1).");
 
   return { fehler, hinweise, texte };
+}
+
+/* Lesefassung: der komplette Dialog einer Fassung am Stück, in der Reihenfolge,
+   in der ihn ein Schüler höchstens sehen kann (Begrüßung, Themen mit Fragen,
+   Rückfragen, Ausstieg, Wiedereinstieg). Liefert [{art, titel, text, notiz}]. */
+export function lesefassung(karte, { publicMode = false, firma = "" } = {}) {
+  const k = prepareCard({ ...karte, company: karte.company || firma || karte.company }, { publicMode });
+  const out = [];
+  if (k.greeting) out.push({ art: "figur", titel: "Begrüßung", text: k.greeting.text });
+  const zweig = (q) => q.requires ? "nur nach Antwort „" + Object.values(q.requires).flat().join(", ") + "“" : "";
+  for (const t of k.themen ?? []) {
+    out.push({ art: "thema", titel: t.label });
+    for (const q of (k.questions ?? []).filter((q) => q.thema === t.id)) {
+      out.push({ art: "frage", titel: q.label, text: q.text, notiz: [zweig(q), q.link ? "öffnet die Seite" : ""].filter(Boolean).join(" · ") });
+    }
+  }
+  out.push({ art: "thema", titel: "Rückfragen der Figur" });
+  for (const a of k.asks ?? []) {
+    const wann = a.trigger?.onExit ? "beim Ausstieg" : "nach der " + a.trigger?.afterAnswers + ". Antwort";
+    out.push({ art: "figur", titel: wann, text: a.prompt });
+    for (const o of a.options ?? []) out.push({ art: "option", titel: o.label, text: o.reply });
+  }
+  const ende = (k.questions ?? []).find((q) => q.end);
+  if (ende) { out.push({ art: "thema", titel: "Ausstieg" }); out.push({ art: "frage", titel: ende.label, text: ende.text }); }
+  out.push({ art: "thema", titel: "Wiedereinstieg" });
+  for (const r of k.reentry?.rules ?? []) out.push({ art: "figur", titel: r.ifVisit ? "ab dem " + r.ifVisit + ". Besuch" : "Standard", text: r.text });
+  return out;
 }
