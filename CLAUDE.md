@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 85 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 86 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -300,6 +300,14 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   springt aus dem Panel (`IconHandy.jumpOut`) und hüpft in 3D auf der
   Kartenmitte mit flachem Pixel-Schatten (`ActivationFX.landIcon/tickHopper`,
   `ACTFX.hopper="ja"`).
+- **Tests (Build 86, Refactoring Stufe 3a):** `node --test 'tests/*.test.mjs'`
+  (Node 22, keine Abhängigkeiten, keine package.json — Node erkennt die
+  ES-Module am Syntax; das Verzeichnis allein als Argument geht nicht). Geprüft
+  werden die DOM-freien Module: dialogEngine, edition, bubbleText, poseArbiter
+  (three.js aus `vendor/` läuft in Node), jitterMetrics und die Regeln in
+  `tools/kartenpruefung.js` — die Prototyp-Karte 000 muss dort fehlerfrei
+  bleiben. Datengrundlage lädt `tests/karte.mjs`. Vor jedem Push laufen
+  lassen; wer eine Regel in Regelwerk/Prüfseite ändert, zieht den Test nach.
 - Kommentare/Commits auf Deutsch, Commit-Trailer `Co-Authored-By: Claude`.
 - Änderungen an Tracking-Werten immer mit Datum + Begründung im Kommentar
   (Fix-Log lebt in den Code-Kommentaren; „(MindAR-Stand …)" = Historie aus
@@ -454,11 +462,14 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   WebXR-Fusion, Eck-Anker-Karte, Prüfstand) mit Wissen + Vorgehen je Punkt.
   MindAR-Stand (2026-07): B (MindAR-Fork) und C sind auf diesem Branch
   gegenstandslos, A/D/E gelten sinngemäß weiter.
-- Refactoring Stufe 3 (offen, 2026-09-15): main.js in Module zerlegen (Tap-
+- Refactoring Stufe 3 (offen, 2026-09-15; Stufe 3a = Tests seit Build 86
+  erledigt, Plan 2026-10-09: 3b main.js zerlegen → 3c Stabilizer in Stufen +
+  `snapshot()` für ?stats → 3d Booleans → 3e Entkopplung): main.js in Module zerlegen (Tap-
   Eingabe, Figur-Hüpfer, Pipeline-Modul) · `poseStabilizer.tick()` in Stufen
   mit expliziten Parametern · Scale-Lock ausbauen (erst Re-Lock-Zähler am
   Gerät prüfen) · Arbiter: `qEarth` ändert sich 60 Hz ohne Dead-Band → kann
   stale Frames als „neu" melden (Vision-Hz in ?stats prüfen) · `SCENE.cardAspect`
   1,60 → 1,40 (63×88 mm) · Tests (`node --test`) für bubbleText, dialogEngine,
-  edition, poseArbiter · `"ja"/"nein"` → Booleans (bricht alte Presets).
+  edition, poseArbiter (erledigt, s. „Konventionen") · `"ja"/"nein"` → Booleans
+  (loadTuning übersetzt alte String-Presets).
 - Fix-Historie: Code-Kommentare mit Datum (2026-07-08 / -09 / -13 / -14).
