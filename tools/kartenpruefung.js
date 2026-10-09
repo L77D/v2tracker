@@ -2,11 +2,13 @@
    DETAR — Kartenprüfung: die maschinellen Punkte der Prüfliste aus
    docs/dialog-regelwerk.md (Teil C1). Läuft in tools/kartenpruefung.html.
 
-   pruefeKarte(karte, { seiten }) → { fehler: [...], hinweise: [...], texte: [...] }
+   pruefeKarte(karte, { seiten, firma, dateien }) → { fehler: [...], hinweise: [...], texte: [...] }
      karte   ganze Karte (daten.json + dialog.json zusammengeführt) ODER nur dialog.json (themen, initial,
              persona, greeting, asks, questions, reentry) — so, wie Claude ihn
              nach dem Regelwerk ausgibt. `company` darf fehlen; dann wird der
              Firmenname aus `optionen.firma` genommen (Eingabefeld der Seite).
+     dateien { dialog, daten } roh aus dem Repo — dann wird jede Datei für sich
+             auf nicht vorgesehene Felder geprüft (A11), sonst die Karte als Ganzes.
      seiten  Funktion text → Seitenzahl in der Sprechblase. Die Seite übergibt
              SpeechBubble.paginate() der App — gemessen am echten Font.
 
@@ -47,6 +49,29 @@ export const MAX_ZUSATZ = 2;
 export const MIN_JE_THEMA = 3;
 export const MAX_FIRMA = 2;
 const UNBEKANNT = "unbekannt";
+// Erlaubte Felder (Regelwerk A11): nur, was App oder Prüfseite lesen — auch kein
+// _hinweis. Notizen zur Karte gehören in den Prüfbericht im Projektordner.
+export const FELDER_DIALOG = ["persona", "firmenbegriffe", "themen", "initial", "greeting", "asks", "questions", "reentry"];
+export const FELDER_DATEN = ["format", "id", "profession", "company", "companyLogo", "companyNeutral", "idleReturnMs", "vorschau", "figur", "designs"];
+const FELDER = {
+  persona: ["name", "lehrjahr", "haltung"],
+  thema: ["id", "label"],
+  greeting: ["tag", "text", "textPublic"],
+  ask: ["id", "trigger", "tag", "prompt", "promptPublic", "options"],
+  trigger: ["afterAnswers", "onExit"],
+  option: ["label", "labelPublic", "sets", "unlocks", "tag", "reply", "replyPublic"],
+  frage: ["id", "thema", "label", "labelPublic", "tag", "text", "textPublic", "unlocks", "requires", "link", "branded", "url", "end"],
+  reentry: ["rules"],
+  regel: ["ifVisit", "ifVar", "ifAsked", "ifNotAsked", "tag", "text", "textPublic"],
+  figur: ["posen", "kopf", "gesicht"],
+  design: ["id", "fassung", "name", "target", "breiteMm", "notiz"],
+};
+function fremdeFelder(obj, erlaubt, ort, F) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return;
+  for (const f of Object.keys(obj)) {
+    if (!erlaubt.includes(f)) F(ort + ": Feld „" + f + "“ ist nicht vorgesehen — exportierte Dateien enthalten nur, was App oder Prüfseite lesen (Notizen gehören in den Prüfbericht).");
+  }
+}
 // Markierung für Aussagen ohne Quelle (Regelwerk A1) — zählt nicht zur Länge
 export const ANNAHME = "[Annahme]";
 const ANNAHME_RE = /\s*\[Annahme\]/g;
@@ -111,7 +136,7 @@ function pruefeMarkup(text) {
   return probleme;
 }
 
-export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
+export function pruefeKarte(karte, { seiten = null, firma = "", dateien = null } = {}) {
   const fehler = [], hinweise = [];
   const F = (t) => fehler.push(t), H = (t) => hinweise.push(t);
   const k = karte ?? {};
@@ -126,6 +151,29 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
   if (k.firmenbegriffe != null && !Array.isArray(k.firmenbegriffe)) F("firmenbegriffe muss eine Liste sein (darf leer sein).");
   const p = k.persona;
   if (p && (!p.name || !p.lehrjahr || !p.haltung)) F("persona braucht name, lehrjahr und haltung.");
+
+  /* --- Nur vorgesehene Felder (A11) ------------------------------------- */
+  if (dateien) { // aus dem Repo geladen: jede Datei für sich
+    fremdeFelder(dateien.dialog, FELDER_DIALOG, "dialog.json", F);
+    fremdeFelder(dateien.daten, FELDER_DATEN, "daten.json", F);
+  } else { // eingefügt: nur der Dialogteil oder die ganze Karte
+    fremdeFelder(k, k.format != null ? [...FELDER_DIALOG, ...FELDER_DATEN] : FELDER_DIALOG, k.format != null ? "Karte" : "Dialogteil", F);
+  }
+  fremdeFelder(p, FELDER.persona, "persona", F);
+  (Array.isArray(k.themen) ? k.themen : []).forEach((t, i) => fremdeFelder(t, FELDER.thema, "Thema " + (i + 1), F));
+  fremdeFelder(k.greeting, FELDER.greeting, "Begrüßung", F);
+  for (const a of asks) {
+    fremdeFelder(a, FELDER.ask, "Rückfrage " + a.id, F);
+    fremdeFelder(a.trigger, FELDER.trigger, "Rückfrage " + a.id + " · trigger", F);
+    (a.options ?? []).forEach((o, i) => fremdeFelder(o, FELDER.option, "Rückfrage " + a.id + " · Option " + (i + 1), F));
+  }
+  for (const q of fragen) fremdeFelder(q, FELDER.frage, "Frage " + (q.id ?? "?"), F);
+  fremdeFelder(k.reentry, FELDER.reentry, "Wiedereinstieg", F);
+  (k.reentry?.rules ?? []).forEach((r, i) => fremdeFelder(r, FELDER.regel, "Wiedereinstieg " + (i + 1), F));
+  if (k.format != null) {
+    fremdeFelder(k.figur, FELDER.figur, "figur", F);
+    (Array.isArray(k.designs) ? k.designs : []).forEach((d, i) => fremdeFelder(d, FELDER.design, "Design " + (d?.id ?? i + 1), F));
+  }
 
   /* --- Themen und IDs -------------------------------------------------- */
   const themenOk = Array.isArray(k.themen) && k.themen.length === THEMEN.length &&
@@ -201,7 +249,6 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
     }
     if (!q.end && !q.label) F("Frage „" + q.id + "“ hat keine Beschriftung (label).");
     if (!q.text) F("Frage „" + q.id + "“ hat keinen Text.");
-    if ("quelle" in q) H("Frage „" + q.id + "“ trägt „quelle“ — das Feld wird nicht mehr geführt.");
   }
   const link = byId.get("link");
   if (link && !(link.link === true && link.branded === true && /^https?:\/\//.test(link.url ?? ""))) {
