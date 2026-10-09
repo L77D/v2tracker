@@ -6,7 +6,9 @@
                      unter vendor/8thwall/), Figur steht auf der echten Karte.
    • ?desktop:       Desktop-Testmodus ohne Kamera (js/desktopMode.js) — Karte
                      als Boden-Plane, Maus-Orbit. Zum Entwickeln/Prüfen.
-   • ?debug:         pinke Hilfslinien (Lauffeld + FACE_CAM-Kegel) zuschalten.
+   • ?debug:         pinke Hilfslinien (Lauffeld + FACE_CAM-Kegel) zuschalten,
+                     im AR-Modus zusätzlich der Tracker-Rahmen (Erkennungsfläche
+                     im Kamerabild vs. Display-Ausschnitt).
 
    TRACKING (seit 2026-09-09, Branch 8thwall-image-targets): Die Kamera und die
    Bilderkennung liefert die Open-Source-8th-Wall-Engine (MIT, ohne SLAM). Sie
@@ -85,7 +87,7 @@ let relocalize = null;
 // Dev-Module werden NUR mit ihrem URL-Flag geladen (kein Byte davon im Normalfall):
 // ?debug → debugOverlay.js · ?stats → statsOverlay.js · ?dev → devPanel.js ·
 // ?dev/?timeline → timeline.js (Theatre.js) · ?desktop → desktopMode.js (+ phoneFrame.js)
-let DebugOverlay = null, StatsOverlay = null, desktop = null;
+let DebugOverlay = null, TrackerFrame = null, StatsOverlay = null, desktop = null;
 
 // 8th-Wall-Engine, selbst gehostet (Open-Source-Build, MIT — s. vendor/8thwall/
 // README.md). xr.js lädt daneben den Chunk „slam", der in der Open-Source-Engine
@@ -179,7 +181,7 @@ async function boot() {
     desktop = await import("./desktopMode.js");
     await desktop.createPhoneFrame();
   }
-  if (DEBUG_MODE) ({ DebugOverlay } = await import("./debugOverlay.js"));
+  if (DEBUG_MODE) ({ DebugOverlay, TrackerFrame } = await import("./debugOverlay.js"));
   if (params.has("stats")) ({ StatsOverlay } = await import("./statsOverlay.js"));
 
   el("cardName").textContent = card.profession;
@@ -520,7 +522,7 @@ async function startAR() {
       XR8.XrController.pipelineModule(),      // „reality": Bildtracker, feuert reality.image*-Events
       XR8.GlTextureRenderer.pipelineModule(), // Kamerabild auf den Canvas (vor der Szene)
       XR8.Threejs.pipelineModule(),           // three.js-Szene/-Kamera/-Renderer auf demselben Canvas
-      detarPipelineModule(XR8, { resolve, reject }),
+      detarPipelineModule(XR8, { resolve, reject, targetData }),
     ]);
     XR8.run({
       canvas,
@@ -541,11 +543,11 @@ async function startAR() {
                                                     sonst „stale" wie bei MindAR)
      anchor.onTargetLost  → reality.imagelost
      (Target geladen)     → reality.imagescanning */
-function detarPipelineModule(XR8, { resolve, reject }) {
-  let exp = null, stab = null, stats = null;
+function detarPipelineModule(XR8, { resolve, reject, targetData }) {
+  let exp = null, stab = null, stats = null, tframe = null;
   let anchor = null, stabRoot = null;
   let latest = null;                                  // letzte Bildpose (detail) — null = nicht getrackt
-  const video = { videoWidth: 0, videoHeight: 0 };    // für ?stats (Kamera-Auflösung)
+  const video = { videoWidth: 0, videoHeight: 0 };    // für ?stats (Kamera-Auflösung) + ?debug-Rahmen
   const _img = new THREE.Matrix4(), _camInv = new THREE.Matrix4();
   const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
 
@@ -582,6 +584,7 @@ function detarPipelineModule(XR8, { resolve, reject }) {
     if (hint.classList.contains("show")) { hint.classList.remove("show"); lost.icon.stop(); }
     if (exp) updateAnchor(exp.camera); // Pose steht, BEVOR der Stabilizer aufsetzt
     stab.onFound();
+    tframe?.onFound();
     const { controller } = exp;
     controller.onCardSeen(); // greeted-Flag: Choreographie nur beim ersten Mal
     controller.onTrackingFound(); // Menü wieder freigeben
@@ -590,6 +593,7 @@ function detarPipelineModule(XR8, { resolve, reject }) {
   function onLost() {
     latest = null;
     stab.onLost();
+    tframe?.onLost();
     const { controller } = exp;
     if (controller.greeted) {
       if (controller.lostHintWanted) { hint.classList.add("show"); lost.icon.setMode("suchen"); }
@@ -653,12 +657,23 @@ function detarPipelineModule(XR8, { resolve, reject }) {
         ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design })
         : null;
 
+      // ?debug — Tracker-Rahmen: Erkennungsfläche im vollen Kamerabild vs.
+      // Display-Ausschnitt (Frage Michael 2026-10-09: Abbruch am Bildrand?)
+      tframe = TrackerFrame
+        ? new TrackerFrame({
+            anchor, camera, targetData,
+            getVideo: () => video,
+            getCanvas: () => renderer.domElement,
+            fillViewport: XR8.GlTextureRenderer.fillTextureViewport,
+          })
+        : null;
+
       exp = buildExperience({
         renderer, scene, camera, worldRoot,
         /* Behavior-Ticks nur, solange die Figur sichtbar ist — verhindert, dass
            Lost-Frames (NaN-Quelle) in die Zustands-Lerps einsickern. */
         isRunning: () => stabRoot.visible,
-        preTick: () => { updateAnchor(camera); stab.tick(); stats?.tick(); },
+        preTick: () => { updateAnchor(camera); stab.tick(); stats?.tick(); tframe?.tick(); },
         render: false, // rendert XR8.Threejs in onRender
       });
       exp.camera = camera;
@@ -671,6 +686,10 @@ function detarPipelineModule(XR8, { resolve, reject }) {
     },
 
     onUpdate: () => { exp?.loop(); },
+
+    // Kamera-Auflösung aktuell halten (Drehen, Kamerawechsel) — Rahmen + ?stats
+    onVideoSizeChange: ({ videoWidth, videoHeight }) => { video.videoWidth = videoWidth; video.videoHeight = videoHeight; },
+    onDeviceOrientationChange: ({ videoWidth, videoHeight }) => { video.videoWidth = videoWidth; video.videoHeight = videoHeight; },
 
     listeners: [
       { event: "reality.imagescanning", process: () => log("DETAR Target geladen, suche Karte …") },

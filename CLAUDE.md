@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 82 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.4) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 83 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.4 + Tracker-Rahmen in ?debug) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -371,7 +371,13 @@ Gyro-Rate; Knöpfe Fall F0–F4 · „Messung 10 s" → Kopieren (Tabellenzeile)
 Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
 oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Pflicht — ohne: Auffang-Seite; Karte aus
-`karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
+`karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` (pinke Hilfslinien; seit Build 83 im AR-Modus
+zusätzlich der Tracker-Rahmen aus `debugOverlay.js → TrackerFrame`: Erkennungsfläche
+des Targets cyan/rot + ganze Karte gestrichelt aus der Rohpose, Mini-Karte oben rechts
+mit vollem Kamerabild vs. Display-Ausschnitt, Anteil der Erkennungsfläche im
+Kamerabild/Display und die Werte beim letzten Verlust „weg: K… D…". Hintergrund:
+die Engine wertet das VOLLE Kamerabild aus, das Display zeigt nur den „cover"-
+Ausschnitt — auf hohen Handys fehlt links/rechts ein Streifen) · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?k=<nr>P` (Public-Edition, steht im
 QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
