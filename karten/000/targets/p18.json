@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p18_luminance.png",
+  "metadata": null,
+  "name": "p18",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p18_original.png",
+    "croppedImage": "p18_cropped.png",
+    "thumbnailImage": "p18_thumbnail.png",
+    "luminanceImage": "p18_luminance.png"
+  },
+  "created": 1791547476754,
+  "updated": 1791547476754
+}

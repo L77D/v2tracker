@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p23_luminance.png",
+  "metadata": null,
+  "name": "p23",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p23_original.png",
+    "croppedImage": "p23_cropped.png",
+    "thumbnailImage": "p23_thumbnail.png",
+    "luminanceImage": "p23_luminance.png"
+  },
+  "created": 1791547479097,
+  "updated": 1791547479097
+}

@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p08_luminance.png",
+  "metadata": null,
+  "name": "p08",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p08_original.png",
+    "croppedImage": "p08_cropped.png",
+    "thumbnailImage": "p08_thumbnail.png",
+    "luminanceImage": "p08_luminance.png"
+  },
+  "created": 1791547471916,
+  "updated": 1791547471916
+}

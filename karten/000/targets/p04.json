@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p04_luminance.png",
+  "metadata": null,
+  "name": "p04",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p04_original.png",
+    "croppedImage": "p04_cropped.png",
+    "thumbnailImage": "p04_thumbnail.png",
+    "luminanceImage": "p04_luminance.png"
+  },
+  "created": 1791547470016,
+  "updated": 1791547470016
+}

@@ -780,7 +780,7 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
    | `idleReturnMs` | Haltezeit nach einem Text, Standard 8000 |
    | `vorschau` | `vorschau.jpg` (Kartenbild für `?desktop`) |
    | `figur` | `posen` (Pose → Bild, `idle` Pflicht), `kopf`, `gesicht` (`neutral`, `blink`, `talk`) |
-   | `designs` | je Fassung ein Erkennungsbild: `id`, `fassung` (`firma`/`public`), `name`, `target`, `breiteMm` (63), `notiz` |
+   | `designs` | je Fassung ein Erkennungsbild: `id`, `fassung` (`firma`/`public`), `name`, `target`, `breiteMm` (63), `qr` (nur Testdrucke: Link wie im gedruckten QR-Code), `notiz` |
 
    - Pfade gelten relativ zum Kartenordner `karten/<nr>/`.
    - `?k=<nr>` nimmt das erste Design mit `"fassung": "firma"`, `?k=<nr>P` das

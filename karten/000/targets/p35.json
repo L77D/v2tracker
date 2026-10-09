@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p35_luminance.png",
+  "metadata": null,
+  "name": "p35",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p35_original.png",
+    "croppedImage": "p35_cropped.png",
+    "thumbnailImage": "p35_thumbnail.png",
+    "luminanceImage": "p35_luminance.png"
+  },
+  "created": 1791547484968,
+  "updated": 1791547484968
+}

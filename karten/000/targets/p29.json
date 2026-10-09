@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p29_luminance.png",
+  "metadata": null,
+  "name": "p29",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p29_original.png",
+    "croppedImage": "p29_cropped.png",
+    "thumbnailImage": "p29_thumbnail.png",
+    "luminanceImage": "p29_luminance.png"
+  },
+  "created": 1791547482045,
+  "updated": 1791547482045
+}

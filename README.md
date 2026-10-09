@@ -100,8 +100,9 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   **`?k=<id>P`** (auch `p`) — Public-Edition derselben Karte.
   **`?design=<id>`** — Kartenbild (Design) der Karte aus `daten.json → designs`
   (ohne Parameter: das erste, heute `card`; Test-Design `tarn`). Übersicht mit
-  QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=` gibt es seit
-  Build 63 nicht mehr.)
+  QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=<id>` gibt es seit
+  Build 63 nicht mehr; seit Build 80 heißt `?karte=<design>` nur noch
+  „Testdruck", z. B. `?karte=p01` — Karte und Fassung folgen aus dem Design.)
 
 Flags sind frei kombinierbar (z. B. `?k=000&dev&stats` am Handy fürs Tracking-Tuning).
 Ohne `?k` startet keine Karte (Auffang-Seite) — `000` steht in den Beispielen

@@ -65,7 +65,7 @@ const FELDER = {
   reentry: ["rules"],
   regel: ["ifVisit", "ifVar", "ifAsked", "ifNotAsked", "tag", "text", "textPublic"],
   figur: ["posen", "kopf", "gesicht"],
-  design: ["id", "fassung", "name", "target", "breiteMm", "notiz"],
+  design: ["id", "fassung", "name", "target", "breiteMm", "qr", "notiz"],
 };
 function fremdeFelder(obj, erlaubt, ort, F) {
   if (!obj || typeof obj !== "object" || Array.isArray(obj)) return;

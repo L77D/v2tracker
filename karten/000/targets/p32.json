@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p32_luminance.png",
+  "metadata": null,
+  "name": "p32",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p32_original.png",
+    "croppedImage": "p32_cropped.png",
+    "thumbnailImage": "p32_thumbnail.png",
+    "luminanceImage": "p32_luminance.png"
+  },
+  "created": 1791547483505,
+  "updated": 1791547483505
+}

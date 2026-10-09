@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p06_luminance.png",
+  "metadata": null,
+  "name": "p06",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p06_original.png",
+    "croppedImage": "p06_cropped.png",
+    "thumbnailImage": "p06_thumbnail.png",
+    "luminanceImage": "p06_luminance.png"
+  },
+  "created": 1791547470992,
+  "updated": 1791547470992
+}

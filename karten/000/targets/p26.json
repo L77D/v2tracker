@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p26_luminance.png",
+  "metadata": null,
+  "name": "p26",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p26_original.png",
+    "croppedImage": "p26_cropped.png",
+    "thumbnailImage": "p26_thumbnail.png",
+    "luminanceImage": "p26_luminance.png"
+  },
+  "created": 1791547480579,
+  "updated": 1791547480579
+}

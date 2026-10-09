@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 79 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 80 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design>) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -107,7 +107,10 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
   Kartenordner absolut, ruft `prepareCard()` (Edition). Unbekannte Karte/
   Design/`aktiv: false` → Hinweis in `#errorBox`, Button bleibt aus. Alles per
   `fetch` mit `no-store`. `?karte=` gibt es nicht mehr (Michael 2026-10-06:
-  komplett auf `?k=`).
+  komplett auf `?k=`) — AUSSER für die Testdrucke (Build 80): deren gedruckte
+  QR-Codes tragen `?karte=<design>` (z. B. `?karte=p01`); der Lader sucht das
+  Design in den aktiven Karten, Fassung = `fassung` des Designs. Feld `qr` des
+  Designs = Link wie gedruckt (karten.html zeigt ihn so).
 - Pro Sitzung genau EINE Karte und EIN Target. Karten-Ids nie umbenennen oder
   wiederverwenden (stehen in gedruckten QR-Codes).
 - **Figur** (`figur` in daten.json): `posen {name: bild}` (`idle` Pflicht) →

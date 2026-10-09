@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p25_luminance.png",
+  "metadata": null,
+  "name": "p25",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p25_original.png",
+    "croppedImage": "p25_cropped.png",
+    "thumbnailImage": "p25_thumbnail.png",
+    "luminanceImage": "p25_luminance.png"
+  },
+  "created": 1791547480074,
+  "updated": 1791547480074
+}

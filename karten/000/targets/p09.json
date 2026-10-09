@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p09_luminance.png",
+  "metadata": null,
+  "name": "p09",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p09_original.png",
+    "croppedImage": "p09_cropped.png",
+    "thumbnailImage": "p09_thumbnail.png",
+    "luminanceImage": "p09_luminance.png"
+  },
+  "created": 1791547472397,
+  "updated": 1791547472397
+}

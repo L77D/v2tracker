@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p05_luminance.png",
+  "metadata": null,
+  "name": "p05",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p05_original.png",
+    "croppedImage": "p05_cropped.png",
+    "thumbnailImage": "p05_thumbnail.png",
+    "luminanceImage": "p05_luminance.png"
+  },
+  "created": 1791547470500,
+  "updated": 1791547470500
+}

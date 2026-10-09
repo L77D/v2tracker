@@ -34,6 +34,286 @@
       "target": "targets/tarn.json",
       "breiteMm": 63,
       "notiz": "Hochkontrast-Pixelmuster, Upload Michael 2026-09-15 (744×1039, Aspekt 1,397 = 63×88 mm), image-target-cli 1.0.0, Standard-Crop 3:4 zentriert"
+    },
+    {
+      "id": "p01",
+      "name": "Testdruck P01 — 01_2409_det_brand_1_det_pattern",
+      "target": "targets/p01.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p01",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 01_2409_det_brand_1_det_pattern (646:365) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p02",
+      "name": "Testdruck P02 — 02_2509_det_brand_values_nopattern",
+      "target": "targets/p02.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p02",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 02_2509_det_brand_values_nopattern (646:486) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p03",
+      "name": "Testdruck P03 — 03_2509_det_brand_values_ditherCopyBG",
+      "target": "targets/p03.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p03",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 03_2509_det_brand_values_ditherCopyBG (646:601) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p04",
+      "name": "Testdruck P04 — 04_2809_1",
+      "target": "targets/p04.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p04",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p05",
+      "name": "Testdruck P05 — 05_2809_2_figma_noise_blue",
+      "target": "targets/p05.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p05",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 05_2809_2_figma_noise_blue (646:833) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p06",
+      "name": "Testdruck P06 — 16_AltChar",
+      "target": "targets/p06.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p06",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 16_AltChar (646:1913) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p07",
+      "name": "Testdruck P07 — 15_BW_07",
+      "target": "targets/p07.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p07",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 15_BW_07 (646:1803) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p08",
+      "name": "Testdruck P08 — 20_01_Wdh2_P08",
+      "target": "targets/p08.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p08",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 20_01_Wdh2_P08 (646:2106) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p09",
+      "name": "Testdruck P09 — 21_02_Wdh2_P09",
+      "target": "targets/p09.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p09",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 21_02_Wdh2_P09 (646:2219) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p10",
+      "name": "Testdruck P10 — 22_03_Wdh2_P10",
+      "target": "targets/p10.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p10",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 22_03_Wdh2_P10 (646:2326) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p11",
+      "name": "Testdruck P11 — 23_04_Wdh2_P11",
+      "target": "targets/p11.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p11",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 23_04_Wdh2_P11 (646:2434) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p12",
+      "name": "Testdruck P12 — 24_05_Wdh2_P12",
+      "target": "targets/p12.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p12",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 24_05_Wdh2_P12 (646:2542) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p13",
+      "name": "Testdruck P13 — 25_02_Wdh3_P13",
+      "target": "targets/p13.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p13",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 25_02_Wdh3_P13 (646:2651) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p14",
+      "name": "Testdruck P14 — 26_04_Wdh3_P14",
+      "target": "targets/p14.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p14",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 26_04_Wdh3_P14 (646:2758) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p15",
+      "name": "Testdruck P15 — 28_01_Versatz_links_P15",
+      "target": "targets/p15.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p15",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 28_01_Versatz_links_P15 (646:2944) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p16",
+      "name": "Testdruck P16 — 29_02_Versatz_rechts_P16",
+      "target": "targets/p16.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p16",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 29_02_Versatz_rechts_P16 (646:3057) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p17",
+      "name": "Testdruck P17 — 30_03_Versatz_oben_P17",
+      "target": "targets/p17.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p17",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 30_03_Versatz_oben_P17 (646:3164) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p18",
+      "name": "Testdruck P18 — 31_04_Versatz_unten_P18",
+      "target": "targets/p18.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p18",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 31_04_Versatz_unten_P18 (646:3272) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p19",
+      "name": "Testdruck P19 — 32_05_Versatz_diagonal_P19",
+      "target": "targets/p19.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p19",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 32_05_Versatz_diagonal_P19 (646:3380) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p20",
+      "name": "Testdruck P20 — 36_04_Graustufen_P20",
+      "target": "targets/p20.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p20",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 36_04_Graustufen_P20 (646:3723) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p21",
+      "name": "Testdruck P21 — 37_04_blass_P21",
+      "target": "targets/p21.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p21",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 37_04_blass_P21 (646:3831) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p22",
+      "name": "Testdruck P22 — 39_04_ohne_Figur_P22",
+      "target": "targets/p22.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p22",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 39_04_ohne_Figur_P22 (646:4047) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p23",
+      "name": "Testdruck P23 — 40_01_Muster50_P23",
+      "target": "targets/p23.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p23",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 40_01_Muster50_P23 (646:4155) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p24",
+      "name": "Testdruck P24 — 41_03_Muster50_P24",
+      "target": "targets/p24.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p24",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 41_03_Muster50_P24 (646:4268) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p25",
+      "name": "Testdruck P25 — 42_05_Muster50_P25",
+      "target": "targets/p25.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p25",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 42_05_Muster50_P25 (646:4376) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p26",
+      "name": "Testdruck P26 — 43_04_anderer_Titel_P26",
+      "target": "targets/p26.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p26",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 43_04_anderer_Titel_P26 (646:4485) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p27",
+      "name": "Testdruck P27 — 44_04_andere_Figur_P27",
+      "target": "targets/p27.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p27",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 44_04_andere_Figur_P27 (646:4593) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p28",
+      "name": "Testdruck P28 — 45_04_Kopfleiste_rot_P28",
+      "target": "targets/p28.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p28",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 45_04_Kopfleiste_rot_P28 (646:4701) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p29",
+      "name": "Testdruck P29 — 49_01_R19_P29",
+      "target": "targets/p29.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p29",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 49_01_R19_P29 (646:4812) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p30",
+      "name": "Testdruck P30 — 50_02_R19_P30",
+      "target": "targets/p30.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p30",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 50_02_R19_P30 (646:4925) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p31",
+      "name": "Testdruck P31 — 51_03_R19_P31",
+      "target": "targets/p31.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p31",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 51_03_R19_P31 (646:5032) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p32",
+      "name": "Testdruck P32 — 52_04_R19_P32",
+      "target": "targets/p32.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p32",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 52_04_R19_P32 (646:5140) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p33",
+      "name": "Testdruck P33 — 53_05_R19_P33",
+      "target": "targets/p33.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p33",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 53_05_R19_P33 (646:5248) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p34",
+      "name": "Testdruck P34 — 54_15_R19_P34",
+      "target": "targets/p34.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p34",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 54_15_R19_P34 (646:5357) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    },
+    {
+      "id": "p35",
+      "name": "Testdruck P35 — 55_16_R19_P35",
+      "target": "targets/p35.json",
+      "breiteMm": 63,
+      "qr": "l77d.github.io/v2tracker/?karte=p35",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 55_16_R19_P35 (646:5467) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
     }
   ]
 }

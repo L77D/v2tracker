@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p03_luminance.png",
+  "metadata": null,
+  "name": "p03",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p03_original.png",
+    "croppedImage": "p03_cropped.png",
+    "thumbnailImage": "p03_thumbnail.png",
+    "luminanceImage": "p03_luminance.png"
+  },
+  "created": 1791547469537,
+  "updated": 1791547469537
+}

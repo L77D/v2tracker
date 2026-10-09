@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p07_luminance.png",
+  "metadata": null,
+  "name": "p07",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p07_original.png",
+    "croppedImage": "p07_cropped.png",
+    "thumbnailImage": "p07_thumbnail.png",
+    "luminanceImage": "p07_luminance.png"
+  },
+  "created": 1791547471459,
+  "updated": 1791547471459
+}

@@ -16,6 +16,8 @@
    einzige Ausnahme ist der Lokal-Prototyp (Doppelklick, keine URL-Parameter),
    der die erste aktive Karte des Katalogs nimmt (Firmenfassung). das Kartenbild per ?design=<id> (ohne = erstes Design
    der Karte). Pro Sitzung genau eine Karte und ein Target.
+   Zweite Grammatik nur für die Testdrucke (Build 80): ?karte=<design> (z. B.
+   ?karte=p01) — Karte und Fassung ergeben sich aus dem Design.
 
    FORMAT: daten.json trägt "format" (Nummer des Aufbaus; 2 = daten.json +
    dialog.json, 1 = alte karte.json bis Build 71, nicht mehr unterstützt — es
@@ -57,17 +59,36 @@ export async function ladeKarte(params) {
   const k = (params.get("k") || "").trim();
   // Public-Fassung: Nummer + P (groß oder klein), z. B. 000P
   const pub = /^\d+[pP]$/.test(k);
-  const id = (pub ? k.slice(0, -1) : k) || (window.__LOKAL ? ids[0] : null);
+  let id = pub ? k.slice(0, -1) : k;
+  let publicMode = pub;
+  let roh = null, druckDesign = null;
+
+  // Testdrucke (Figma „Druck MeinSpiel 63x88", Build 80): deren QR-Codes tragen
+  // ?karte=<design> (z. B. ?karte=p01) statt ?k — gedruckt, also nicht änderbar.
+  // Gesucht wird das Design in den aktiven Karten; Fassung = "fassung" des Designs.
+  const druck = !id && (params.get("karte") || "").trim().toLowerCase();
+  if (druck) {
+    for (const kid of ids) {
+      let daten;
+      try { daten = await holeJson(KARTEN_DIR + kid + "/daten.json"); } catch (e) { continue; }
+      const d = (Array.isArray(daten.designs) ? daten.designs : []).find((x) => String(x.id).toLowerCase() === druck);
+      if (d) { id = kid; roh = daten; druckDesign = d.id; publicMode = d.fassung === "public"; break; }
+    }
+    if (!id) return { error: "Unbekannte Testkarte „" + druck + "“", ids, hinweis: " (Parameter ?karte = Design-Id eines Testdrucks in daten.json)" };
+  }
+
+  if (!id) id = window.__LOKAL ? ids[0] : null;
   if (!id) return { keineKarte: true, ids };
-  const publicMode = pub;
   const eintrag = liste.find((k) => k.id === id);
   if (!eintrag) return { error: "Unbekannte Karte „" + id + "“", ids, hinweis: kartenHinweis };
   if (eintrag.aktiv === false) return { error: "Karte „" + id + "“ ist nicht mehr verfügbar", ids, hinweis: kartenHinweis };
 
   const ordner = KARTEN_DIR + id + "/";
-  let roh, dialog;
-  try { roh = await holeJson(ordner + "daten.json"); }
-  catch (e) { return { error: "Kartendaten nicht ladbar: " + ordner + "daten.json", ids: [] }; }
+  let dialog;
+  if (!roh) {
+    try { roh = await holeJson(ordner + "daten.json"); }
+    catch (e) { return { error: "Kartendaten nicht ladbar: " + ordner + "daten.json", ids: [] }; }
+  }
   try { dialog = await holeJson(ordner + "dialog.json"); }
   catch (e) { return { error: "Dialog nicht ladbar: " + ordner + "dialog.json", ids: [] }; }
 
@@ -91,7 +112,7 @@ export async function ladeKarte(params) {
   const designIds = designs.map((d) => d.id);
   const fassung = publicMode ? "public" : "firma";
   const passend = designs.find((x) => (x.fassung || "firma") === fassung) || designs[0];
-  const designId = params.get("design") || passend?.id;
+  const designId = params.get("design") || druckDesign || passend?.id;
   const d = designs.find((x) => x.id === designId);
   if (!d) {
     return { error: "Unbekanntes Design „" + designId + "“ der Karte „" + id + "“", ids: designIds,

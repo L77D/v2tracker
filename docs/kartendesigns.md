@@ -6,6 +6,16 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
 `main` bleibt unberührt. (Bis Build 62: `targets/8thwall/karten.json` und
 `?karte=<id>`; beides gibt es nicht mehr.)
 
+**Testdrucke (Build 80):** Die 35 Motive mit QR-Code aus Figma DETAR, Seite
+PRINT, Section „Druck MeinSpiel 63x88" (Knoten 646:364) sind die Designs
+`p01`–`p35` der Karte 000 (alle Firmenfassung: FIRMA-Platzhalter auf jedem
+Motiv). Ihre gedruckten QR-Codes nutzen eine eigene Link-Grammatik,
+`l77d.github.io/v2tracker/?karte=p01` — sie steht unverändert im Feld `qr`
+des Designs, `karten.html` zeigt sie so, und der Kartenlader löst
+`?karte=<design>` auf (Karte = die aktive Karte mit diesem Design, Fassung =
+`fassung` des Designs). Export: Rahmen 815 × 1110 px (69 × 94 mm) ohne die
+3 mm Beschnitt (35,5 px je Seite) in 2× → 1488 × 2078 px.
+
 - **Liste:** `daten.json → designs` im Kartenordner, z. B.
   `karten/000/daten.json`. Je Eintrag: `id` (steht in der
   URL), `name` (Anzeigename), `target` (Pfad relativ zum Kartenordner, z. B.
@@ -61,7 +71,8 @@ mehrere gedruckte Varianten nebeneinander testen — kein Branch pro Design,
    ```
 
    Das erste Design der Liste ist der Standard — neue Designs nicht davor
-   einsortieren, solange sie nur getestet werden.
+   einsortieren, solange sie nur getestet werden. Gedruckte Testkarte mit
+   eigener QR-Grammatik: zusätzlich `"qr": "<Link wie gedruckt>"`.
 5. Committen und pushen (Testseite erst nach Merge in `main`, sonst Tunnel,
    s. u.) — `karten.html` zeigt das neue Design mit QR-Code sofort.
 

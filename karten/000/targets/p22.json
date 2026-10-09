@@ -1,0 +1,23 @@
+{
+  "imagePath": "image-targets/p22_luminance.png",
+  "metadata": null,
+  "name": "p22",
+  "type": "PLANAR",
+  "properties": {
+    "left": 0,
+    "top": 47,
+    "width": 1488,
+    "height": 1984,
+    "isRotated": false,
+    "originalWidth": 1488,
+    "originalHeight": 2078
+  },
+  "resources": {
+    "originalImage": "p22_original.png",
+    "croppedImage": "p22_cropped.png",
+    "thumbnailImage": "p22_thumbnail.png",
+    "luminanceImage": "p22_luminance.png"
+  },
+  "created": 1791547478635,
+  "updated": 1791547478635
+}
