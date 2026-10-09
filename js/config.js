@@ -120,8 +120,8 @@ export const SCENE = {
                            // (1346×2156 px = 1,60; MindAR-Target, 2026-09-07). Die gedruckte
                            // Karte ist 63×88 mm = 1,40 (karten.json) — Angleichen ist ein
                            // Stufe-3-Punkt (sichtbare Marker-Geometrie, Gerätetest).
-  figureScale: 0.4,  // 2026-10-09 (Michael): gesamte AR-Szene auf 0.4 (Build 82; vorher
-                     // Build 81: 0.68 = 80 % von 0.85; 2026-09-07: ~85 %) — Figur samt
+  figureScale: 0.5,  // 2026-10-09 (Michael): gesamte AR-Szene auf 0.5 (Build 84; vorher
+                     // Build 82: 0.4, Build 81: 0.68 = 80 % von 0.85; 2026-09-07: ~85 %) — Figur samt
                      // Sprechblase (rig.js) und Hüpf-Icon (activationFX.js); die
                      // Eck-Marker bleiben auf den Kartenecken, die sind Kartengeometrie.
   headNodAxis: 0.25, // Höhe der Kopf-Nick-Achse ÜBER dem HeadPivot (≈ Kopfmitte)
