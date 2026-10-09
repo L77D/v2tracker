@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 87 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 88 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -306,8 +306,16 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   werden die DOM-freien Module: dialogEngine, edition, bubbleText, poseArbiter
   (three.js aus `vendor/` läuft in Node), jitterMetrics und die Regeln in
   `tools/kartenpruefung.js` — die Prototyp-Karte 000 muss dort fehlerfrei
-  bleiben. Datengrundlage lädt `tests/karte.mjs`. Vor jedem Push laufen
-  lassen; wer eine Regel in Regelwerk/Prüfseite ändert, zieht den Test nach.
+  bleiben. Datengrundlage lädt `tests/karte.mjs`. Seit Build 88 auch der
+  **PoseStabilizer**: `tests/stabilizerSzenario.mjs` (gefälschte Uhr + Gyro,
+  feste Tracking-Werte `STAB_FEST`, 1300 Ticks durch alle Stufen) gegen den
+  Goldstandard `tests/fixtures/poseStabilizer.golden.json` (Stand Build 87)
+  je Feature-Schalter-Variante, Toleranz 1e-9. Der Goldstandard bricht bei
+  JEDER Verhaltensänderung im Filter — gewollt; bei einer gewollten Änderung
+  mit dem Stand davor neu erzeugen (Anleitung im Kopf von
+  `tests/poseStabilizer.test.mjs`); Tuning in config.js berührt ihn nicht.
+  Vor jedem Push laufen lassen; wer eine Regel in Regelwerk/Prüfseite
+  ändert, zieht den Test nach.
 - Kommentare/Commits auf Deutsch, Commit-Trailer `Co-Authored-By: Claude`.
 - Änderungen an Tracking-Werten immer mit Datum + Begründung im Kommentar
   (Fix-Log lebt in den Code-Kommentaren; „(MindAR-Stand …)" = Historie aus
@@ -355,7 +363,9 @@ Rendern: XR8.Threejs.onRender (experience.js → buildExperience({render:false})
 (main/MindAR: `anchor.group.matrix` roh pixel-skaliert, stabRoot auf Szenen-
 Ebene, `renderer.setAnimationLoop` — Rest identisch.)
 
-PoseStabilizer: NaN-Guard → **Schwerkraft-Schiedsrichter** (Build 59,
+PoseStabilizer (seit Build 88, Stufe 3c: `tick()` ist Dirigent über benannte
+Stufen mit expliziter Rohpose `raw`; nach außen liest nur `snapshot()` —
+statsOverlay greift auf kein Feld mehr direkt zu): NaN-Guard → **Schwerkraft-Schiedsrichter** (Build 59,
 `js/poseArbiter.js`, Toggle 10: aus der Rohpose die Spiegel-Kandidatin der
 ebenen Pose berechnen und die Lage wählen, deren Kartennormale im Erdframe
 nach oben zeigt — nur beta/gamma nötig, ohne Gyro passiv; Hysterese
@@ -487,10 +497,9 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   MindAR-Stand (2026-07): B (MindAR-Fork) und C sind auf diesem Branch
   gegenstandslos, A/D/E gelten sinngemäß weiter.
 - Refactoring Stufe 3 (offen, 2026-09-15; erledigt: 3a Tests (Build 86),
-  3b main.js zerlegt (Build 87, s. „Boot und Szene"); Plan 2026-10-09: 3c
-  Stabilizer in Stufen + `snapshot()` für ?stats → 3d Booleans → 3e
-  Entkopplung): `poseStabilizer.tick()` in Stufen
-  mit expliziten Parametern · Scale-Lock ausbauen (erst Re-Lock-Zähler am
+  3b main.js zerlegt (Build 87, s. „Boot und Szene"), 3c PoseStabilizer in
+  Stufen + `snapshot()` + Goldstandard (Build 88); Plan 2026-10-09: 3d
+  Booleans → 3e Entkopplung): Scale-Lock ausbauen (erst Re-Lock-Zähler am
   Gerät prüfen) · Arbiter: `qEarth` ändert sich 60 Hz ohne Dead-Band → kann
   stale Frames als „neu" melden (Vision-Hz in ?stats prüfen) · `SCENE.cardAspect`
   1,60 → 1,40 (63×88 mm) · Tests (`node --test`) für bubbleText, dialogEngine,

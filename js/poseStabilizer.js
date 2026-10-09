@@ -14,6 +14,19 @@
    in stabRoot.matrix schreiben. Sichtbarkeit steuert der Stabilizer selbst.
    Stufen-Nummern (#1–#10) = Toggles im Dev-Panel (js/devPanel.js).
 
+   AUFBAU (Refactoring Stufe 3c, Build 88): tick() ist nur noch der Dirigent
+   und ruft die Stufen in fester Reihenfolge — jede Stufe bekommt die Rohpose
+   `raw` {p, q, s} explizit und sagt, ob der Frame weiterläuft:
+     holdWhileLost → passThrough(#1) → applyCameraDelta(Gyro) → readRaw(#5)
+     → arbitrate(#10) → lockScale(#9) → normalize(#2) → acquire/initialise
+     → updateMotionEstimate → applyExtrapolation(#8) → filterPosition(#3)
+     → filterRotation → write
+   Die Scratch-Vektoren (_pos/_quat/_scale) wandern nur noch als `raw`
+   durch die Stufen; write() hat seinen eigenen. Nach außen gibt es genau
+   eine Lesestelle: snapshot() für ?stats (statsOverlay.js) — alle anderen
+   Felder sind intern. Verhalten gegenüber Build 87 bitidentisch, gesichert
+   durch tests/fixtures/poseStabilizer.golden.json.
+
    NaN-SCHUTZ (Fix 2026-07-08): In den Frames um Tracking-Verlust kann der
    Tracker degenerierte Matrizen liefern. Ein einziges NaN vergiftet über lerp/atan2
    dauerhaft alle Folgewerte — Symptom: Kopf/Bubble/Figur verschwinden bis
@@ -25,9 +38,10 @@ import { STAB, GYRO } from "./config.js";
 import { arbitrateUpright } from "./poseArbiter.js";
 import { finiteVec, finiteQuat } from "./util.js";
 
-const _pos = new THREE.Vector3();
-const _quat = new THREE.Quaternion();
-const _scale = new THREE.Vector3();
+// Rohpose des aktuellen Frames — EIN Satz Scratch-Vektoren, der als `raw`
+// explizit durch die Stufen gereicht wird (keine Allokation pro Frame).
+const _raw = { p: new THREE.Vector3(), q: new THREE.Quaternion(), s: new THREE.Vector3() };
+const _wp = new THREE.Vector3();     // write(): Position in Anchor-Einheiten
 const _dqInv = new THREE.Quaternion();
 const _dq = new THREE.Quaternion();
 const _axis = new THREE.Vector3();
@@ -76,6 +90,8 @@ export class PoseStabilizer {
       newMeas: false, rawPos: new THREE.Vector3(), rawQuat: new THREE.Quaternion(),
       modeSwitches: 0, moveCause: "—", nanCount: 0, gyroApplied: 0,
     };
+    // snapshot(): ein wiederverwendetes Objekt für ?stats (keine Allokation pro Frame)
+    this.snap = {};
 
     // Tracking-Status (Lost-Hold)
     this.tracking = false;
@@ -91,6 +107,7 @@ export class PoseStabilizer {
     this.vel = new THREE.Vector3();         // Kartenbreiten/s (geglättet)
     this.angVel = new THREE.Vector3();      // Achse*rad/s (geglättet)
     this.hasMeas = false;
+    this.farCount = 0;                      // ferne Messungen in Folge (Ausreißer-Debounce #6)
 
     // FIX 2026-07-13: Stale-Erkennung braucht die UNGEDREHTE Rohpose. measPos
     // wird vom Gyro mitrotiert — der Vergleich damit meldete bei Handy-Drehung
@@ -120,6 +137,7 @@ export class PoseStabilizer {
     this.visionHz = null;
   }
 
+  /* ---- Ereignisse von außen ---------------------------------------------- */
   onFound() {
     const now = performance.now();
     // Nur wenn die Figur schon AUSGEBLENDET war, auf die neue Pose snappen —
@@ -152,195 +170,212 @@ export class PoseStabilizer {
     this.relocCount++;
   }
 
+  /* Diagnose für ?stats (statsOverlay.js) — die EINZIGE Lesestelle von außen;
+     alles andere am Stabilizer ist intern (Stufe 3c). Liefert immer dasselbe
+     Objekt; rawPos/rawQuat/arb zeigen auf interne Objekte (nur lesen). */
+  snapshot() {
+    const s = this.snap, d = this.diag;
+    s.tracking = this.tracking;
+    s.visible = this.target.visible;
+    s.moving = this.moving;
+    s.moveCause = d.moveCause;
+    s.visionHz = this.visionHz;
+    s.newMeas = d.newMeas;
+    s.rawPos = d.rawPos;
+    s.rawQuat = d.rawQuat;
+    s.rawSkewDeg = this.rawSkewDeg;
+    s.rawOffset = this.rawOffset;
+    s.relocCount = this.relocCount;
+    s.snapCount = this.snapCount;
+    s.relockCount = this.relockCount;
+    s.flipCount = this.flipCount;
+    s.nanCount = d.nanCount;
+    s.modeSwitches = d.modeSwitches;
+    s.gyroApplied = d.gyroApplied;
+    s.arb = this.arb;
+    return s;
+  }
+
+  /* ---- Dirigent: ein Frame ------------------------------------------------ */
   tick() {
     const now = performance.now();
-    let dtMs = this.lastClockMs ? now - this.lastClockMs : 1000 / STAB.refHz;
-    this.lastClockMs = now;
-    if (dtMs <= 0) dtMs = 1000 / STAB.refHz;
-    const dt = dtMs / 1000;
+    const dt = this.clockDt(now);
     this.diag.newMeas = false;
 
     // Gyro-Delta JEDEN Frame abholen (hält den internen Zustand frisch).
     // null = KEIN frisches Signal (keine Permission / kein Sensor / stale).
     const dq = this.gyro?.getDelta() ?? null;
-
     const gyroOn = GYRO.enabled !== "nein";
 
-    // --- Lost-Hold / Gyro-Brücke ----------------------------------------------
     if (this.tracking) this.lastSeenMs = now;
-    if (!this.tracking) {
-      const since = now - this.lastSeenMs;
-      if (dq && gyroOn && this.everVisible && this.target.visible && since < GYRO.bridgeMs) {
-        // Gyro-Brücke: Kamera-Drehung wird kompensiert — die Figur bleibt
-        // (ungefähr) auf der KARTE, nicht am Bildschirm.
-        this.applyCameraDelta(dq);
-        this.write();
-        return;
-      }
-      // FIX 2026-07-08 (Handy-Test): OHNE lebendes Gyro-Signal gibt es KEINE
-      // lange Brücke — die eingefrorene Pose ist kamera-relativ und klebt am
-      // BILDSCHIRM, sobald sich das Handy bewegt („Figur hängt im Bild").
-      // Dann nur kurzer Flacker-Schutz (lostHoldMs), danach ausblenden.
-      const holdMs = STAB.lostHold === "nein" ? 0 : (dq ? GYRO.bridgeMs : STAB.lostHoldMs);
-      if (this.everVisible && since > holdMs) {
-        this.target.visible = false;
-      }
-      return; // Pose eingefroren — nie aus einem Lost-Frame lesen (NaN-Quelle)
-    }
+    else { this.holdWhileLost(now, dq, gyroOn); return; } // Pose eingefroren — nie aus einem Lost-Frame lesen (NaN-Quelle)
 
-    // --- FEATURE-SCHALTER #1: Stabilizer komplett aus → rohe Anchor-Pose 1:1 ---
-    if (STAB.enabled === "nein") {
-      this.target.matrix.copy(this.source.matrix);
-      this.target.matrixWorldNeedsUpdate = true;
-      this.initialised = false; // beim Wieder-Einschalten sauber neu aufsetzen
-      return;
-    }
+    if (STAB.enabled === "nein") { this.passThrough(); return; }
 
-    // --- Gyro-PREDICTION: echte Kamera-Drehung sofort übernehmen ---------------
-    // Das Sehen muss dann nur noch Drift/Translation korrigieren → der Filter
-    // darf hart glätten, ohne dass die Figur bei Bewegung nachzieht.
+    // Gyro-PREDICTION: echte Kamera-Drehung sofort übernehmen. Das Sehen muss
+    // dann nur noch Drift/Translation korrigieren → der Filter darf hart
+    // glätten, ohne dass die Figur bei Bewegung nachzieht.
     if (dq && gyroOn) this.applyCameraDelta(dq);
 
-    // --- Rohe kamera-relative Pose lesen + NaN-Schutz (#5) ----------------------
-    this.source.matrix.decompose(_pos, _quat, _scale);
-    if (STAB.nanGuard !== "nein" &&
-        (!finiteVec(_pos) || !finiteQuat(_quat) || !finiteVec(_scale) || _scale.x < 1e-8)) {
-      this.diag.nanCount++;
-      return; // kaputter Frame → komplett verwerfen, letzte gute Pose steht
-    }
+    const raw = _raw;
+    if (!this.readRaw(raw)) return;          // kaputter Frame → komplett verwerfen, letzte gute Pose steht
+    this.arbitrate(raw);
+    if (!this.lockScale(raw, now)) return;   // Fehl-Messung (schräg/riesig) → komplett verwerfen
+    this.normalize(raw);
 
-    // SCHWERKRAFT-SCHIEDSRICHTER (#10, 2026-09-15, „Pose-Flip"): Die ebene
-    // Pose-Schätzung hat zwei Lösungen; die Engine liefert manchmal stabil die
-    // gespiegelte (Karte um 2θ gekippt → Figur liegt flach zum Betrachter).
-    // Aus der Rohpose wird die Spiegel-Kandidatin berechnet und die Lage
-    // gewählt, deren Kartennormale im Erdframe nach oben zeigt (nur beta/gamma
-    // nötig). VOR Scale-Lock/Normierung/Stale-Erkennung: das Ergebnis hängt nur
-    // von der Rohpose ab, bitidentische Rohposen bleiben bitidentisch → stale
-    // Frames werden weiter erkannt. Ohne frisches Gyro-Signal passiv.
+    if (!this.initialised) {
+      // AUFSETZEN PER MEDIAN (2026-09-07): erst Messungen sammeln; solange wird
+      // der laufende Median angezeigt. Liefert false, sobald der Median steht —
+      // dann liegen Median-Pose und -Scale in raw.
+      if (this.acquire(raw.p, raw.q, raw.s, now)) return;
+      this.initialise(raw, now);
+      return;
+    }
+    this.lastScale.copy(raw.s);
+    // Diagnose: wie weit liegt die Rohpose vom geglätteten Zustand (Kartenbreiten / Grad)?
+    this.rawSkewDeg = (raw.q.angleTo(this.smoothQuat) * 180) / Math.PI;
+    this.rawOffset = raw.p.distanceTo(this.smoothPos);
+
+    this.updateMotionEstimate(raw, now);
+    const moving = this.applyExtrapolation(raw, now);
+    this.filterPosition(raw.p, dt, moving);
+    this.filterRotation(raw.q, dt, moving);
+    this.write();
+  }
+
+  /* Frame-Zeit in Sekunden; erster Frame und Uhr-Sprünge → Referenztakt. */
+  clockDt(now) {
+    let dtMs = this.lastClockMs ? now - this.lastClockMs : 1000 / STAB.refHz;
+    this.lastClockMs = now;
+    if (dtMs <= 0) dtMs = 1000 / STAB.refHz;
+    return dtMs / 1000;
+  }
+
+  /* ---- Lost-Hold / Gyro-Brücke (#4) ---------------------------------------- */
+  holdWhileLost(now, dq, gyroOn) {
+    const since = now - this.lastSeenMs;
+    if (dq && gyroOn && this.everVisible && this.target.visible && since < GYRO.bridgeMs) {
+      // Gyro-Brücke: Kamera-Drehung wird kompensiert — die Figur bleibt
+      // (ungefähr) auf der KARTE, nicht am Bildschirm.
+      this.applyCameraDelta(dq);
+      this.write();
+      return;
+    }
+    // FIX 2026-07-08 (Handy-Test): OHNE lebendes Gyro-Signal gibt es KEINE
+    // lange Brücke — die eingefrorene Pose ist kamera-relativ und klebt am
+    // BILDSCHIRM, sobald sich das Handy bewegt („Figur hängt im Bild").
+    // Dann nur kurzer Flacker-Schutz (lostHoldMs), danach ausblenden.
+    const holdMs = STAB.lostHold === "nein" ? 0 : (dq ? GYRO.bridgeMs : STAB.lostHoldMs);
+    if (this.everVisible && since > holdMs) {
+      this.target.visible = false;
+    }
+  }
+
+  /* ---- FEATURE-SCHALTER #1: Stabilizer komplett aus → rohe Anchor-Pose 1:1 -- */
+  passThrough() {
+    this.target.matrix.copy(this.source.matrix);
+    this.target.matrixWorldNeedsUpdate = true;
+    this.initialised = false; // beim Wieder-Einschalten sauber neu aufsetzen
+  }
+
+  /* ---- Rohe kamera-relative Pose lesen + NaN-Schutz (#5) -------------------- */
+  readRaw(raw) {
+    this.source.matrix.decompose(raw.p, raw.q, raw.s);
+    if (STAB.nanGuard !== "nein" &&
+        (!finiteVec(raw.p) || !finiteQuat(raw.q) || !finiteVec(raw.s) || raw.s.x < 1e-8)) {
+      this.diag.nanCount++;
+      return false;
+    }
+    return true;
+  }
+
+  /* ---- SCHWERKRAFT-SCHIEDSRICHTER (#10, 2026-09-15, „Pose-Flip") -------------
+     Die ebene Pose-Schätzung hat zwei Lösungen; die Engine liefert manchmal
+     stabil die gespiegelte (Karte um 2θ gekippt → Figur liegt flach zum
+     Betrachter). Aus der Rohpose wird die Spiegel-Kandidatin berechnet und die
+     Lage gewählt, deren Kartennormale im Erdframe nach oben zeigt (nur
+     beta/gamma nötig). VOR Scale-Lock/Normierung/Stale-Erkennung: das Ergebnis
+     hängt nur von der Rohpose ab, bitidentische Rohposen bleiben bitidentisch
+     → stale Frames werden weiter erkannt. Ohne frisches Gyro-Signal passiv. */
+  arbitrate(raw) {
     const qEarth = STAB.gravityArbiter !== "nein" ? (this.gyro?.getOrientation() ?? null) : null;
     this.arb.active = !!qEarth;
     if (qEarth) {
       const was = this.arb.flipped;
-      arbitrateUpright(_pos, _quat, qEarth, STAB.arbiterMargin, this.arb);
+      arbitrateUpright(raw.p, raw.q, qEarth, STAB.arbiterMargin, this.arb);
       if (this.arb.flipped !== was) this.flipCount++;
     } else {
       this.arb.flipped = false;
     }
+  }
 
-    // SCALE-LOCK (#9, MindAR-Stand 2026-07-14): Die Anchor-Scale ist strukturell
-    // KONSTANT (Entfernung steckt in der Translation, nie in der Scale). Jede
-    // Abweichung war unter MindAR ein ARTEFAKT (elementweiser Matrix-Filter →
-    // nicht-starre Zwischenmatrizen; Fehl-Homographien → „Figur schräg/zu
-    // groß"): kleine Abweichung → eingefrorene Scale, große → Frame verwerfen.
-    // UNTER 8TH WALL (2026-09-15): arSession.js setzt die Scale aus detail.scale ×
-    // scaledWidth, und detail.scale ist pro Track konstant — die Stufe löst
-    // strukturell nie aus (Re-Lock-Zähler in ?stats bleibt 0). Bleibt als
-    // Sicherung; Ausbau ist ein Stufe-3-Punkt nach Prüfung am Gerät.
-    if (STAB.scaleLock !== "nein" && this.hasScaleLock) {
-      if (Math.abs(_scale.x - this.scaleLock) / this.scaleLock > STAB.scaleOutlier) {
-        // RE-LOCK (2026-09-07): hält die Abweichung scaleRelockMs am Stück an, war
-        // der Lock selbst falsch (schlechter Aufsetz-Frame) → neu aufsetzen, mit
-        // Median über die nächsten Messungen. Einzelne Ausreißer weiter verwerfen.
-        if (!this.outlierSinceMs) this.outlierSinceMs = now;
-        else if (now - this.outlierSinceMs > STAB.scaleRelockMs) {
-          this.outlierSinceMs = 0;
-          this.initialised = false;
-          this.hasScaleLock = false;
-          this.acq = null;
-          this.relockCount++;
-        }
-        return; // Fehl-Messung (schräg/riesig) → komplett verwerfen
+  /* ---- SCALE-LOCK (#9, MindAR-Stand 2026-07-14) -----------------------------
+     Die Anchor-Scale ist strukturell KONSTANT (Entfernung steckt in der
+     Translation, nie in der Scale). Jede Abweichung war unter MindAR ein
+     ARTEFAKT (elementweiser Matrix-Filter → nicht-starre Zwischenmatrizen;
+     Fehl-Homographien → „Figur schräg/zu groß"): kleine Abweichung →
+     eingefrorene Scale, große → Frame verwerfen.
+     UNTER 8TH WALL (2026-09-15): arSession.js setzt die Scale aus detail.scale ×
+     scaledWidth, und detail.scale ist pro Track konstant — die Stufe löst
+     strukturell nie aus (Re-Lock-Zähler in ?stats bleibt 0). Bleibt als
+     Sicherung; Ausbau ist ein Stufe-3-Punkt nach Prüfung am Gerät.
+     Liefert false, wenn der Frame zu verwerfen ist. */
+  lockScale(raw, now) {
+    if (STAB.scaleLock === "nein" || !this.hasScaleLock) return true;
+    if (Math.abs(raw.s.x - this.scaleLock) / this.scaleLock > STAB.scaleOutlier) {
+      // RE-LOCK (2026-09-07): hält die Abweichung scaleRelockMs am Stück an, war
+      // der Lock selbst falsch (schlechter Aufsetz-Frame) → neu aufsetzen, mit
+      // Median über die nächsten Messungen. Einzelne Ausreißer weiter verwerfen.
+      if (!this.outlierSinceMs) this.outlierSinceMs = now;
+      else if (now - this.outlierSinceMs > STAB.scaleRelockMs) {
+        this.outlierSinceMs = 0;
+        this.initialised = false;
+        this.hasScaleLock = false;
+        this.acq = null;
+        this.relockCount++;
       }
-      this.outlierSinceMs = 0;
-      _scale.setScalar(this.scaleLock);
+      return false;
     }
+    this.outlierSinceMs = 0;
+    raw.s.setScalar(this.scaleLock);
+    return true;
+  }
 
-    // EINHEITEN-NORMIERUNG (#2, Prüfstand-Befund 2026-07-08): gefiltert wird
-    // in KARTENBREITEN (pos / scale) — damit sind posDeadZone/beta einheiten-
-    // fest, egal in welcher Einheit der Tracker liefert (8th Wall: Anchor-Scale
-    // = Kartenbreite in Szenen-Einheiten ≈ 0,06; MindAR: Target-Pixelbreite,
-    // Position z. B. z ≈ −4500).
-    if (STAB.normalize !== "nein") _pos.divideScalar(_scale.x);
+  /* ---- EINHEITEN-NORMIERUNG (#2, Prüfstand-Befund 2026-07-08) ---------------
+     Gefiltert wird in KARTENBREITEN (pos / scale) — damit sind posDeadZone/beta
+     einheitenfest, egal in welcher Einheit der Tracker liefert (8th Wall:
+     Anchor-Scale = Kartenbreite in Szenen-Einheiten ≈ 0,06; MindAR: Target-
+     Pixelbreite, Position z. B. z ≈ −4500). */
+  normalize(raw) {
+    if (STAB.normalize !== "nein") raw.p.divideScalar(raw.s.x);
+  }
 
-    // (Snap #6 lebt in updateMotionEstimate: nur auf NEUE Messungen, zwei
-    //  ferne Messungen in Folge = Ausreißer-Debounce.)
-    if (!this.initialised) {
-      // AUFSETZEN PER MEDIAN (2026-09-07): erst Messungen sammeln; solange wird
-      // der laufende Median angezeigt. Liefert false, sobald der Median steht —
-      // dann liegen Median-Pose und -Scale in _pos/_quat/_scale.
-      if (this.acquire(_pos, _quat, _scale, now)) return;
-      this.xPrev.copy(_pos);
-      this.dxPrev.set(0, 0, 0);
-      this.smoothPos.copy(_pos);
-      this.smoothQuat.copy(_quat);
-      this.lastScale.copy(_scale);
-      this.scaleLock = _scale.x; // Scale einfrieren (#9) — aus dem Median der Aufsetz-Messungen
-      this.hasScaleLock = true;
-      this.outlierSinceMs = 0;
-      this.measPos.copy(_pos);
-      this.measQuat.copy(_quat);
-      this.measT = now;
-      this.hasMeas = true;
-      this.rawPrev.copy(_pos);
-      this.rawPrevQ.copy(_quat);
-      this.hasRaw = true;
-      this.vel.set(0, 0, 0);
-      this.angVel.set(0, 0, 0);
-      this.moving = false;
-      this.snapOld.ok = false;
-      this.snapNew.ok = false;
-      this.driftSpeed = 0;
-      this.driftAngSpeed = 0;
-      this.farCount = 0;
-      this.initialised = true;
-      this.write();
-      return;
-    }
-    this.lastScale.copy(_scale);
-    // Diagnose: wie weit liegt die Rohpose vom geglätteten Zustand (Kartenbreiten / Grad)?
-    this.rawSkewDeg = (_quat.angleTo(this.smoothQuat) * 180) / Math.PI;
-    this.rawOffset = _pos.distanceTo(this.smoothPos);
-
-    // --- Bewegungs-Extrapolation (2026-07-09) -----------------------------------
-    // MindAR misst nur mit ~15–30 Hz; dazwischen wiederholt der Anchor die
-    // alte Pose → Treppensignal beim Karte-Bewegen. Hier: neue Messungen
-    // erkennen, Geschwindigkeit schätzen, und zwischen den Messungen die
-    // Ziel-Pose mit dieser Geschwindigkeit WEITERFÜHREN (_pos/_quat werden
-    // durch die Prediction ersetzt). `moving` schaltet zusätzlich die
-    // Dead-Zones ab — ruhig in Ruhe, flüssig in Bewegung.
-    this.updateMotionEstimate(now);
-    const moving = this.applyExtrapolation(now);
-
-    // --- One-Euro auf die Position (pro Achse) --------------------------------
-    // beta-GATE (2026-07-14): Die Frame-Ableitung dxHat wird in Ruhe NIE ~0 —
-    // das 15–30-Hz-Treppensignal springt bei jeder neuen Messung über ein
-    // 16-ms-Render-dt (dxRaw-Spikes von 0.3+ KB/s), dCutoff hält dxHat auf
-    // Rausch-Niveau → beta·dxHat öffnete den Filter in Ruhe DAUERHAFT auf
-    // 1–2 Hz („wirkt, als gäbe es keinen Filter", egal wie klein minCutoff).
-    // Fix: Der beta-Term greift nur im BEWEGT-Modus — die Entscheidung trifft
-    // der tremor-feste 250-ms-Drift-Detektor, nicht die verrauschte Ableitung.
-    // Ruhe = purer minCutoff (hartes Glätten), Bewegung = adaptiv wie gehabt.
-    this.oneEuro(_pos, this.smoothPos, dt, moving);
-
-    // Dead-Zone (#3): winzige Restbewegung verwerfen (nur im RUHE-Zustand)
-    const dzOn = STAB.deadZones !== "nein";
-    if (dzOn && !moving && this.smoothPos.distanceTo(this.xPrev) < STAB.posDeadZone) {
-      this.smoothPos.copy(this.xPrev);
-    } else {
-      this.xPrev.copy(this.smoothPos);
-    }
-
-    // --- ADAPTIVE Rotations-Glättung (One-Euro-Prinzip, 2026-07-13) -------------
-    // Vorher fixer SLERP-Faktor: ließ in Ruhe 35 % des Rotations-Rauschens
-    // durch und hing bei schnellen Drehungen nach. Jetzt: Cutoff wächst mit
-    // der gemessenen Winkelgeschwindigkeit — Ruhe = dicht, Drehung = wach.
-    const angle = this.smoothQuat.angleTo(_quat);
-    if (angle > STAB.rotDeadZone || moving || !dzOn) {
-      const rotCutoff = STAB.rotMinCutoff + STAB.rotBeta * this.angVel.length();
-      const t = Math.min(1, this.alpha(dt, rotCutoff));
-      this.smoothQuat.slerp(_quat, t);
-    }
-
+  /* ---- Aufsetzen: Filterzustand aus der Median-Pose ------------------------- */
+  initialise(raw, now) {
+    this.xPrev.copy(raw.p);
+    this.dxPrev.set(0, 0, 0);
+    this.smoothPos.copy(raw.p);
+    this.smoothQuat.copy(raw.q);
+    this.lastScale.copy(raw.s);
+    this.scaleLock = raw.s.x; // Scale einfrieren (#9) — aus dem Median der Aufsetz-Messungen
+    this.hasScaleLock = true;
+    this.outlierSinceMs = 0;
+    this.measPos.copy(raw.p);
+    this.measQuat.copy(raw.q);
+    this.measT = now;
+    this.hasMeas = true;
+    this.rawPrev.copy(raw.p);
+    this.rawPrevQ.copy(raw.q);
+    this.hasRaw = true;
+    this.vel.set(0, 0, 0);
+    this.angVel.set(0, 0, 0);
+    this.moving = false;
+    this.snapOld.ok = false;
+    this.snapNew.ok = false;
+    this.driftSpeed = 0;
+    this.driftAngSpeed = 0;
+    this.farCount = 0;
+    this.initialised = true;
     this.write();
   }
 
@@ -389,13 +424,15 @@ export class PoseStabilizer {
     q.copy(samples[best].q);
   }
 
-  /* Neue Vision-Messung erkennen (ROHPOSE unterscheidet sich von der letzten —
-     ungedreht, damit die Gyro-Prediction keine Fehl-Messungen erzeugt) und
-     lineare + Winkel-Geschwindigkeit schätzen (geglättet, 50/50-Lerp).
-     Die Geschwindigkeit selbst wird gegen die GYRO-KOMPENSIERTE measPos
-     gerechnet — Kamera-Drehung ist damit herausgerechnet, übrig bleibt die
-     echte Karten-Bewegung. */
-  updateMotionEstimate(now) {
+  /* ---- Bewegungs-Schätzung (2026-07-09) ---------------------------------------
+     Die Bilderkennung misst nur mit ~15–30 Hz; dazwischen wiederholt der Anchor
+     die alte Pose → Treppensignal beim Karte-Bewegen. Hier: neue Vision-Messung
+     erkennen (ROHPOSE unterscheidet sich von der letzten — ungedreht, damit die
+     Gyro-Prediction keine Fehl-Messungen erzeugt) und lineare + Winkel-
+     Geschwindigkeit schätzen (geglättet, 50/50-Lerp). Die Geschwindigkeit selbst
+     wird gegen die GYRO-KOMPENSIERTE measPos gerechnet — Kamera-Drehung ist
+     damit herausgerechnet, übrig bleibt die echte Karten-Bewegung. */
+  updateMotionEstimate(raw, now) {
     // Vision-Hz-Fenster (für ?stats)
     if (now - this.hzWindowT > 1000) {
       this.visionHz = this.measCount;
@@ -404,23 +441,23 @@ export class PoseStabilizer {
     }
 
     const isNew = !this.hasRaw ||
-      _pos.distanceTo(this.rawPrev) > 1e-6 || this.rawPrevQ.angleTo(_quat) > 1e-6;
-    this.rawPrev.copy(_pos);
-    this.rawPrevQ.copy(_quat);
+      raw.p.distanceTo(this.rawPrev) > 1e-6 || this.rawPrevQ.angleTo(raw.q) > 1e-6;
+    this.rawPrev.copy(raw.p);
+    this.rawPrevQ.copy(raw.q);
     this.hasRaw = true;
-    if (!isNew) return; // stale Frame — MindAR hat nicht neu gemessen
+    if (!isNew) return; // stale Frame — die Engine hat nicht neu gemessen
     this.measCount++;
     this.diag.newMeas = true;
-    this.diag.rawPos.copy(_pos);
-    this.diag.rawQuat.copy(_quat);
+    this.diag.rawPos.copy(raw.p);
+    this.diag.rawQuat.copy(raw.q);
 
     // AUSREISSER-DEBOUNCE + Snap (#6, 2026-07-13): Messung weit weg vom
     // Glättungszustand? EINE solche Messung ist meist ein Fehlgriff unter
     // Bewegungsunschärfe → verwerfen (weder Geschwindigkeit noch Snap daraus).
     // Erst die ZWEITE ferne Messung in Folge gilt als echt (Re-Found nach
     // Drift) → Filter snappt neu auf.
-    const far = this.smoothPos.distanceTo(_pos) > STAB.snapDist ||
-                this.smoothQuat.angleTo(_quat) > STAB.snapAngle;
+    const far = this.smoothPos.distanceTo(raw.p) > STAB.snapDist ||
+                this.smoothQuat.angleTo(raw.q) > STAB.snapAngle;
     if (far) {
       this.farCount++;
       if (this.farCount >= 2 && STAB.snap !== "nein") {
@@ -437,11 +474,11 @@ export class PoseStabilizer {
     // sind Mess-Rauschen — daraus KEINE Geschwindigkeit schätzen, sondern die
     // Schätzung abklingen lassen. Sonst hält Ruhe-Rauschen den Bewegt-Modus
     // fälschlich am Leben und die Latenz-Kompensation VERSTÄRKT das Rauschen.
-    const dPosMeas = _pos.distanceTo(this.measPos);
+    const dPosMeas = raw.p.distanceTo(this.measPos);
     if (dPosMeas > STAB.posDeadZone) {
-      const vx = (_pos.x - this.measPos.x) / dtMeas;
-      const vy = (_pos.y - this.measPos.y) / dtMeas;
-      const vz = (_pos.z - this.measPos.z) / dtMeas;
+      const vx = (raw.p.x - this.measPos.x) / dtMeas;
+      const vy = (raw.p.y - this.measPos.y) / dtMeas;
+      const vz = (raw.p.z - this.measPos.z) / dtMeas;
       if (Number.isFinite(vx)) this.vel.lerp({ x: vx, y: vy, z: vz }, 0.5);
       // Spike-Kappe: mehr als maxSpeed ist keine Hand mehr, sondern Messfehler
       if (this.vel.length() > STAB.maxSpeed) this.vel.setLength(STAB.maxSpeed);
@@ -450,7 +487,7 @@ export class PoseStabilizer {
     }
 
     // Winkel: dq = meas⁻¹ ⊗ neu → Achse*Winkel/Zeit (im Mess-lokalen Frame)
-    _dq.copy(this.measQuat).invert().multiply(_quat);
+    _dq.copy(this.measQuat).invert().multiply(raw.q);
     if (_dq.w < 0) { _dq.x *= -1; _dq.y *= -1; _dq.z *= -1; _dq.w *= -1; } // kürzester Weg
     const s = Math.sqrt(Math.max(0, 1 - _dq.w * _dq.w));
     const angMeas = 2 * Math.acos(Math.min(1, _dq.w));
@@ -462,30 +499,32 @@ export class PoseStabilizer {
       this.angVel.multiplyScalar(0.5);
     }
 
-    this.measPos.copy(_pos);
-    this.measQuat.copy(_quat);
+    this.measPos.copy(raw.p);
+    this.measQuat.copy(raw.q);
     this.measT = now;
 
     // Drift-Fenster fortschreiben (Snapshots alle ~250 ms)
     if (!this.snapNew.ok) {
-      this.snapNew.p.copy(_pos); this.snapNew.q.copy(_quat);
+      this.snapNew.p.copy(raw.p); this.snapNew.q.copy(raw.q);
       this.snapNew.t = now; this.snapNew.ok = true;
     } else if (now - this.snapNew.t > 250) {
       this.snapOld.p.copy(this.snapNew.p); this.snapOld.q.copy(this.snapNew.q);
       this.snapOld.t = this.snapNew.t; this.snapOld.ok = true;
-      this.snapNew.p.copy(_pos); this.snapNew.q.copy(_quat); this.snapNew.t = now;
+      this.snapNew.p.copy(raw.p); this.snapNew.q.copy(raw.q); this.snapNew.t = now;
     }
     if (this.snapOld.ok) {
       const dtW = Math.max(0.1, (now - this.snapOld.t) / 1000);
       // Geglättet (EMA): einzelne Tremor-Spitzen am Fensterrand dürfen den
       // Bewegt-Modus nicht zünden; echte Bewegung hebt das Signal in ~200 ms.
-      this.driftSpeed += (_pos.distanceTo(this.snapOld.p) / dtW - this.driftSpeed) * 0.25;
-      this.driftAngSpeed += (this.snapOld.q.angleTo(_quat) / dtW - this.driftAngSpeed) * 0.25;
+      this.driftSpeed += (raw.p.distanceTo(this.snapOld.p) / dtW - this.driftSpeed) * 0.25;
+      this.driftAngSpeed += (this.snapOld.q.angleTo(raw.q) / dtW - this.driftAngSpeed) * 0.25;
     }
   }
 
-  /* Zwischen den Messungen: Ziel-Pose (_pos/_quat) per Geschwindigkeit
-     vorhersagen. Liefert true, wenn die Karte gerade als „in Bewegung" gilt.
+  /* ---- Extrapolation (#8): Ziel-Pose zwischen den Messungen vorhersagen ------
+     Überschreibt raw.p/raw.q mit der Prediction. Liefert true, wenn die Karte
+     gerade als „in Bewegung" gilt — das schaltet die Dead-Zones ab und öffnet
+     den beta-Term des One-Euro-Filters.
 
      HYSTERESE + VERWEILZEIT (2026-07-13): Einschalten ab minSpeed, Ausschalten
      erst unter der HALBEN Schwelle UND nachdem moveDwellMs lang keine
@@ -495,7 +534,7 @@ export class PoseStabilizer {
      LATENZ-KOMPENSATION (2026-07-13): Jede Vision-Messung ist bei Ankunft
      schon ~latencyMs alt (Verarbeitungszeit) — die Prediction rechnet dieses
      Alter mit ein, sonst läuft die Figur der Karte konstant hinterher. */
-  applyExtrapolation(now) {
+  applyExtrapolation(raw, now) {
     // Bewegt-Entscheidung über die FENSTER-DRIFT (tremor-fest), nicht über
     // die Momentan-Geschwindigkeit (die dient nur der Vorhersage selbst).
     const speed = this.driftSpeed;
@@ -526,15 +565,50 @@ export class PoseStabilizer {
     const dist = Math.min(this.vel.length() * tp, STAB.extrapMaxDist);
     if (dist > 1e-7 && this.vel.lengthSq() > 0) {
       _axis.copy(this.vel).normalize();
-      _pos.copy(this.measPos).addScaledVector(_axis, dist);
+      raw.p.copy(this.measPos).addScaledVector(_axis, dist);
     }
     const ang = Math.min(this.angVel.length() * tp, STAB.extrapMaxAngle);
     if (ang > 1e-5) {
       _axis.copy(this.angVel).normalize();
       _predQ.setFromAxisAngle(_axis, ang);
-      _quat.copy(this.measQuat).multiply(_predQ);
+      raw.q.copy(this.measQuat).multiply(_predQ);
     }
     return moving;
+  }
+
+  /* ---- One-Euro auf die Position (pro Achse) + Dead-Zone (#3) ----------------
+     beta-GATE (2026-07-14): Die Frame-Ableitung dxHat wird in Ruhe NIE ~0 —
+     das 15–30-Hz-Treppensignal springt bei jeder neuen Messung über ein
+     16-ms-Render-dt (dxRaw-Spikes von 0.3+ KB/s), dCutoff hält dxHat auf
+     Rausch-Niveau → beta·dxHat öffnete den Filter in Ruhe DAUERHAFT auf
+     1–2 Hz („wirkt, als gäbe es keinen Filter", egal wie klein minCutoff).
+     Fix: Der beta-Term greift nur im BEWEGT-Modus — die Entscheidung trifft
+     der tremor-feste 250-ms-Drift-Detektor, nicht die verrauschte Ableitung.
+     Ruhe = purer minCutoff (hartes Glätten), Bewegung = adaptiv wie gehabt.
+     Dead-Zone: winzige Restbewegung verwerfen (nur im RUHE-Zustand). */
+  filterPosition(p, dt, moving) {
+    this.oneEuro(p, this.smoothPos, dt, moving);
+    const dzOn = STAB.deadZones !== "nein";
+    if (dzOn && !moving && this.smoothPos.distanceTo(this.xPrev) < STAB.posDeadZone) {
+      this.smoothPos.copy(this.xPrev);
+    } else {
+      this.xPrev.copy(this.smoothPos);
+    }
+  }
+
+  /* ---- ADAPTIVE Rotations-Glättung (One-Euro-Prinzip, 2026-07-13) ------------
+     Vorher fixer SLERP-Faktor: ließ in Ruhe 35 % des Rotations-Rauschens
+     durch und hing bei schnellen Drehungen nach. Jetzt: Cutoff wächst mit
+     der gemessenen Winkelgeschwindigkeit — Ruhe = dicht, Drehung = wach.
+     Dead-Zone (#3) auch hier nur in Ruhe. */
+  filterRotation(q, dt, moving) {
+    const dzOn = STAB.deadZones !== "nein";
+    const angle = this.smoothQuat.angleTo(q);
+    if (angle > STAB.rotDeadZone || moving || !dzOn) {
+      const rotCutoff = STAB.rotMinCutoff + STAB.rotBeta * this.angVel.length();
+      const t = Math.min(1, this.alpha(dt, rotCutoff));
+      this.smoothQuat.slerp(q, t);
+    }
   }
 
   /* Kamera hat sich um dq gedreht (Kamera-Frame) → Karten-Pose im Kamera-
@@ -566,7 +640,7 @@ export class PoseStabilizer {
       const aD = this.alpha(dt, STAB.dCutoff);
       const dxHat = this.dxPrev[a] + aD * (dxRaw - this.dxPrev[a]);
       this.dxPrev[a] = dxHat;
-      // beta nur bei Bewegung (Drift-Detektor) — s. Kommentar am Aufrufer
+      // beta nur bei Bewegung (Drift-Detektor) — s. Kommentar an filterPosition
       const cutoff = open ? STAB.minCutoff + STAB.beta * Math.abs(dxHat) : STAB.minCutoff;
       const aPos = this.alpha(dt, cutoff);
       out[a] = this.xPrev[a] + aPos * (targetV[a] - this.xPrev[a]);
@@ -578,11 +652,12 @@ export class PoseStabilizer {
     return 1 / (1 + tau / dt);
   }
 
+  /* Geglätteten Zustand nach stabRoot schreiben. smoothPos ist in Kartenbreiten
+     normiert → zurück in Anchor-Einheiten. */
   write() {
-    // smoothPos ist in Kartenbreiten normiert → zurück in Anchor-Einheiten
-    _pos.copy(this.smoothPos);
-    if (STAB.normalize !== "nein") _pos.multiplyScalar(this.lastScale.x);
-    this.target.matrix.compose(_pos, this.smoothQuat, this.lastScale);
+    _wp.copy(this.smoothPos);
+    if (STAB.normalize !== "nein") _wp.multiplyScalar(this.lastScale.x);
+    this.target.matrix.compose(_wp, this.smoothQuat, this.lastScale);
     this.target.matrixWorldNeedsUpdate = true;
   }
 }

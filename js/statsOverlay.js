@@ -136,8 +136,9 @@ export class StatsOverlay {
   paintFall() { this.fallBtn.textContent = FAELLE[this.fall]; }
 
   startCapture() {
-    this.cap = { t0: performance.now(), samples: [], snaps0: this.stab.snapCount ?? 0,
-      nan0: this.stab.diag?.nanCount ?? 0, lostMs: 0, lastT: performance.now() };
+    const st = this.stab.snapshot();
+    this.cap = { t0: performance.now(), samples: [], snaps0: st.snapCount,
+      nan0: st.nanCount, lostMs: 0, lastT: performance.now() };
     this.result = null;
     this.copyBtn.hidden = this.logBtn.hidden = true;
     this.resEl.textContent = "";
@@ -152,8 +153,8 @@ export class StatsOverlay {
       minSpeed: STAB.minSpeed, minAngSpeed: STAB.minAngSpeed, minCutoff: STAB.minCutoff,
       beta: STAB.beta, rotMinCutoff: STAB.rotMinCutoff, rotBeta: STAB.rotBeta,
       latencyMs: STAB.latencyMs, breiteMm: this.mm, design: this.env?.design?.id ?? null,
-      snaps: (this.stab.snapCount ?? 0) - c.snaps0,
-      nan: (this.stab.diag?.nanCount ?? 0) - c.nan0,
+      snaps: this.stab.snapshot().snapCount - c.snaps0,
+      nan: this.stab.snapshot().nanCount - c.nan0,
       verlorenMs: Math.round(c.lostMs),
       dauerMs: Math.round(now - c.t0),
     };
@@ -224,7 +225,8 @@ export class StatsOverlay {
   }
   tick() {
     const now = performance.now();
-    const st = this.stab, d = st.diag;
+    // Stabilizer-Zustand nur über snapshot() lesen (Stufe 3c): ein Objekt, pro Frame aktualisiert
+    const st = this.stab.snapshot();
     // Gyro-Drehrate: Winkel zwischen aufeinanderfolgenden Orientierungen
     // aufsummieren (misst die Handdrehung auch bei Toggle 7 aus)
     if (this.gyro?.active) {
@@ -232,23 +234,23 @@ export class StatsOverlay {
       (this.gyroPrev ??= new THREE.Quaternion()).copy(this.gyro.qCur);
     }
     let sample = null;
-    if (st.tracking && this.stabRoot.visible && d) {
+    if (st.tracking && this.stabRoot.visible) {
       this.stabRoot.matrix.decompose(_p, _q, _s);
       const sc = _s.x;
       if (sc > 1e-8 && Number.isFinite(_p.x)) {
         sample = {
-          t: now, n: d.newMeas, m: st.moving,
+          t: now, n: st.newMeas, m: st.moving,
           sp: [_p.x / sc, _p.y / sc, _p.z / sc], sq: [_q.x, _q.y, _q.z, _q.w],
           sx: this.headPx(_p, _q, sc),
-          ga: d.gyroApplied, ms: d.modeSwitches, gw: this.gyro?.active ? this.gyroAng : null,
+          ga: st.gyroApplied, ms: st.modeSwitches, gw: this.gyro?.active ? this.gyroAng : null,
         };
-        if (d.newMeas) {
+        if (st.newMeas) {
           // Rohmessung nach Schiedsrichter; in Kartenbreiten, wenn normiert wird
           const norm = STAB.normalize !== "nein";
-          const r = d.rawPos;
+          const r = st.rawPos;
           sample.rp = norm ? [r.x, r.y, r.z] : [r.x / sc, r.y / sc, r.z / sc];
-          sample.rq = [d.rawQuat.x, d.rawQuat.y, d.rawQuat.z, d.rawQuat.w];
-          _gq.copy(d.rawQuat);
+          sample.rq = [st.rawQuat.x, st.rawQuat.y, st.rawQuat.z, st.rawQuat.w];
+          _gq.copy(st.rawQuat);
           sample.rx = this.headPx(_v.copy(r).multiplyScalar(norm ? sc : 1).clone(), _gq, sc);
         }
       }
@@ -272,7 +274,7 @@ export class StatsOverlay {
     const v = this.env?.getVideo?.();
     const cam = v && v.videoWidth ? `${v.videoWidth}×${v.videoHeight}` : "—";
     const pr = this.env?.renderer ? this.env.renderer.getPixelRatio().toFixed(1) : "—";
-    const arb = this.stab.arb ?? {};
+    const arb = st.arb;
     const arbState = STAB.gravityArbiter === "nein" ? "AUS (Toggle)" : !arb.active ? "kein Gyro" : arb.flipped ? "GESPIEGELT→korrigiert" : "roh ok";
     // Engine-Variante (2026-09-09): SIMD oder Nicht-SIMD-Fallback (arSession.js
     // wählt per WebAssembly.validate; Konsole: „8th Wall XR Version: …s"
@@ -282,17 +284,17 @@ export class StatsOverlay {
       : `v${BUILD} — v${this.liveBuild} LIVE → neu laden!`;
     this.el.textContent =
       // Kompakt seit Build 62 (mehr Kennzahl-Zeilen, Panel ist auf 45 vh gedeckelt)
-      `Track: ${this.stab.tracking ? "FOUND" : "LOST"} · sichtbar: ${this.stabRoot.visible ? "ja" : "nein"} · Gyro: ${gy}\n` +
+      `Track: ${st.tracking ? "FOUND" : "LOST"} · sichtbar: ${this.stabRoot.visible ? "ja" : "nein"} · Gyro: ${gy}\n` +
       `Cam: ${cam} PR: ${pr} · Build: ${build} · Engine: ${this.env?.engine ?? "—"}\n` +
       this.metricLines() +
-      `Roh↔Stab: ${(this.stab.rawSkewDeg ?? 0).toFixed(1)}°  ${((this.stab.rawOffset ?? 0) * 1000).toFixed(1)}‰KB  Re-Erk.: ${this.stab.relocCount ?? 0}\n` +
+      `Roh↔Stab: ${st.rawSkewDeg.toFixed(1)}°  ${(st.rawOffset * 1000).toFixed(1)}‰KB  Re-Erk.: ${st.relocCount}\n` +
       // Pose-Flip-Diagnose (2026-09-15): Schiedsrichter-Zustand, Kippwinkel der
       // Kartennormale gegen die Sichtlinie, z-Anteil der Normale im Erdframe
       // (1 = senkrecht nach oben; negativ/klein bei Karte auf dem Tisch = die
       // Engine liefert die gespiegelte Lösung), Zahl der Wechsel; dazu die bis
       // Build 58 unsichtbaren automatischen Snaps und Scale-Re-Locks.
       `Flip: ${arbState}  Kipp ${(arb.tiltDeg ?? 0).toFixed(0)}°  n·up roh ${(arb.zRaw ?? 0).toFixed(2)} → gew. ${(arb.zChosen ?? 0).toFixed(2)}` +
-      `  Flips ${this.stab.flipCount ?? 0}  Snaps ${this.stab.snapCount ?? 0}  Re-Lock ${this.stab.relockCount ?? 0}  NaN ${this.stab.diag?.nanCount ?? 0}\n` +
+      `  Flips ${st.flipCount}  Snaps ${st.snapCount}  Re-Lock ${st.relockCount}  NaN ${st.nanCount}\n` +
       // Karten-Kennung (2026-09-07): zeigt, welche Kartendatei der Browser
       // tatsächlich geladen hat — Safari cached jede Datei einzeln (Pages:
       // max-age 600), ein frischer Build kann eine alte Karte mitschleppen.

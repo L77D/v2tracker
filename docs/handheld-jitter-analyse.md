@@ -342,7 +342,7 @@ Aufwände als Arbeitszeit inklusive Gerätetest, ohne Wertung, ohne Rangfolge.
 ## e) Phase 2, Schritt 1: Messwerkzeug (Build 62, 2026-09-25)
 
 Umgesetzt ist das Werkzeug aus Abschnitt b. Das Filterverhalten ist
-**unverändert**: Der Stabilizer bekommt nur Diagnose-Zähler (`stab.diag`).
+**unverändert**: Der Stabilizer bekommt nur Diagnose-Zähler (seit Build 88 über `stab.snapshot()` gelesen).
 
 ### Was neu ist
 
