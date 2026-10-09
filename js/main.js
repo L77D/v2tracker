@@ -1,0 +1,609 @@
+/* =============================================================================
+   DETAR — App-Boot: Splash → Kamera → 8th-Wall-Bildtracking → Choreographie.
+
+   8th Wall Image Targets (Open-Source-Engine, selbst gehostet unter
+   vendor/8thwall/), Figur steht auf der echten Karte.
+
+   TRACKING (seit 2026-09-09, Branch 8thwall-image-targets): Die Kamera und die
+   Bilderkennung liefert die Open-Source-8th-Wall-Engine (MIT, ohne SLAM). Sie
+   läuft in einer eigenen Kamera-Pipeline (XR8.run) — KEIN SLAM/World-Tracking
+   (disableWorldTracking: true), kein Niantic-Cloud-Aufruf, kein API-Key. Die
+   Engine wird ERST in der Start-Geste geladen (Splash → „Scan starten"), vorher
+   läuft weder Skript noch Kamera. Die Bildpose kommt als Event
+   (reality.imagefound / imageupdated / imagelost) in Szenen-Koordinaten und wird
+   hier in die KAMERA-relative Rohpose umgerechnet, die der PoseStabilizer seit
+   dem MindAR-Stand erwartet — Glättung, Gyro-Fusion, Median-Aufsetzen
+   und die gesamte Choreographie bleiben unverändert.
+
+   KOORDINATEN-KERN (unverändert): Zapworks lief im Anchor-Origin-Modus (Karte =
+   Welt-Ursprung, Kamera bewegt sich). Der Stabilizer arbeitet invertiert
+   (Kamera = Ursprung, der Karten-Anchor bewegt sich im Kamera-Raum) — deshalb
+   hängt stabRoot unter der Kamera. Figur + Bubble leben unter einem `worldRoot`
+   (Karten-Frame: X = Karte rechts, Y = hoch von der Karte weg, Z = zur Karten-
+   Unterkante), und alle "Wo ist die Kamera?"-Rechnungen transformieren die
+   Kamera-Weltposition in diesen Frame (frame.getCamLocal) — die komplette
+   Behavior-Logik aus dem Prototyp bleibt dadurch 1:1 gültig.
+
+   SKALIERUNG: Die Anchor-Scale wird auf die KARTENBREITE in Szeneneinheiten
+   gesetzt (8th Wall: scale × scaledWidth; der 3:4-Crop des Targets behält die
+   volle Kartenbreite). Damit ist eine Anchor-
+   Einheit = eine Kartenbreite — genau wie bei MindAR — und worldRoot.scale =
+   1/cardWidth lässt alle getunten Werte (Lauffeld, Bubble, Sprünge …) gelten.
+   ============================================================================= */
+import * as THREE from "../vendor/three/three.module.js";
+import { ladeKarte } from "./kartenLader.js";
+import { SCENE, STAB, CAM, CHOREO, GYRO, syncCssVars } from "./config.js";
+import { buildRig } from "./rig.js";
+import { FaceAnimator } from "./faceAnimator.js";
+import { SpeechBubble } from "./speechBubble.js";
+import { IdleWander } from "./idleWander.js";
+import { ActivationAnim } from "./activationAnim.js";
+import { QuestionMenu } from "./questionMenu.js";
+import { CardController } from "./cardController.js";
+import { ActivationFX } from "./activationFX.js";
+import { PoseStabilizer } from "./poseStabilizer.js";
+import { GyroFusion } from "./gyroFusion.js";
+import { sound } from "./sound.js";
+import { buildSupport } from "./supportUI.js";
+import { preflight, showPreflightScreen } from "./preflight.js";
+import { el, finiteVec } from "./util.js";
+
+const params = new URLSearchParams(location.search);
+// Edition: Public-Fassung = Kartennummer mit angehängtem P (?k=000P, Build 75,
+// Michael 2026-10-08 — ersetzt das frühere Flag ?public). Ohne Firmenlogo/
+// -name im Splash und ohne Link-Frage im Dialog (js/edition.js). Bestimmt der
+// Kartenlader (resolved.publicMode); steht in der Query, bleibt also beim
+// Neuladen und bei „Link kopieren" erhalten.
+let PUBLIC_MODE = false;
+// Karte (Content) kommt seit Build 63 aus karten/<id>/daten.json + dialog.json (js/kartenLader.js,
+// ?k=<id>) und wird in boot() gesetzt — vorher statischer Import von
+// cards/elektroniker.js. `design` = gewähltes Kartenbild fürs Tracking (?design).
+let card = null;
+let design = null;
+// NEU-AUFSETZEN auf Tap (2026-09-07): wird im AR-Modus gesetzt (startAR) —
+// PoseStabilizer per Median neu aufsetzen. Aufrufer: Figur-Tap (Hüpfer
+// kaschiert den Sprung) und Karten-Tap in der „Karte gefunden"-Phase. (Unter MindAR wurde hier zusätzlich die Neu-Erkennung
+// des Trackers erzwungen; 8th Wall erkennt kontinuierlich neu, ein Eingriff in
+// den Tracker ist weder nötig noch über die API möglich.)
+let relocalize = null;
+
+// 8th-Wall-Engine, selbst gehostet (Open-Source-Build, MIT — s. vendor/8thwall/
+// README.md). xr.js lädt daneben den Chunk „slam", der in der Open-Source-Engine
+// xr-tracking.js ist: der reine Bildtracker, KEIN SLAM-Binary.
+//
+// ZWEI VARIANTEN (Production-Härtung 2026-09-09): vendor/8thwall/ ist mit
+// WASM-SIMD gebaut (wasmreleasesimd; braucht iOS 16.4 / Chrome 91 — ältere
+// Browser lehnen das Modul beim Instanziieren ab, die Engine stirbt nach dem
+// Klick), vendor/8thwall-nosimd/ ohne SIMD (wasmrelease; läuft ab iOS 11 /
+// Chrome 57, nur langsamer). Der Test unten ist byte-identisch mit der Engine-
+// eigenen Prüfung (wasm-feature-detect: v128-Konstante + i8x16.add). Der Chunk
+// xr-tracking.js wird von xr.js relativ zu seinem EIGENEN Pfad geladen — die
+// Variante des Kerns zieht also automatisch den passenden Tracker nach.
+// ?nosimd erzwingt die Nicht-SIMD-Variante (Test).
+function hasWasmSimd() {
+  try {
+    return typeof WebAssembly === "object" && WebAssembly.validate(new Uint8Array([
+      0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11,
+    ]));
+  } catch (e) { return false; }
+}
+const ENGINE_SIMD = !params.has("nosimd") && hasWasmSimd();
+const XR_ENGINE_URL = ENGINE_SIMD ? "./vendor/8thwall/xr.js" : "./vendor/8thwall-nosimd/xr.js";
+// Image-Target-Daten (@8thwall/image-target-cli). Eine
+// Seite = eine Karte = ein Target. Seit Build 63 (2026-10-06) liegen Karte und
+// ihre Designs (Kartenbilder) in karten/<id>/ — Auswahl per ?k=<id> und
+// ?design=<id>, aufgelöst in js/kartenLader.js (ersetzt targets/8thwall/
+// karten.json und ?karte=). Die Kartenbreite des Designs wird zu
+// physicalWidthInMeters (Standard 63 mm laut Druckspezifikation); SCENE.cardWidth
+// bleibt die SZENEN-Einheit (worldRoot-Skalierung, Eck-Marker) und ist davon
+// unabhängig.
+
+let gyro = null; // GyroFusion — wird in der START-Geste angelegt (iOS-Permission)
+
+/* --------------------------------------------------------------------------
+   Splash befüllen + Start-Button freigeben, sobald der Font geladen ist.
+   -------------------------------------------------------------------------- */
+async function boot() {
+  // Vorabprüfung (2026-09-09): In-App-Browser / kein HTTPS / keine Kamera-API /
+  // kein WASM → Hinweis-Bildschirm statt Fehler nach dem Klick; Button bleibt
+  // aus. Test: ?preflight=inapp|nocam|insecure|nowasm|nowebp (s. js/preflight.js).
+  const blocked = await preflight(params.get("preflight"));
+  // Karte laden (?k=<id> gegen karten/katalog.json, Design per ?design=<id>).
+  // Unbekannte Karte/Design: Hinweis in der Fehlerzeile des Splash, Button
+  // bleibt aus — statt einer leeren Seite nach dem Klick (Target-404).
+  const resolved = await ladeKarte(params);
+  PUBLIC_MODE = !!resolved.publicMode;
+  // Ohne ?k startet keine Karte (Build 74): Auffang-Seite statt Splash —
+  // Vorrang vor der Vorabprüfung, denn ohne Karte gibt es nichts zu starten.
+  if (resolved.keineKarte) {
+    document.body.classList.add("keine-karte");
+    console.warn("DETAR: kein ?k — Auffang-Seite. Bekannte Karten:", resolved.ids.join(", "));
+    return;
+  }
+  if (blocked) {
+    el("cardName").textContent = resolved.card?.profession ?? resolved.beruf ?? "";
+    showPreflightScreen(blocked);
+    return;
+  }
+  if (resolved.error) {
+    if (resolved.beruf) el("cardName").textContent = resolved.beruf;
+    const box = el("errorBox");
+    box.textContent = resolved.error + (resolved.ids.length ? " — bekannt: " + resolved.ids.join(", ") : "") +
+      (resolved.hinweis ?? "");
+    box.style.display = "block";
+    console.warn("DETAR", resolved.error, resolved.ids);
+    return;
+  }
+  ({ card, design } = resolved);
+  // Engine-Kern VORLADEN (Netzwerk, nicht ausgeführt) — erst hier per JS statt
+  // als <link> in index.html, weil die Variante (SIMD / nicht-SIMD) vom Gerät
+  // abhängt; so lädt jedes Gerät nur die eine xr.js, die es auch nutzt. Der
+  // Tracker-Chunk kommt weiterhin erst nach dem Klick.
+  {
+    const pre = document.createElement("link");
+    pre.rel = "preload"; pre.as = "script"; pre.href = XR_ENGINE_URL;
+    document.head.appendChild(pre);
+  }
+  syncCssVars();
+
+  el("cardName").textContent = card.profession;
+  // Firmenlogo nur, wenn die Karte eines mitbringt — sonst der Name als Text.
+  // Public-Edition: der ganze Block „bei + Logo/Firma" bleibt weg (body.public;
+  // der Public-Splash wird noch gestaltet — Michael 2026-09-09).
+  const logoImg = el("companyLogo"), companyText = el("companyText");
+  if (PUBLIC_MODE) { document.body.classList.add("public"); logoImg.hidden = true; companyText.hidden = true; }
+  else if (card.companyLogo) { logoImg.src = card.companyLogo; logoImg.alt = card.company; companyText.hidden = true; }
+  else { logoImg.hidden = true; companyText.textContent = card.company ?? ""; }
+  // (DET-Logo mit Job-Link nach dem Splash: seit dem UI-Update 2026-09-03 raus)
+
+  // Font muss VOR dem ersten Bubble-measureText geladen sein.
+  try {
+    await Promise.all([document.fonts.load(`52px "Jersey 10"`), document.fonts.load(`26px "Silkscreen"`)]);
+  } catch (e) { /* Fallback mono */ }
+
+  const btn = el("launchButton");
+  btn.disabled = false;
+  btn.addEventListener("click", async () => {
+    btn.disabled = true; // Spinner während Kamera/Tracking hochfahren
+    // Sound MUSS in der User-Geste initialisiert werden (AudioContext-Unlock,
+    // gleiche Regel wie die Gyro-Permission) — VOR allen awaits.
+    sound.init();
+    sound.uiTap();
+    // Gyro-Permission MUSS direkt in der User-Geste angefragt werden (iOS) —
+    // deshalb hier, VOR allen awaits. Fail-safe: ohne Gyro läuft alles normal.
+    if (GYRO.enabled !== "nein" && !params.has("nogyro")) {
+      gyro = new GyroFusion();
+      gyro.enable(); // bewusst nicht awaiten (Geste nicht verlieren)
+    }
+    try {
+      await startAR();
+      document.body.classList.add("launched");
+      document.body.classList.add("scanning"); // Suchrahmen (weiße Ecken) bis zur ersten Erkennung
+    } catch (err) {
+      console.error("DETAR start failed:", err);
+      showStartError(err);
+      btn.disabled = false;
+    }
+  });
+}
+
+/* Startfehler. Kamera abgelehnt → eigener Bildschirm ohne Kamerabild
+   (Dialogsystem 2026-09-03, UI-Inventar Abschnitt 6); alles andere bleibt
+   eine Fehlerzeile im Splash. */
+function showStartError(err) {
+  const isCam = /permission|notallowed|denied/i.test(String(err?.name) + String(err?.message));
+  if (isCam) {
+    document.body.classList.add("camera-denied");
+    const reload = el("permReload");
+    if (reload) reload.onclick = () => location.reload();
+    return;
+  }
+  const box = el("errorBox");
+  box.textContent = "Start fehlgeschlagen. Bitte Seite neu laden. (" + (err?.message ?? err) + ")";
+  box.style.display = "block";
+}
+
+/* --------------------------------------------------------------------------
+   Gemeinsamer Szenen-Aufbau (Rig + Behaviors + UI + Loop) für beide Modi.
+   `render: false` → der Loop rendert NICHT selbst (AR: das übernimmt der
+   Threejs-Pipeline-Modul-Hook onRender der 8th-Wall-Engine, sonst doppelt).
+   -------------------------------------------------------------------------- */
+function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTick, render = true }) {
+  const frame = {
+    worldRoot,
+    camera,
+    /* Kamera-Weltposition in den Karten-Frame transformieren. WICHTIG:
+       updateWorldMatrix VOR dem Lesen — matrixWorld ist im Animation-Loop
+       sonst einen Frame alt (Zapworks-Gotcha, gilt in three.js generell).
+       NaN-SCHUTZ: liefert null, wenn die Transformation nicht endlich ist
+       (degenerierte Matrix um Tracking-Verlust) — Aufrufer überspringen den
+       Frame dann, statt NaN in ihre Lerps einsickern zu lassen. */
+    getCamLocal(out) {
+      camera.getWorldPosition(out);
+      worldRoot.updateWorldMatrix(true, false);
+      worldRoot.worldToLocal(out);
+      if (STAB.nanGuard !== "nein" && !finiteVec(out)) return null;
+      return out;
+    },
+    /* Welt → Karten-Frame (matrixWorld muss aktuell sein — getCamLocal wird
+       in allen Verwendungen zuerst gerufen und aktualisiert sie). */
+    toLocal(v) {
+      return worldRoot.worldToLocal(v);
+    },
+  };
+
+  const nodes = buildRig(worldRoot, card.figur);
+
+  const faceAnim = new FaceAnimator(nodes);
+  const bubble = new SpeechBubble(nodes, frame);
+  const wander = new IdleWander(nodes, frame);
+  const activation = new ActivationAnim(nodes);
+  const fx = new ActivationFX(worldRoot);
+  let controller = null;
+  const menu = new QuestionMenu(el("question-root"), null, {
+    onQuestion: (q) => controller.answerQuestion(q),
+    onTheme: (id) => controller.onTheme(id),
+    onBack: () => controller.onBack(),
+    onOption: (o) => controller.onOption(o),
+    onNext: () => controller.onNext(),
+    onReentry: () => controller.onCardTapped(),
+  });
+  controller = new CardController({ card, nodes, bubble, face: faceAnim, wander, activation, menu, fx });
+  menu.engine = controller.engine;
+
+  /* ---- Figur-Tap: Parabel-Hüpfer zurück zur Kartenmitte ------------------ */
+  const figureJump = { active: false, t: 0, fromX: 0, fromZ: 0 };
+  function startFigureJump() {
+    if (figureJump.active) return;
+    figureJump.active = true;
+    sound.figureJump();
+    figureJump.t = 0;
+    figureJump.fromX = nodes.FigureRoot.position.x;
+    figureJump.fromZ = nodes.FigureRoot.position.z;
+    wander.setBusy(true);
+    wander.walkTarget = null;
+    faceAnim.holdFace = "talk"; // gehaltener Ausdruck — sonst überschreibt der nächste Tick
+  }
+  function tickFigureJump(dt) {
+    if (!figureJump.active) return;
+    figureJump.t += dt;
+    const k = Math.min(1, figureJump.t / Math.max(0.05, CHOREO.jumpDurationSec));
+    const e = k * k * (3 - 2 * k); // smoothstep horizontal
+    nodes.FigureRoot.position.x = figureJump.fromX * (1 - e);
+    nodes.FigureRoot.position.z = figureJump.fromZ * (1 - e);
+    nodes.FigureRoot.position.y = nodes.FIGURE_HOME.pos.y + Math.sin(Math.PI * k) * CHOREO.jumpHeight;
+    if (k >= 1) {
+      figureJump.active = false;
+      nodes.FigureRoot.position.set(0, nodes.FIGURE_HOME.pos.y, 0);
+      wander.setBusy(false);
+      faceAnim.holdFace = null;
+      if (!faceAnim.talking) faceAnim.showFace(faceAnim.blinkActive ? "blink" : "neutral");
+    }
+  }
+
+  // Tap-Erkennung (Tap ≠ Wackeln/Drag: CHOREO.tapMaxPx Bewegung, CHOREO.tapMaxMs Dauer)
+  const _ray = new THREE.Raycaster();
+  const _tapNdc = new THREE.Vector2();
+  let _downX = 0, _downY = 0, _downT = 0;
+  const figureMeshes = [
+    ...Object.values(nodes.bodies),
+    nodes.Head, nodes.FaceNeutral, nodes.FaceBlink, nodes.FaceTalk,
+  ];
+  let _lastTapT = 0;
+  function doTap(clientX, clientY) {
+    // Entprellen: pointerup UND der native click-Fallback (iOS) rufen doTap —
+    // seit dem Dialogsystem ist Doppel-Auslösung NICHT mehr harmlos (Blase
+    // überspringen + Weiter in einem Tap). Zweiter Aufruf binnen
+    // CHOREO.tapDebounceMs fällt weg.
+    const nowT = performance.now();
+    if (nowT - _lastTapT < CHOREO.tapDebounceMs) return;
+    _lastTapT = nowT;
+    const rect = renderer.domElement.getBoundingClientRect();
+    _tapNdc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    _tapNdc.y = -(((clientY - rect.top) / rect.height) * 2 - 1);
+    _ray.setFromCamera(_tapNdc, camera);
+    // Aktivier-Phase + Ruhezustand: Tap auf die KARTE (unsichtbare Tap-Plane)
+    // startet die Figur bzw. holt sie zurück (Wiedereinstieg).
+    if (controller.phase === "attract" || controller.phase === "resting") {
+      if (_ray.intersectObject(fx.tapPlane, false).length > 0) {
+        const wasAttract = controller.phase === "attract";
+        controller.onCardTapped();
+        if (wasAttract) relocalize?.(); // Nutzer hält still → beste Gelegenheit für eine saubere Pose
+      }
+      return;
+    }
+    // Sprechblase: Schreibvorgang überspringen bzw. Weiter-Schritt auslösen
+    if (bubble.element.visible && _ray.intersectObject(bubble.plane, false).length > 0) {
+      if (controller.onBubbleTapped()) return;
+    }
+    if (controller.phase !== "live") return;
+    const hits = _ray.intersectObjects(figureMeshes.filter((m) => m.visible), false);
+    if (hits.length > 0) { startFigureJump(); relocalize?.(); } // Hüpfer + „Geraderücken"
+  }
+  renderer.domElement.addEventListener("pointerdown", (e) => {
+    _downX = e.clientX; _downY = e.clientY; _downT = performance.now();
+  });
+  renderer.domElement.addEventListener("pointerup", (e) => {
+    if (Math.hypot(e.clientX - _downX, e.clientY - _downY) > CHOREO.tapMaxPx) return;
+    if (performance.now() - _downT > CHOREO.tapMaxMs) return;
+    doTap(e.clientX, e.clientY);
+  });
+  // FALLBACK (iOS): bricht der Browser die Pointer-Sequenz mit pointercancel
+  // ab, kommt nie ein pointerup — der native click feuert trotzdem. Doppel-
+  // Auslösung ist ungefährlich: onCardTapped ist über die Phase idempotent,
+  // der Figur-Sprung über figureJump.active.
+  renderer.domElement.addEventListener("click", (e) => doTap(e.clientX, e.clientY));
+
+  /* ---- Render-Loop -------------------------------------------------------- */
+  let lastT = performance.now();
+  function loop() {
+    const now = performance.now();
+    const dt = (now - lastT) / 1000;
+    lastT = now;
+    preTick?.(); // AR: PoseStabilizer (glättet Anchor-Pose → stabRoot)
+    if (!isRunning || isRunning()) {
+      wander.tick(dt);
+      tickFigureJump(dt); // nach wander: überschreibt die Position während des Sprungs
+      activation.tick(dt);
+      fx.tick(dt);
+      faceAnim.tick(dt);
+      bubble.tick(dt);
+    }
+    if (render) renderer.render(scene, camera);
+  }
+
+  return { controller, bubble, loop, nodes, fx };
+}
+
+/* --------------------------------------------------------------------------
+   8th-Wall-Engine LAZY laden — erst aus der Start-Geste heraus. Vor dem Klick
+   auf „Scan starten" läuft kein Engine-Skript und keine Kamera. xr.js zieht
+   über data-preload-chunks="slam" den Tracking-Chunk nach (Open-Source-Engine:
+   xr-tracking.js = Bildtracker ohne SLAM) und feuert danach `xrloaded`.
+   -------------------------------------------------------------------------- */
+const ENGINE_LOAD_TIMEOUT_MS = 30000; // großzügig für langsame Netze (xr-tracking.js ≈ 3,8 MB)
+function loadEngine() {
+  if (window.XR8) return Promise.resolve(window.XR8);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = XR_ENGINE_URL;
+    s.async = true;
+    s.setAttribute("data-preload-chunks", "slam");
+    // Timeout (2026-09-15): lädt xr.js, feuert aber nie `xrloaded` (z. B. WASM-
+    // Instanziierung schlägt fehl), hing das Promise vorher für immer — Button
+    // blieb ausgegraut, kein Fehlertext.
+    const onLoaded = () => { clearTimeout(timer); resolve(window.XR8); };
+    const fail = (msg) => { window.removeEventListener("xrloaded", onLoaded); reject(new Error(msg)); };
+    const timer = setTimeout(() => fail("8th-Wall-Engine antwortet nicht (Timeout " + ENGINE_LOAD_TIMEOUT_MS / 1000 + " s): " + XR_ENGINE_URL),
+      ENGINE_LOAD_TIMEOUT_MS);
+    s.onerror = () => { clearTimeout(timer); fail("8th-Wall-Engine nicht ladbar: " + XR_ENGINE_URL +
+      " (Build nach vendor/8thwall/ legen, s. vendor/8thwall/README.md)"); };
+    window.addEventListener("xrloaded", onLoaded, { once: true });
+    document.head.appendChild(s);
+  });
+}
+
+/* Target-Daten (JSON aus image-target-cli) laden. Das Luminanz-Bild wird
+   NEBEN der JSON gesucht (resources.luminanceImage) — so kann ein frisch
+   generierter CLI-Ordner 1:1 nach karten/<id>/targets/ kopiert werden, ohne den
+   von der CLI fest eingetragenen Pfad „image-targets/…" anzupassen. */
+async function loadTargetData() {
+  const targetUrl = design.targetUrl;
+  const res = await fetch(targetUrl, { cache: "no-store" });
+  if (!res.ok) throw new Error("Target-Datei fehlt: " + targetUrl + " (Design „" + design.id + "“ der Karte „" + card.id + "“)");
+  const data = await res.json();
+  const base = new URL(targetUrl, location.href);
+  const lum = data.resources?.luminanceImage;
+  data.imagePath = new URL(lum || data.imagePath, base).href;
+  // Karte liegt in der Hand → beweglich (kein „static target"). Physische
+  // Breite = Kartenbreite des Designs in daten.json (breiteMm, Standard
+  // 63 mm laut Druckspezifikation; bis Build 56 SCENE.cardWidth = 59 mm):
+  // damit ist detail.scale metrisch; die Figur hängt davon nicht ab
+  // (Anchor-Einheit = Kartenbreite, s. Kopfkommentar).
+  data.moveable = true;
+  data.physicalWidthInMeters = design.breiteMm / 1000;
+  return data;
+}
+
+/* --------------------------------------------------------------------------
+   AR-Modus (8th Wall Image Targets). Tracking-Glättung: eigener PoseStabilizer
+   (One-Euro + SLERP + Dead-Zone + Lost-Hold + Median-Aufsetzen) zwischen
+   Rohpose und Figur — die Figur hängt unter stabRoot (Kind der KAMERA, weil
+   der Stabilizer kamera-relativ arbeitet); `anchor` ist eine Gruppe außerhalb
+   der Szene, deren Matrix pro Frame aus der 8th-Wall-Bildpose gebaut wird
+   (Kamera⁻¹ × Bild, Scale = Kartenbreite). Der Stabilizer kopiert die Pose
+   geglättet nach stabRoot und steuert auch die Sichtbarkeit. NaN-Schutz und
+   Behavior-Pause bei Verlust bleiben wie gehabt.
+
+   Aufgelöst wird das Promise, sobald die Kamera läuft und die Szene steht
+   (onStart); verworfen bei Kamera-Fehler (onCameraStatusChange „failed" →
+   NotAllowedError für den Kamera-abgelehnt-Bildschirm) oder Engine-Ausnahme.
+   -------------------------------------------------------------------------- */
+async function startAR() {
+  const container = el("ar-container");
+  const [XR8, targetData] = await Promise.all([loadEngine(), loadTargetData()]);
+
+  // XR8.Threejs verlangt das globale THREE (>= r125) — dieselbe Instanz wie
+  // unsere Module (vendor/three/three.module.js, relativer Import), sonst
+  // passen Klassen nicht zusammen.
+  window.THREE = THREE;
+
+  // Canvas für Kamerabild + Szene. Die Engine liest canvas.width/height jeden
+  // Frame und passt Renderer/Projektion an (onCanvasSizeChange) — Größe setzen
+  // wir selbst: CSS-Größe × PixelRatio, gecappt (CAM.maxPixelRatio, Finding 2:
+  // Cap 2 statt 3 auf iPhones gibt der Vision-Schleife GPU-Luft).
+  const canvas = document.createElement("canvas");
+  canvas.id = "xr-canvas";
+  container.appendChild(canvas);
+  const sizeCanvas = () => {
+    const pr = Math.min(window.devicePixelRatio || 1, CAM.maxPixelRatio);
+    canvas.width = Math.max(1, Math.round(container.clientWidth * pr));
+    canvas.height = Math.max(1, Math.round(container.clientHeight * pr));
+  };
+  sizeCanvas();
+  window.addEventListener("resize", () => requestAnimationFrame(sizeCanvas));
+  window.addEventListener("orientationchange", () => setTimeout(sizeCanvas, 300));
+
+  // NUR Bildtracking: disableWorldTracking MUSS vor pipelineModule() und run()
+  // stehen. Ohne World-Tracking fragt die Engine weder Bewegungssensoren an
+  // noch lädt sie je einen SLAM-Chunk; unsere GyroFusion bleibt davon getrennt.
+  XR8.XrController.configure({
+    disableWorldTracking: true,
+    imageTargetData: [targetData],
+  });
+
+  return new Promise((resolve, reject) => {
+    XR8.addCameraPipelineModules([
+      XR8.XrController.pipelineModule(),      // „reality": Bildtracker, feuert reality.image*-Events
+      XR8.GlTextureRenderer.pipelineModule(), // Kamerabild auf den Canvas (vor der Szene)
+      XR8.Threejs.pipelineModule(),           // three.js-Szene/-Kamera/-Renderer auf demselben Canvas
+      detarPipelineModule(XR8, { resolve, reject }),
+    ]);
+    XR8.run({
+      canvas,
+      cameraConfig: { direction: XR8.XrConfig.camera().BACK },
+      // ANY statt MOBILE: ohne World-Tracking läuft Bildtracking auch am
+      // Rechner mit Webcam (Schnelltest) — die Engine lässt das nur so zu.
+      allowedDevices: XR8.XrConfig.device().ANY,
+    });
+  });
+}
+
+/* Unser Kamera-Pipeline-Modul: baut in onStart die Szene auf (nach dem
+   Threejs-Modul, damit XR8.Threejs.xrScene() steht), tickt in onUpdate und
+   übersetzt die Bild-Events in die bisherigen Hooks (Stabilizer, Controller,
+   Suchrahmen, Karte-verloren-Hinweis). Ereignis-Zuordnung zu MindAR:
+     anchor.onTargetFound → reality.imagefound
+     (Pose-Update)        → reality.imageupdated  (nur wenn sich die Pose ändert;
+                                                    sonst „stale" wie bei MindAR)
+     anchor.onTargetLost  → reality.imagelost */
+function detarPipelineModule(XR8, { resolve, reject }) {
+  let exp = null, stab = null;
+  let anchor = null, stabRoot = null;
+  let latest = null;                                  // letzte Bildpose (detail) — null = nicht getrackt
+  const _img = new THREE.Matrix4(), _camInv = new THREE.Matrix4();
+  const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
+
+  // Karte verloren: Support-Zeile mit Icon mittig im Bild (mock 05), das Menü
+  // bleibt stehen und friert nach CHOREO.trackingLostMs ein.
+  const hint = el("lostHint");
+  const lost = buildSupport("gefunden", [{ text: "Halte auf die Karte" }]);
+  lost.icon.stop();
+  hint.appendChild(lost);
+
+  /* Bildpose (Szenen-Frame; Bild = XY-Ebene, +Z zur Kamera, Höhe des 3:4-Crops
+     = 1 × scale) → kamera-relative Rohpose mit Scale = KARTENBREITE. Der Crop
+     behält die volle Kartenbreite, also Kartenbreite = scale × scaledWidth.
+     Wird jeden Frame gerechnet (Kamera-Matrix des aktuellen Frames, vom
+     Threejs-Modul gesetzt); ohne neue Messung bleibt die Matrix bitidentisch →
+     der Stabilizer sieht den Frame korrekt als „stale". */
+  function updateAnchor(camera) {
+    const d = latest;
+    if (!d) return;
+    const aspect = d.scaledWidth ?? (d.properties ? d.properties.width / d.properties.height : 1);
+    const cardWidth = (d.scale || 1) * aspect;
+    _p.set(d.position.x, d.position.y, d.position.z);
+    _q.set(d.rotation.x, d.rotation.y, d.rotation.z, d.rotation.w);
+    _s.setScalar(cardWidth);
+    _img.compose(_p, _q, _s);
+    camera.updateMatrixWorld(true);
+    _camInv.copy(camera.matrixWorld).invert();
+    anchor.matrix.multiplyMatrices(_camInv, _img);
+  }
+
+  function onFound(detail) {
+    latest = detail;
+    document.body.classList.remove("scanning");
+    if (hint.classList.contains("show")) { hint.classList.remove("show"); lost.icon.stop(); }
+    if (exp) updateAnchor(exp.camera); // Pose steht, BEVOR der Stabilizer aufsetzt
+    stab.onFound();
+    const { controller } = exp;
+    controller.onCardSeen(); // greeted-Flag: Choreographie nur beim ersten Mal
+    controller.onTrackingFound(); // Menü wieder freigeben
+  }
+
+  function onLost() {
+    latest = null;
+    stab.onLost();
+    const { controller } = exp;
+    if (controller.greeted) {
+      if (controller.lostHintWanted) { hint.classList.add("show"); lost.icon.setMode("suchen"); }
+      controller.onTrackingLost(); // nach CHOREO.trackingLostMs friert das Menü ein; im Ruhezustand wechselt die Panel-Zeile
+    }
+  }
+
+  let settled = false;
+  // Vor onStart: Promise verwerfen (Splash zeigt den Fehler). Nach onStart
+  // (2026-09-15): Kamera-Ausfall in der Session (Anruf, Tab-Wechsel, Hitze) —
+  // vorher stumm; jetzt Support-Zeile mittig „Kamera unterbrochen".
+  const fail = (err) => {
+    if (!settled) { settled = true; reject(err); return; }
+    console.error("DETAR Kamera/Engine nach dem Start:", err);
+    hint.innerHTML = "";
+    hint.appendChild(buildSupport("suchen", [{ text: "Kamera unterbrochen", kind: "gelb" }, { text: "→ Seite neu laden", einzug: true }]));
+    hint.classList.add("show");
+  };
+
+  return {
+    name: "detar",
+
+    onCameraStatusChange: ({ status, reason }) => {
+      if (status !== "failed") return;
+      // DENY_CAMERA → NotAllowedError, damit showStartError den eigenen
+      // Kamera-abgelehnt-Bildschirm zeigt (Regex permission|notallowed|denied).
+      const err = new Error("Kamera nicht verfügbar (" + (reason ?? "UNSPECIFIED") + ")");
+      err.name = reason === "DENY_CAMERA" ? "NotAllowedError" : "CameraError";
+      fail(err);
+    },
+
+    onException: (err) => {
+      console.error("XR8:", err);
+      fail(err instanceof Error ? err : new Error(String(err)));
+    },
+
+    onStart: () => {
+      const { scene, camera, renderer } = XR8.Threejs.xrScene();
+
+      // Rohpose-Träger (Ersatz für MindARs anchor.group): NICHT in der Szene,
+      // matrixAutoUpdate aus — nur die Matrix zählt (der Stabilizer liest sie).
+      anchor = new THREE.Group();
+      anchor.matrixAutoUpdate = false;
+
+      // Geglätteter Träger als KIND DER KAMERA (kamera-relative Pose)
+      stabRoot = new THREE.Group();
+      camera.add(stabRoot);
+      stab = new PoseStabilizer(anchor, stabRoot, gyro);
+      relocalize = () => stab.reacquire();
+
+      // Karten-Frame unter dem stabRoot: X = rechts, Y = hoch von der Karte,
+      // Z = zur Karten-Unterkante. (+90° X: Anchor-Z "aus dem Bild" wird zu Y.)
+      const worldRoot = new THREE.Group();
+      worldRoot.rotation.x = Math.PI / 2;
+      worldRoot.scale.setScalar(1 / SCENE.cardWidth);
+      stabRoot.add(worldRoot);
+
+      exp = buildExperience({
+        renderer, scene, camera, worldRoot,
+        /* Behavior-Ticks nur, solange die Figur sichtbar ist — verhindert, dass
+           Lost-Frames (NaN-Quelle) in die Zustands-Lerps einsickern. */
+        isRunning: () => stabRoot.visible,
+        preTick: () => { updateAnchor(camera); stab.tick(); },
+        render: false, // rendert XR8.Threejs in onRender
+      });
+      exp.camera = camera;
+      if (!settled) { settled = true; resolve(); }
+    },
+
+    onUpdate: () => { exp?.loop(); },
+
+    listeners: [
+      { event: "reality.imagefound",   process: ({ detail }) => { if (exp) onFound(detail); } },
+      { event: "reality.imageupdated", process: ({ detail }) => { latest = detail; } },
+      { event: "reality.imagelost",    process: () => { if (exp) onLost(); } },
+    ],
+  };
+}
+
+// Fehler im Boot (außerhalb des Start-Klicks) sichtbar machen — vorher eine
+// stille Unhandled Rejection, Splash mit ausgegrautem Knopf (2026-09-15).
+boot().catch((err) => { console.error("DETAR boot failed:", err); showStartError(err); });

@@ -1,0 +1,31 @@
+{
+  "format": 2,
+  "id": "000",
+  "profession": "Elektroniker*in für Betriebstechnik",
+  "company": "Musterbetrieb",
+  "companyLogo": null,
+  "companyNeutral": "der Betrieb",
+  "idleReturnMs": 8000,
+  "figur": {
+    "posen": {
+      "idle": "figur/body_idle.webp",
+      "affirm": "figur/body_react_affirm.webp",
+      "think": "figur/body_react_think.webp"
+    },
+    "kopf": "figur/head.webp",
+    "gesicht": {
+      "neutral": "figur/face_neutral.webp",
+      "blink": "figur/face_blink.webp",
+      "talk": "figur/face_talk.webp"
+    }
+  },
+  "designs": [
+    {
+      "id": "p02",
+      "name": "Beispielkarte (Testdruck P02)",
+      "target": "targets/p02.json",
+      "breiteMm": 63,
+      "notiz": "Kartenbild 63 × 88 mm ohne Beschnitt (1488 × 2078 px), image-target-cli, Standard-Crop 3:4 zentriert"
+    }
+  ]
+}

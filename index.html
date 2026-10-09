@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>DEIN ERSTER TAG — AR</title>
+  <link rel="stylesheet" href="./css/app.css" />
+  <link rel="stylesheet" href="./css/question-menu.css" />
+  <!-- three.js 0.160 aus dem Repo (vendor/three/, tree-shaken — s. dortige
+       README); seit 2026-09-09 kein CDN mehr. Neue THREE.*-Klasse im Code →
+       tools/three-slim-entry.js + tools/build-three.sh. KEINE Importmap mehr
+       (Production-Härtung 2026-09-09): Import-Maps brauchen iOS 16.4 /
+       Chrome 89, relative ES-Module-Imports laufen ab iOS 11 / Chrome 61 —
+       js/*.js importieren deshalb ../vendor/three/three.module.js direkt. -->
+  <!-- 8th-Wall-Engine (Open-Source-Build, MIT, selbst gehostet unter
+       vendor/8thwall/ bzw. vendor/8thwall-nosimd/ — kein CDN, kein Niantic-
+       Server, kein API-Key). Den Kern lädt js/main.js in boot() per JS-Preload
+       vor (Netzwerk, nicht ausgeführt) — welche Variante, entscheidet ein
+       WASM-SIMD-Test am Gerät, deshalb kein statischer <link rel=preload> mehr
+       (2026-09-09). Der Tracker-Chunk xr-tracking.js wird bewusst erst nach
+       dem Klick geholt; das Skript-Tag setzt main.js in der Start-Geste
+       („Scan starten"), vorher läuft weder Engine noch Kamera. -->
+</head>
+<body>
+  <!-- Pixel-Halo-Filter (UI-Update 2026-09-03): Textkasten mit ausgefransten
+       Kanten = Alpha der Schrift um r px dilatiert und in Kastenfarbe gefüllt,
+       Original obendrauf. Zuordnung Klasse → Filter in css/app.css (.px-*). -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <filter id="px-000000-8" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="d"/>
+      <feFlood flood-color="#000000" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="px-3d3d3d-8" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="d"/>
+      <feFlood flood-color="#3d3d3d" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="px-193d18-8" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="8" result="d"/>
+      <feFlood flood-color="#193d18" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="px-0b95d0-5" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/>
+      <feFlood flood-color="#0b95d0" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="px-71ff51-5" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/>
+      <feFlood flood-color="#71ff51" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="px-23b6f5-5" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="5" result="d"/>
+      <feFlood flood-color="#23b6f5" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="px-171717-10" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="10" result="d"/>
+      <feFlood flood-color="#171717" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="px-3aa1cd-4" x="-30%" y="-90%" width="160%" height="280%" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="4" result="d"/>
+      <feFlood flood-color="#3aa1cd" result="c"/>
+      <feComposite in="c" in2="d" operator="in" result="box"/>
+      <feMerge><feMergeNode in="box"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </svg>
+
+  <!-- AR-Vollbild: js/main.js legt hier den Canvas an (#xr-canvas), auf den
+       die 8th-Wall-Engine Kamerabild + three.js-Szene zeichnet -->
+  <div id="ar-container"></div>
+
+  <!-- Suchrahmen: vier weiße Screen-Ecken, bis die Karte gefunden ist -->
+  <div id="scanFrame" aria-hidden="true">
+    <img class="c-tl" src="./assets/ui/corner-weiss.svg" alt="" />
+    <img class="c-tr" src="./assets/ui/corner-weiss.svg" alt="" />
+    <img class="c-br" src="./assets/ui/corner-weiss.svg" alt="" />
+    <img class="c-bl" src="./assets/ui/corner-weiss.svg" alt="" />
+  </div>
+
+  <!-- Hinweis, wenn die Karte nach dem ersten Scan wieder verloren geht
+       (Support-Zeile mit Icon, befüllt aus js/supportUI.js) -->
+  <div id="lostHint"></div>
+
+  <!-- Bottom-UI: Support-Zeilen (Suche / gefunden), später das Dialog-Menü -->
+  <div id="question-root"></div>
+
+  <!-- Splash (liegt über allem, verschwindet mit body.launched) -->
+  <div class="splash d-dots" id="splash">
+    <div class="splash-band">
+      <div class="splash-logo">
+        <img src="./assets/logos/det-logo-jobsar.svg" alt="Dein Erster Tag" />
+        <span class="splash-jobsar px-jobsar">Jobs.AR</span>
+      </div>
+    </div>
+
+    <div class="splash-center">
+      <p class="splash-kicker">Du scannst</p>
+      <h1 class="card-name px-title" id="cardName">…</h1>
+      <!-- „bei + Firma": in der Public-Edition (?k=<nr>P) komplett ausgeblendet
+           (body.public, css/app.css) — der Public-Splash wird noch gestaltet -->
+      <p class="splash-kicker" id="companyKicker">bei</p>
+      <div class="company-box">
+        <!-- Logo aus der Karte (card.companyLogo) oder Firmenname als Text -->
+        <img id="companyLogo" src="" alt="" />
+        <span id="companyText" class="company-text"></span>
+      </div>
+    </div>
+
+    <div class="splash-cta">
+      <div id="errorBox"></div>
+      <button id="launchButton" class="d-btn" disabled><span class="px-title">Scan starten</span></button>
+    </div>
+
+    <!-- Kameraerlaubnis fehlt oder wurde abgelehnt: eigener Bildschirm ohne
+         Kamerabild (body.camera-denied), Dialogsystem 2026-09-03 -->
+    <div class="perm-screen" id="permScreen">
+      <p class="perm-title px-title">Ohne Kamera geht's nicht</p>
+      <p class="perm-text">Die Figur steht nur auf der Karte, wenn die Kamera sie sehen darf.
+        Erlaube der Seite in den Browser-Einstellungen den Kamerazugriff und lade sie dann neu.</p>
+      <p class="perm-text perm-text--small">Das Kamerabild bleibt auf deinem Handy — es wird weder übertragen noch gespeichert.</p>
+      <button id="permReload" class="d-btn d-btn--perm"><span class="px-title">Neu laden</span></button>
+    </div>
+
+    <!-- Vorabprüfung (Production-Härtung 2026-09-09): In-App-Browser, kein
+         HTTPS, keine Kamera-API, kein WebAssembly oder — per Inline-Skript
+         unten — kein ES-Modul-Support. Befüllt von js/preflight.js bzw. dem
+         Inline-Skript; sichtbar über body.preflight-blocked. Der Start-Button
+         bleibt in diesem Fall deaktiviert. -->
+    <!-- Auffang-Seite (Build 74, Michael 2026-10-08): ohne ?k startet keine
+         Karte — wer die App ohne QR-Code öffnet, landet hier
+         (body.keine-karte, gesetzt von js/main.js). -->
+    <div class="perm-screen" id="auffangScreen">
+      <p class="perm-title px-title">Scanne deine Karte</p>
+      <p class="perm-text">Diese Seite öffnest du über den QR-Code auf einer Karte von Dein Erster Tag.
+        Halte die Kamera deines Handys auf den QR-Code und tippe auf den Link.</p>
+      <p class="perm-text perm-text--small">Du hast keine Karte? Frag in deiner Schule oder am Messestand danach.</p>
+    </div>
+
+    <div class="perm-screen pf-screen" id="preflightScreen">
+      <p class="perm-title px-title" id="pfTitle">Bitte im Browser öffnen</p>
+      <p class="perm-text" id="pfText"></p>
+      <input class="pf-url" id="pfUrl" type="text" readonly value="" aria-label="Link zur App" />
+      <button id="pfCopy" class="d-btn d-btn--perm"><span class="px-title">Link kopieren</span></button>
+    </div>
+  </div>
+
+  <!-- Klassisches Skript (KEIN Modul, ES5): Browser ohne ES-Modul-Support
+       (vor iOS 11 / Chrome 61) führen js/main.js nie aus, und Browser ohne
+       Optional Chaining / Nullish Coalescing (`?.` / `??`, vor iOS 13.4 /
+       Chrome 80) brechen beim PARSEN von main.js ab — in beiden Fällen bliebe
+       der Splash ohne Knopf stehen. Hier bekommt so ein Gerät den Hinweis-
+       Bildschirm. `noModule` gibt es genau in den Browsern, die Module können;
+       die Syntax-Probe läuft über new Function, damit dieses Skript selbst
+       ES5 bleibt. -->
+  <script>
+    (function () {
+      var ok = "noModule" in HTMLScriptElement.prototype;
+      if (ok) { try { new Function("var a; return a?.b ?? 0"); } catch (e) { ok = false; } }
+      if (ok) return;
+      document.getElementById("pfText").textContent =
+        "Dein Browser ist zu alt für diese App. Aktualisiere ihn oder öffne den Link in einem aktuellen Safari (iPhone) bzw. Chrome (Android).";
+      document.getElementById("pfUrl").value = location.href;
+      document.body.className += " preflight-blocked";
+    })();
+  </script>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

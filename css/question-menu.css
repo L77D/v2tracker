@@ -1,0 +1,268 @@
+/* =============================================================================
+   DETAR — Bottom-UI des Dialogsystems, UI-UPDATE 2026-09-03 nach Figma
+   (mock_03/04, Komponenten support/frage/Auswahl). Tokens in app.css.
+
+   Aufbau je Phase (js/questionMenu.js):
+     support   Handy-Icon + Balken (Suche, Karte gefunden, Ruhezustand)
+     themen    Kopfzeile „Was interessiert dich?" + festes 2×2-Raster
+               (3 Themen + „Ich muss weiter")
+     thema     Kopfzeile [←] Thema · Seitenpunkte + Karussell, 2×2 Kacheln je
+               Seite, nächste Seite lugt rechts an (Scroll-Snap)
+     options   Kopfzeile „Deine Antwort" + 2×2-Raster
+     next      eine Kachel „Weiter" / „Seite öffnen"
+   Kachel = Auswahl-Komponente: Reiter-Zeile (17 px, NEU/LINK/✅/THEMA) über
+   dem Textkasten (178 breit, Jersey 10 30,5 px, Pixel-Halo), ±2,34° gedreht.
+   Maße 1:1 aus dem 402-px-Figma-Frame (= iPhone-Breite). Enges Raster
+   (2026-09-04, seit Build 22 live; bis Build 60 als Override-Block am Ende):
+   Zeilenraster 88 px Themen / 102 px Fragen, Kachelhöhe folgt dem Text.
+   ============================================================================= */
+
+:root {
+  --q-tile-w:        178px;    /* Figma-Kachel 178×73; die Höhe folgt seit dem engen
+                                  Raster (2026-09-04) dem Text, s. .detar-kachel */
+  --q-cell-w:        181px;
+  --q-row-themen:    88px;     /* Zeilenraster Themen (enges Raster wie mock_03) */
+  --q-row-fragen:    102px;    /* Zeilenraster Fragen (mock_04) */
+  --q-cell-gap:      4px;      /* (auch in js/questionMenu.js beim Seiten-Scroll: +4) */
+  --q-tile-font:     30.5px;
+  --q-reiter-font:   19.4px;
+  --q-reiter-h:      17px;
+  /* Kachel-Neigung ±2,34°: setzt js/questionMenu.js (TILT_DEG) als --tilt */
+  --q-page-inset:    8px;      /* linker Rand des Karussells (Figma: 8) */
+  --q-grid-inset:    20px;     /* linker Rand des Themenrasters (Figma: 20) */
+  --q-head-top:      -27px;    /* Kopfzeile ragt über die Panel-Oberkante (527 vs 554) */
+
+  /* Reveal-Animation (Menü fährt beim ersten Mal rein) — Dauer/Offset werden
+     aus CHOREO synchronisiert (config.js → syncCssVars). */
+  --q-reveal-time:   1.0s;
+  --q-reveal-ease:   cubic-bezier(0.16, 1, 0.3, 1);
+  --q-reveal-offset: 60px;
+  --q-bounce:        cubic-bezier(0.34, 1.56, 0.64, 1);
+  --q-bounce-time:   0.18s;
+}
+
+/* --- Panel: transparenter Grund über der Kamera, gelbes Raster ------------- */
+.detar-panel {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 35px 0 calc(16px + env(safe-area-inset-bottom));
+  pointer-events: auto;
+}
+/* Raster im Panel: Titelzeilen-Blau statt Gelb, beginnt erst 20 % unter der
+   Panel-Oberkante (Michael 2026-09-07) */
+.detar-panel.d-dots::before { z-index: 0; background-color: var(--d-blau); top: 20%; }
+/* Support-Phasen: Icon sitzt 8 px unter der Panel-Oberkante (mock_01/02) */
+.detar-panel--support { padding-top: 0; min-height: 235px; }
+.detar-panel--support .support { margin-top: 8px; }
+
+/* --- Kopfzeile: [←] Titel ······ Seitenpunkte ------------------------------ */
+.detar-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: 36px;
+  margin: var(--q-head-top) 26px 18px var(--q-grid-inset);
+}
+.detar-head--thema { margin-left: 16px; }
+.detar-title {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 2px 12px 0;          /* (der Feinschliff-Override 4/8/6 in app.css griff hier nie:
+                                    question-menu.css lädt später — Live-Stand ist 2/12/0) */
+  font-family: var(--d-font-support);
+  font-size: var(--d-support-md);
+  line-height: 1;
+  letter-spacing: -0.12em;      /* Silkscreen: Laufweite −12 % (Feinschliff 2026-09-04) */
+  color: #fff;
+  background: var(--d-blau);
+  white-space: nowrap;
+  user-select: none;
+}
+.detar-back {
+  position: relative;
+  width: 34px;
+  height: 36px;
+  flex: 0 0 auto;
+  margin-right: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.detar-back img { display: block; width: 34px; height: 16px; image-rendering: pixelated; }
+.detar-back:active img { transform: translateX(-3px); }
+/* NEU-Punkt: anderswo wartet eine freigeschaltete Frage (kein Mockup —
+   abgeleitet: kleines Quadrat in NEU-Grün an der Pfeilecke) */
+.detar-back--new::after {
+  content: "";
+  position: absolute;
+  top: 2px; right: -6px;
+  width: 8px; height: 8px;
+  background: var(--d-neu-bg);
+  outline: 2px solid var(--d-schwarz);
+}
+.detar-dots {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.detar-dot {
+  width: 20px; height: 20px;
+  background: var(--d-schwarz);
+  position: relative;
+}
+.detar-dot::after {
+  content: "";
+  position: absolute;
+  left: 7px; top: 7px;
+  width: 6px; height: 6px;
+  background: #fff;
+}
+.detar-dot.active { background: var(--d-blau); }
+
+/* --- Festes Raster (Themen, Antwortoptionen, Weiter) ----------------------- */
+.detar-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, var(--q-cell-w));
+  grid-auto-rows: var(--q-row-themen);
+  column-gap: var(--q-cell-gap);
+  row-gap: 0;
+  margin-left: calc(var(--q-grid-inset) - 2px);
+}
+
+/* --- Karussell (Fragen eines Themas): Seiten à 2×2, Scroll-Snap ----------- */
+.detar-pages {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--q-cell-gap);
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 var(--q-page-inset);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  pointer-events: auto;
+  touch-action: pan-x;
+}
+.detar-pages::-webkit-scrollbar { display: none; }
+.detar-pages::after { content: ""; flex: 0 0 var(--q-page-inset); }
+.detar-page {
+  flex: 0 0 calc(2 * var(--q-cell-w) + var(--q-cell-gap));
+  display: grid;
+  grid-template-columns: repeat(2, var(--q-cell-w));
+  grid-auto-rows: var(--q-row-fragen);
+  column-gap: var(--q-cell-gap);
+  row-gap: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* --- Zelle + Kachel (Auswahl-Komponente) ----------------------------------
+   Enges Raster wie mock_03/04 (2026-09-04): Kachel oben in der Zeile verankert,
+   Textkasten nur so hoch wie der Text. */
+.detar-cell {
+  width: var(--q-cell-w);
+  height: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.detar-tile {
+  width: var(--q-tile-w);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  isolation: isolate;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  --tilt: 0deg;
+  transform: rotate(var(--tilt));
+  transition: transform var(--q-bounce-time) var(--q-bounce);
+}
+.detar-tile:active { transform: rotate(var(--tilt)) translateY(3px); }
+.detar-reiter {
+  position: relative;
+  z-index: 2;
+  height: var(--q-reiter-h);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 13px;
+  margin-bottom: -2px;          /* 2026-09-04: Reiter schneidet die Outline nur leicht (Michael) */
+  font-family: var(--d-font);
+  font-size: var(--q-reiter-font);
+  line-height: 0.69;
+  letter-spacing: 0.78px;
+  white-space: nowrap;
+}
+.detar-tile--theme .detar-reiter { justify-content: center; }
+.detar-reiter > span { display: inline-block; padding-top: 3px; }
+.px-reiter--thema   { color: #fff; }
+.px-reiter--neu     { color: var(--d-neu-ink); }
+.px-reiter--link    { color: var(--d-link-ink); }
+.detar-reiter--check { font-size: 16px; letter-spacing: 0; }
+.detar-kachel {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 4px 2px;
+  font-family: var(--d-font);
+  font-size: var(--q-tile-font);
+  line-height: 0.69;
+  text-align: center;
+  color: var(--d-gelb);
+  overflow-wrap: anywhere;
+}
+.detar-tile--theme .detar-kachel { color: #fff; text-transform: uppercase; }
+.detar-tile--asked .detar-kachel { color: var(--d-asked-ink); }
+.detar-tile.selected .detar-kachel { color: var(--d-sel-ink); letter-spacing: 0.9px; }
+/* Ausgewählt schlägt „schon gefragt" (Figma frage/ausgewählt) */
+.detar-tile.selected .px-kachel,
+.detar-tile.selected .px-kachel--asked { filter: url(#px-193d18-8); }
+
+/* --- Reveal (erstes Einfahren nach der Begrüßung) --------------------------- */
+.detar-panel--reveal {
+  transform: translateY(var(--q-reveal-offset));
+  opacity: 0;
+  transition: transform var(--q-reveal-time) var(--q-reveal-ease),
+              opacity var(--q-reveal-time) var(--q-reveal-ease);
+}
+.detar-panel--reveal.detar-panel--reveal-in { transform: translateY(0); opacity: 1; }
+
+/* --- Tracking verloren: Menü steht, reagiert nicht (mock 05: ungedimmt) --- */
+.detar-panel--frozen, .detar-panel--frozen * { pointer-events: none !important; }
+
+@media (max-width: 380px) {
+  :root {
+    --q-cell-w: 168px; --q-tile-w: 165px; --q-tile-font: 28px;
+    --q-grid-inset: 12px;
+  }
+}
+
