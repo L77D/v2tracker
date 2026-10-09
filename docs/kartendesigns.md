@@ -49,7 +49,8 @@ des Designs, `karten.html` zeigt sie so, und der Kartenlader löst
 
 1. **Kartenbild exportieren** — die ganze Karte ohne Beschnittrand, hochkant,
    mindestens ~1300 px breit (das Standard-Target ist 1346 × 2156). PNG oder
-   JPG. Layout-Regeln fürs Tracking: `Tracking-Pruefstand/` im Projektordner.
+   JPG. Layout-Regeln fürs Tracking: `Produktion/Kartenlayout/DETAR_Kartenlayout_Eckpfeiler_Tracking.md`
+   im Projektordner; Bewertung mit TrackingScore (`Tracking-Pruefstand/TrackingScore/`).
 2. **Target erzeugen** (Node ≥ 18; die CLI ist interaktiv, Pipe-Variante
    unten). Name = Design-id — kurz, Kleinbuchstaben, keine Leerzeichen,
    z. B. `v3-blau`:

@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 82 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.4) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 83 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.4 + Doku-Verweise auf den Projektordner) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -283,7 +283,9 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   `python3 tools/build-lokal-prototyp.py <Ziel.html>` packt die App in eine
   HTML-Datei (Module als data:-URLs in der Import-Map, Assets/Fonts/tuning.json
   eingebettet, Desktop-Modus + Dev-Panel erzwungen; three.js aus `vendor/three/`,
-  kein CDN). Nach jedem Build neu erzeugen; Ablage `…/Claude/Lokal-Prototyp/`.
+  kein CDN). Bei Bedarf neu erzeugen; kein fester Ablageort mehr (alte Stände: `…/Claude/_Archiv/Lokal-Prototyp/`).
+  Kartendaten im Projektordner: `Karten/<nr>_<firma>_<beruf>/Export/<nr>/` = `karten/<nr>/` hier
+  (Übernahme per `_Karte übernehmen.app`, 2026-10-08).
   Das Skript patcht Quelltextzeilen per `assert` (markiert mit
   „Patch-Anker build-lokal-prototyp.py" in main.js, config.js, rig.js,
   supportUI.js, kartenLader.js, desktopMode.js) — Wortlaut dort nicht ändern.
