@@ -3,7 +3,7 @@
    erbt. Port des in Zapworks verifizierten Stabilizers (Stand 2026-07-02).
 
    Eingang (seit 8th Wall, 2026-09-09): `source.matrix` ist die KAMERA-RELATIVE
-   Karten-Pose (main.js → updateAnchor: Kamera⁻¹ × Bildpose, Scale = Karten-
+   Karten-Pose (arSession.js → updateAnchor: Kamera⁻¹ × Bildpose, Scale = Karten-
    breite in Szenen-Einheiten). Unter MindAR (Branch main) war das direkt
    anchor.group.matrix — Kamera-Origin-Modus, Anchor-Scale in Target-Pixeln.
 
@@ -35,7 +35,7 @@ const _predQ = new THREE.Quaternion();
 
 export class PoseStabilizer {
   /**
-   * @param source Rohpose-Träger (main.js schreibt pro Frame source.matrix)
+   * @param source Rohpose-Träger (arSession.js schreibt pro Frame source.matrix)
    * @param target stabRoot (Kind der Kamera, trägt die Figur)
    * @param gyro   optionale GyroFusion (Prediction + Lost-Brücke)
    */
@@ -232,7 +232,7 @@ export class PoseStabilizer {
     // Abweichung war unter MindAR ein ARTEFAKT (elementweiser Matrix-Filter →
     // nicht-starre Zwischenmatrizen; Fehl-Homographien → „Figur schräg/zu
     // groß"): kleine Abweichung → eingefrorene Scale, große → Frame verwerfen.
-    // UNTER 8TH WALL (2026-09-15): main.js setzt die Scale aus detail.scale ×
+    // UNTER 8TH WALL (2026-09-15): arSession.js setzt die Scale aus detail.scale ×
     // scaledWidth, und detail.scale ist pro Track konstant — die Stufe löst
     // strukturell nie aus (Re-Lock-Zähler in ?stats bleibt 0). Bleibt als
     // Sicherung; Ausbau ist ein Stufe-3-Punkt nach Prüfung am Gerät.

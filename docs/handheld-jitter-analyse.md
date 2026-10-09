@@ -49,13 +49,13 @@ sichtbar, Bewertung 5–6/10, `?stats` „Jitter stab" teils 2–3 mm.
 
 ### Punkt 2 — Stabilizer kennt nur die Kamera-relative Pose: **bestätigt; SLAM-Aussage falsch**
 
-- Eingang ist die Kamera-relative Pose: `js/main.js:590-602` (`updateAnchor` =
+- Eingang ist die Kamera-relative Pose: `js/arSession.js` (`updateAnchor` =
   Kamera⁻¹ × Bildpose), Stabilizer liest sie `js/poseStabilizer.js:196`.
   Hand- und Kartenbewegung sind darin nicht trennbar.
 - Gyro liefert nur Drehung: `js/gyroFusion.js:63` (nur `deviceorientation`),
   `:98-113` (Rotations-Delta); angewendet als reine Drehung in
   `js/poseStabilizer.js:524-541`. Keine Verschiebung.
-- `disableWorldTracking: true`: `js/main.js:538-539`.
+- `disableWorldTracking: true`: `js/arSession.js` (`startAR`).
 - **Korrektur: Die Open-Source-Engine in `vendor/8thwall/` hat kein World-
   Tracking, das man einschalten könnte.**
   - `docs/8thwall-migration.md:10-14`: „Die Open-Source-Engine enthält gar kein
@@ -350,7 +350,7 @@ Umgesetzt ist das Werkzeug aus Abschnitt b. Das Filterverhalten ist
 - `js/statsOverlay.js` — neue Zeilen, 5-s-Fenster, Mess-Knöpfe oben im Panel.
 - `js/poseStabilizer.js` — `diag`: neue Messung ja/nein + Rohmessung,
   Modus-Wechsel, Auslöser, NaN-Verwürfe, angewendete Gyro-Deltas.
-- `js/main.js` — reicht die Kamera an `?stats` durch (Projektion in px).
+- `js/arSession.js` — reicht die Kamera an `?stats` durch (Projektion in px).
 
 ### Anzeige lesen
 

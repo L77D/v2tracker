@@ -92,7 +92,7 @@ export const CHOREO = {
   billboardLerp: 0.2,
   jumpDurationSec: 0.45, // Figur-Tap: Parabel-Hüpfer zur Kartenmitte
   jumpHeight: 0.04,
-  // Tap-Erkennung (main.js; bis Build 60 Literale): Entprellung pointerup +
+  // Tap-Erkennung (js/tapInput.js, bis Build 86 main.js; bis Build 60 Literale): Entprellung pointerup +
   // click-Fallback (Doppel-Auslösung wäre seit dem Dialogsystem nicht mehr
   // harmlos), Tap ≠ Drag über Weg und Dauer.
   tapDebounceMs: 120,
@@ -107,7 +107,7 @@ export const CHOREO = {
 };
 
 // Szene (Skalierung + Nick-Achse). cardWidth koppelt die Prototyp-Einheiten an
-// die Anchor-Einheit: eine Anchor-Einheit = eine Kartenbreite (main.js setzt die
+// die Anchor-Einheit: eine Anchor-Einheit = eine Kartenbreite (arSession.js setzt die
 // Anchor-Scale auf die Kartenbreite; MindAR normierte genauso), im Prototyp war
 // die Karte cardWidth Einheiten breit. worldRoot wird um 1/cardWidth skaliert —
 // damit gelten ALLE getunten Werte (Lauffeld, Bubble, Sprünge …) unverändert.
@@ -298,7 +298,7 @@ export const GYRO = {
 // Kamera: Die 8th-Wall-Engine wählt die Auflösung selbst (geräteabhängige
 // Constraint-Leiter mit Retry); gelieferte Auflösung in ?stats ablesen.
 export const CAM = {
-  maxPixelRatio: 2,      // Canvas-Cap (Finding 2, 2026-07-14): main.js setzt die
+  maxPixelRatio: 2,      // Canvas-Cap (Finding 2, 2026-07-14): arSession.js setzt die
                          // Canvas-Pixelgröße = CSS-Größe × min(devicePixelRatio, Cap)
                          // — Cap 2 statt 3 auf iPhones gibt der Vision-Schleife GPU-Luft.
 };

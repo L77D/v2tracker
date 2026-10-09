@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 86 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 87 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -36,7 +36,7 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   Kontur mit `lineJoin miter` + `lineCap square`.
 - `js/supportUI.js` — Handy-Icon (6 PNG-Frames, `assets/ui/icon-handy/`)
   + Balken; Zustände suchen/gefunden/ruhe. Genutzt von `questionMenu.js`
-  (Suche, Karte gefunden, Ruhezustand) und `main.js` (`#lostHint`).
+  (Suche, Karte gefunden, Ruhezustand) und `arSession.js` (`#lostHint`).
 - `js/questionMenu.js` — Themen als festes 2×2-Raster; Fragen als Karussell
   mit 2×2 Kacheln je Seite + Seitenpunkte; Kachel = Reiter (THEMA/NEU/LINK/✅)
   über Textkasten 178×73, ±2,34° Tilt. Maße 1:1 aus dem 402-px-Figma-Frame.
@@ -199,7 +199,7 @@ synchron halten.
 - Randzustände: Kamera abgelehnt → `body.camera-denied` (eigener Bildschirm im
   Splash); Tracking verloren → `menu.setFrozen()` + `#lostHint` (Icon-Zeile
   mittig, Menü bleibt ungedimmt stehen).
-- Tap-Entprellung in main.js (pointerup + click-Fallback binnen 120 ms) —
+- Tap-Entprellung in `js/tapInput.js` (pointerup + click-Fallback binnen 120 ms) —
   seit dem Dialogsystem wäre Doppel-Auslösung NICHT mehr harmlos.
 - Splash: `card.companyLogo` (Pfad) oder Firmenname als Text; `card.jobUrl`
   wird seit Build 18 nicht mehr angezeigt (DET-Label raus).
@@ -222,7 +222,7 @@ in `main`.)
 **Stack (seit 2026-09-09):** `three@0.160` als schlankes Bundle in
 `vendor/three/` (relativer Import `../vendor/three/three.module.js`, KEINE
 Importmap mehr) + **Open-Source-8th-Wall-Engine** (MIT) selbst gehostet unter
-`vendor/8thwall/` (SIMD) und `vendor/8thwall-nosimd/` (Fallback; `main.js`
+`vendor/8thwall/` (SIMD) und `vendor/8thwall-nosimd/` (Fallback; `js/arSession.js`
 wählt per `WebAssembly.validate`, `?nosimd` erzwingt) — `xr.js` +
 `xr-tracking.js`; Bildtracker, KEIN SLAM, kein Binary, kein Niantic-Aufruf,
 kein API-Key. Engine wird erst in der Start-Geste geladen; `js/preflight.js`
@@ -317,16 +317,39 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
 - `.gitignore` hält `tuning.json`, `beats.theatre.json`, den Lokal-Prototyp und
   CLI-Zwischenbilder aus dem Repo.
 
+## Boot und Szene (seit Build 87, Refactoring Stufe 3b)
+
+`main.js` ist nur noch der Boot (URL-Flags, Vorabprüfung, Karte laden, Splash,
+Start-Geste mit Sound + Gyro-Permission, Fehlerpfade, Dev-Werkzeuge) und
+reicht einen Kontext `ctx` `{card, design, gyro, log, devLog, DebugOverlay,
+StatsOverlay, attachDevTools}` an die Module:
+
+- `js/arSession.js` — Engine-Variante (SIMD-Test, `?nosimd`), `preloadEngine()`
+  im Boot, `startAR(ctx)` aus der Start-Geste: Lazy-Load mit Timeout, Target-
+  Daten, Canvas, Kamera-Pipeline, Pipeline-Modul „detar" (Bildpose → Rohpose
+  `anchor.matrix`, PoseStabilizer, ?stats, `#lostHint`, Kamera-Ausfall).
+- `js/experience.js` — `buildExperience(szene, ctx)` für AR und Desktop: Rig,
+  Behaviors, Sprechblase, Menü, CardController, Tap-Auswertung (`handleTap`:
+  Karte → `controller.onCardTapped()` liefert "start"/"reentry"/false, Blase,
+  Figur), Render-Loop. `szene.relocalize` = `stab.reacquire` (nur AR).
+  Phasenfragen stellt der Controller selbst (`acceptsCardTap`, `acceptsFigureTap`).
+- `js/tapInput.js` — Pointer → Tap (Entprellung, Tap ≠ Drag) + Raycaster.
+- `js/figureJump.js` — Parabel-Hüpfer der Figur.
+- `js/desktopMode.js` importiert `buildExperience` selbst (`startDesktop(ctx)`).
+- Patch-Anker von `tools/build-lokal-prototyp.py` in main.js (`DESKTOP_MODE`,
+  `DEV_MODE`) und desktopMode.js (`vorschau`) sind unverändert; das Skript
+  sammelt `js/` rekursiv, neue Module brauchen dort nichts.
+
 ## Tracking-Architektur
 
 ```
 8th Wall XrController (xr-tracking.js) → reality.imagefound/imageupdated/imagelost
-  └─ anchor.matrix (main.js: Kamera⁻¹ × Bildpose, Scale = Kartenbreite; Gruppe
+  └─ anchor.matrix (arSession.js: Kamera⁻¹ × Bildpose, Scale = Kartenbreite; Gruppe
      außerhalb der Szene — Ersatz für MindARs anchor.group)
        └─ PoseStabilizer.tick() (jeden Frame im onUpdate des Pipeline-Moduls)
             └─ stabRoot (geglättet, KIND DER KAMERA; trägt Figur)
                  └─ worldRoot (Karten-Frame: rot.x=+90°, scale=1/SCENE.cardWidth)
-Rendern: XR8.Threejs.onRender (buildExperience({render:false}))
+Rendern: XR8.Threejs.onRender (experience.js → buildExperience({render:false}))
 ```
 
 (main/MindAR: `anchor.group.matrix` roh pixel-skaliert, stabRoot auf Szenen-
@@ -360,14 +383,14 @@ Delta vor) als Prediction + Verlust-Brücke.
 
 - `CAM`: unter 8th Wall wählt die Engine die Auflösung selbst (Constraint-
   Leiter mit Retry); `maxPixelRatio: 2` gilt weiter (Canvas-Pixelgröße in
-  main.js). (main/MindAR: 960×540 per getUserMedia-Wrap, `?res=`.)
+  arSession.js). (main/MindAR: 960×540 per getUserMedia-Wrap, `?res=`.)
 - `STAB`: `minCutoff 0.1` · `beta 10` (gated) · `rotMinCutoff 0.5` ·
   `rotBeta 4` · `minSpeed 0.04` · `minAngSpeed 0.09` · `scaleOutlier 0.1`
   (Scale-Lock löst unter 8th Wall strukturell nie aus, s. Gotchas).
   Die MindAR-Keys `filterMinCF/filterBeta/missTolerance/warmupTolerance`
   gibt es hier nicht mehr.
 - `CHOREO.tapDebounceMs 120` · `tapMaxPx 6` · `tapMaxMs 400` (Tap-Erkennung,
-  main.js) · `idleReturnMs 5500` als Fallback — die Karte (`idleReturnMs` in
+  tapInput.js) · `idleReturnMs 5500` als Fallback — die Karte (`idleReturnMs` in
   daten.json, heute 8000) hat Vorrang.
 - Feature-Toggles 1–10 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock, Nr. 10 =
   Schwerkraft-Schiedsrichter (Pose-Flip).
@@ -421,7 +444,7 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   Preset nehmen. `?preflight=…` überspringt boot() komplett (kein Dev-Panel).
 - 8th Wall: `disableWorldTracking: true` MUSS vor `XrController.pipelineModule()`
   und `XR8.run()` stehen. `XR8.Threejs` verlangt `window.THREE` (dieselbe
-  Instanz wie `vendor/three/three.module.js`, main.js setzt sie). `renderer.setSize` der Engine schreibt Pixelmaße
+  Instanz wie `vendor/three/three.module.js`, arSession.js setzt sie). `renderer.setSize` der Engine schreibt Pixelmaße
   als Inline-CSS → `#xr-canvas` hat `width/height: 100% !important`.
 - 8th Wall: `reality.imageupdated` feuert nur bei geänderter Pose → der
   Stabilizer sieht unveränderte Frames als „stale" (wie MindAR). `detail.scale`
@@ -439,6 +462,7 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   die Spiegel-Lösung). Herleitung + Handy-Test: `docs/8thwall-migration.md` 9.
 - Boot-Fehlerpfade (Build 61): `boot()` und `attachDevTools()` haben `.catch`
   (vorher stille Unhandled Rejection = Splash mit totem Knopf); `loadEngine()`
+  (arSession.js)
   hat 30 s Timeout; Kamera-Ausfall NACH dem Start zeigt „Kamera unterbrochen"
   in `#lostHint`.
 - Kompatibilität: keine `static`-Klassenfelder im Live-Code (ES2022, iOS 14.5
@@ -462,10 +486,10 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   WebXR-Fusion, Eck-Anker-Karte, Prüfstand) mit Wissen + Vorgehen je Punkt.
   MindAR-Stand (2026-07): B (MindAR-Fork) und C sind auf diesem Branch
   gegenstandslos, A/D/E gelten sinngemäß weiter.
-- Refactoring Stufe 3 (offen, 2026-09-15; Stufe 3a = Tests seit Build 86
-  erledigt, Plan 2026-10-09: 3b main.js zerlegen → 3c Stabilizer in Stufen +
-  `snapshot()` für ?stats → 3d Booleans → 3e Entkopplung): main.js in Module zerlegen (Tap-
-  Eingabe, Figur-Hüpfer, Pipeline-Modul) · `poseStabilizer.tick()` in Stufen
+- Refactoring Stufe 3 (offen, 2026-09-15; erledigt: 3a Tests (Build 86),
+  3b main.js zerlegt (Build 87, s. „Boot und Szene"); Plan 2026-10-09: 3c
+  Stabilizer in Stufen + `snapshot()` für ?stats → 3d Booleans → 3e
+  Entkopplung): `poseStabilizer.tick()` in Stufen
   mit expliziten Parametern · Scale-Lock ausbauen (erst Re-Lock-Zähler am
   Gerät prüfen) · Arbiter: `qEarth` ändert sich 60 Hz ohne Dead-Band → kann
   stale Frames als „neu" melden (Vision-Hz in ?stats prüfen) · `SCENE.cardAspect`

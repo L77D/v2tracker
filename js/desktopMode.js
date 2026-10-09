@@ -6,6 +6,7 @@
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { SCENE } from "./config.js";
+import { buildExperience } from "./experience.js";
 
 let phoneFrame = null;
 
@@ -16,9 +17,12 @@ export async function createPhoneFrame() {
   return phoneFrame;
 }
 
-/* Szene + Loop; buildExperience/attachDevTools kommen aus main.js (gemeinsamer
-   Aufbau für AR und Desktop). Simuliert nach 1,2 s den Scan. */
-export async function startDesktop({ buildExperience, attachDevTools, vorschau }) {
+/* Szene + Loop; der gemeinsame Aufbau für AR und Desktop kommt aus
+   js/experience.js (bis Build 86 aus main.js durchgereicht). ctx wie bei
+   arSession.startAR: { card, attachDevTools, DebugOverlay, devLog, … }.
+   Simuliert nach 1,2 s den Scan. */
+export async function startDesktop(ctx) {
+  const { vorschau } = ctx.card;
   const { OrbitControls } = await import("../vendor/three/addons/controls/OrbitControls.js");
   const container = document.getElementById("ar-container");
 
@@ -70,9 +74,9 @@ export async function startDesktop({ buildExperience, attachDevTools, vorschau }
   const worldRoot = new THREE.Group();
   scene.add(worldRoot);
 
-  const exp = buildExperience({ renderer, scene, camera, worldRoot });
+  const exp = buildExperience({ renderer, scene, camera, worldRoot }, ctx);
   const { controller, loop } = exp;
-  await attachDevTools(exp);
+  await ctx.attachDevTools(exp);
 
   renderer.setAnimationLoop(() => {
     controls.update();

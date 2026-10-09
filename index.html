@@ -14,11 +14,11 @@
        js/*.js importieren deshalb ../vendor/three/three.module.js direkt. -->
   <!-- 8th-Wall-Engine (Open-Source-Build, MIT, selbst gehostet unter
        vendor/8thwall/ bzw. vendor/8thwall-nosimd/ — kein CDN, kein Niantic-
-       Server, kein API-Key). Den Kern lädt js/main.js in boot() per JS-Preload
+       Server, kein API-Key). Den Kern lädt js/main.js in boot() per JS-Preload (arSession.js → preloadEngine)
        vor (Netzwerk, nicht ausgeführt) — welche Variante, entscheidet ein
        WASM-SIMD-Test am Gerät, deshalb kein statischer <link rel=preload> mehr
        (2026-09-09). Der Tracker-Chunk xr-tracking.js wird bewusst erst nach
-       dem Klick geholt; das Skript-Tag setzt main.js in der Start-Geste
+       dem Klick geholt; das Skript-Tag setzt js/arSession.js in der Start-Geste
        („Scan starten"), vorher läuft weder Engine noch Kamera. -->
 </head>
 <body>
@@ -76,7 +76,7 @@
     </filter>
   </svg>
 
-  <!-- AR-Vollbild: js/main.js legt hier den Canvas an (#xr-canvas), auf den
+  <!-- AR-Vollbild: js/arSession.js legt hier den Canvas an (#xr-canvas), auf den
        die 8th-Wall-Engine Kamerabild + three.js-Szene zeichnet -->
   <div id="ar-container"></div>
 

@@ -93,11 +93,18 @@ export class CardController {
       this.activation.play(() => this.startGreeting());
     }
   }
-  /* Tap auf die Karte (Raycast in main.js): startet die Figur (attract) oder
-     holt sie aus dem Ruhezustand zurück (resting). */
+  /* Tap-Auswertung (js/experience.js → handleTap): in welcher Phase zählt
+     welcher Tap? Karte = Aktivier-Phase und Ruhezustand, Figur = Gespräch.
+     (Bis Build 86 verglich main.js die Phasen-Strings selbst.) */
+  get acceptsCardTap() { return this.phase === "attract" || this.phase === "resting"; }
+  get acceptsFigureTap() { return this.phase === "live"; }
+  /* Tap auf die Karte (Raycast in js/experience.js): startet die Figur (attract)
+     oder holt sie aus dem Ruhezustand zurück (resting). Liefert "start" /
+     "reentry" / false — beim Start setzt der Aufrufer den PoseStabilizer neu
+     auf (Nutzer hält still). Auch Hook onReentry des Menüs. */
   onCardTapped() {
-    if (this.phase === "resting") { this.reentry(); return; }
-    if (this.phase !== "attract") return;
+    if (this.phase === "resting") { this.reentry(); return "reentry"; }
+    if (this.phase !== "attract") return false;
     this.phase = "intro";
     this.menu.hideOnboarding();
     sound.cardTapped(); // Swoosh in den Burst hinein
@@ -105,6 +112,7 @@ export class CardController {
       sound.popIn();
       this.activation.play(() => this.startGreeting());
     });
+    return "start";
   }
   startGreeting() {
     this.phase = "live";
@@ -154,7 +162,7 @@ export class CardController {
     this.pendingContinue = () => { this.pendingContinue = null; fn(); };
     this.menu.showNext(label);
   }
-  /* Tap auf die Sprechblase (Raycast in main.js). */
+  /* Tap auf die Sprechblase (Raycast in js/experience.js). */
   onBubbleTapped() {
     if (this.speaking) { this.bubble.skip(); return true; }
     if (this.pendingContinue) { this.pendingContinue(); return true; }

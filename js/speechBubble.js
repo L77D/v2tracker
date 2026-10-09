@@ -75,7 +75,7 @@ export class SpeechBubble {
     this.plane.position.y = h / 2 + TYPO.offsetY;
     // 20: über allen Figur-Layern (Body 0, Head 1, Face 2).
     this.plane.renderOrder = 20;
-    this.plane.userData.isBubble = true; // Tap-Raycast (main.js): Blase antippen
+    this.plane.userData.isBubble = true; // Tap-Raycast (js/experience.js): Blase antippen
     this.element.add(this.plane);
   }
   /* Nach Font-Load oder Tuning-Änderung neu aufbauen (measureText braucht den echten Font). */

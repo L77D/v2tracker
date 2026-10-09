@@ -80,7 +80,7 @@ quer). Die CLI schneidet beim Default-Crop **zentriert** auf 3:4: aus
 1346 × 2156 wird 1346 × 1795 (`top: 181`), die **volle Kartenbreite bleibt**,
 oben und unten fallen je 181 px weg. Für die Erkennung reicht das (der Kern
 der Karte trägt die Merkmale); für die Geometrie ist es wichtig, weil
-`js/main.js` die Kartenbreite aus dem Target ableitet:
+`js/arSession.js` (bis Build 86 `js/main.js`) die Kartenbreite aus dem Target ableitet:
 `Kartenbreite = detail.scale × detail.scaledWidth` (scaledWidth = 0.75 beim
 3:4-Hochkant-Crop). Wer einen **eigenen Crop** wählt (`Use default crop? n`),
 muss die Breite auf die Kartenbreite lassen, sonst steht die Figur falsch
@@ -88,10 +88,10 @@ skaliert.
 
 **b) `imagePath` in der JSON ist eine URL relativ zur Seite**, fest
 `image-targets/<name>_luminance.png`. Damit der CLI-Ordner 1:1 nach
-`karten/<id>/targets/` kopiert werden kann, ignoriert `main.js → loadTargetData()`
+`karten/<id>/targets/` kopiert werden kann, ignoriert `arSession.js → loadTargetData()`
 dieses Feld und löst `resources.luminanceImage` **neben der JSON** auf. Die
 eingecheckte `card.json` trägt trotzdem den korrigierten Pfad, damit sie auch
-für sich stimmt. Zusätzlich setzt `main.js` zur Laufzeit `moveable: true`
+für sich stimmt. Zusätzlich setzt `arSession.js` zur Laufzeit `moveable: true`
 (Karte in der Hand) und `physicalWidthInMeters = breiteMm / 1000` aus dem
 `breiteMm` des Designs in `karten/<id>/daten.json` (seit Build 72; Build 63–71 `karte.json`; Build 57–62 aus `targets/8thwall/karten.json`; 63 mm) — dadurch ist
 `detail.scale` metrisch. Die mm-Werte in `?stats` rechnen seit Build 61 mit
@@ -174,7 +174,7 @@ Das Kamerabild bleibt auf dem Gerät.
   allowedDevices: ANY})` mit den Pipeline-Modulen `XrController` (Tracker),
   `GlTextureRenderer` (Kamerabild), `Threejs` (Szene/Kamera/Renderer auf
   demselben Canvas) und dem eigenen Modul `detar`. Der Canvas wird von
-  `main.js` angelegt und in Pixelgröße = CSS × min(devicePixelRatio, 2)
+  `arSession.js` angelegt und in Pixelgröße = CSS × min(devicePixelRatio, 2)
   gehalten (`CAM.maxPixelRatio` gilt weiter); `#xr-canvas` bekommt per CSS
   `width/height: 100% !important`, weil `renderer.setSize` sonst Pixelmaße als
   Inline-Stil schreibt.
@@ -288,7 +288,7 @@ fällt, bekommt eine verständliche Meldung statt einer leeren Seite. Jede
 |---|---|---|
 | 1 | **Importmap entfernt** — `js/*.js` importieren `../vendor/three/three.module.js` direkt, `OrbitControls.js` importiert `../../three.module.js` (sed in `tools/build-three.sh`); `tools/build-lokal-prototyp.py` bettet three + OrbitControls als normale Module ein (die Import-Map bleibt NUR im Einzeldatei-Export). | Grenze iOS 16.4 / Chrome 89 → iOS 11 / Chrome 63 (Module). Vorher blieb der Splash ohne Knopf stehen. |
 | 2 | **Vorabprüfung** `js/preflight.js` in `boot()` vor dem Freischalten des Buttons: In-App-Browser (UA-Marker, Liste aus `devices/compatibility.ts` der Engine), `isSecureContext`, `mediaDevices.getUserMedia`, `WebAssembly`, WebP-mit-Alpha (Decode-Test). Befund → `#preflightScreen` („Bitte im Browser öffnen", Text je Fall, URL als Textfeld, „Link kopieren" mit Clipboard-API + execCommand-Fallback), `body.preflight-blocked`, Button bleibt aus. Klassisches Inline-Skript (ES5) in `index.html` fängt Browser ohne ES-Module UND ohne `?.`/`??`-Syntax (Parse-Fehler in main.js) mit demselben Bildschirm. Test: `?preflight=inapp\|nocam\|insecure\|nowasm\|nowebp`, `?preflight=aus`. | Kein Gerät mehr ohne Rückmeldung. 2,3 KB gz. |
-| 3 | **Nicht-SIMD-Engine** `vendor/8thwall-nosimd/` (gleicher Monorepo-Commit 519b988, `--config=wasmrelease`, Trim-Patch). `main.js` wählt per `WebAssembly.validate` (Testmodul der Engine-eigenen Prüfung) — der Chunk `xr-tracking.js` lädt relativ zu `xr.js`, also automatisch die passende Variante. Preload des Kerns jetzt per JS in `boot()` (nur die gewählte Variante). `?nosimd` erzwingt den Fallback; `?stats` zeigt „Engine: …"; Konsole „8th Wall XR Version: 0.0.0.0s" (SIMD) / „0.0.0.0" (ohne). Mit wasmtime geprüft: SIMD-Variante ist ohne SIMD schon im Kern `xr.js` ungültig, nicht erst im Tracker. | WASM-SIMD (iOS 16.4 / Chrome 91) ist keine Pflicht mehr; ältere Geräte bekommen den langsameren Tracker statt eines Absturzes nach dem Klick. +1,4 MB gz im Repo, für das Gerät gleich groß. |
+| 3 | **Nicht-SIMD-Engine** `vendor/8thwall-nosimd/` (gleicher Monorepo-Commit 519b988, `--config=wasmrelease`, Trim-Patch). `arSession.js` (bis Build 86 `main.js`) wählt per `WebAssembly.validate` (Testmodul der Engine-eigenen Prüfung) — der Chunk `xr-tracking.js` lädt relativ zu `xr.js`, also automatisch die passende Variante. Preload des Kerns jetzt per JS in `boot()` (nur die gewählte Variante). `?nosimd` erzwingt den Fallback; `?stats` zeigt „Engine: …"; Konsole „8th Wall XR Version: 0.0.0.0s" (SIMD) / „0.0.0.0" (ohne). Mit wasmtime geprüft: SIMD-Variante ist ohne SIMD schon im Kern `xr.js` ungültig, nicht erst im Tracker. | WASM-SIMD (iOS 16.4 / Chrome 91) ist keine Pflicht mehr; ältere Geräte bekommen den langsameren Tracker statt eines Absturzes nach dem Klick. +1,4 MB gz im Repo, für das Gerät gleich groß. |
 | 4 | **Figur → WebP** 768×1152 (exakt 2:3), Qualität 85, Lanczos auf premultipliziertem Alpha. `rig.js` auf `.webp`, PNGs gelöscht, `dev-server.js` kennt `image/webp`. | 2124 KB → 156 KB (gz 2084 → 148 KB). Neues Gate: WebP mit Alpha = iOS 14 / Chrome 32 (Vorabprüfung fängt es). |
 | 5 | **Tracker-WASM als eigene Datei** — NICHT umgesetzt (s. 7.3). | — |
 | 6 | **Font-Subsetting** mit pyftsubset auf die Zeichen aus `cards/*.js`, `js/*.js`, `index.html`, `css/*.css` + Latin-1 + „“”‚‘’…–—→✅ (Liste `tools/font-subset-unicodes.txt`, Skript `tools/build-fonts.sh`, Original-TTFs nicht im Repo; seit Build 64 ersetzt durch einen festen deutschen Zeichensatz, unabhängig von Kartentexten). TTF bleibt TTF, OFL-Texte bleiben, Hinting entfernt (iOS/macOS und Android/Skia werten TrueType-Instruktionen nicht aus; Outlines identisch). | Jersey 10 76,6 → 18,5 KB (gz 26,9 → 7,0), Silkscreen 32,2 → 13,9 KB (gz 11,6 → 4,9). |

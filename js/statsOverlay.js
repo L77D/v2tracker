@@ -274,7 +274,7 @@ export class StatsOverlay {
     const pr = this.env?.renderer ? this.env.renderer.getPixelRatio().toFixed(1) : "—";
     const arb = this.stab.arb ?? {};
     const arbState = STAB.gravityArbiter === "nein" ? "AUS (Toggle)" : !arb.active ? "kein Gyro" : arb.flipped ? "GESPIEGELT→korrigiert" : "roh ok";
-    // Engine-Variante (2026-09-09): SIMD oder Nicht-SIMD-Fallback (main.js
+    // Engine-Variante (2026-09-09): SIMD oder Nicht-SIMD-Fallback (arSession.js
     // wählt per WebAssembly.validate; Konsole: „8th Wall XR Version: …s"
     // = SIMD, ohne s = nicht-SIMD)
     const build = this.liveBuild == null ? `v${BUILD}`
