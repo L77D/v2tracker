@@ -23,7 +23,8 @@
    • ?debug:         pinke Hilfslinien (Lauffeld + FACE_CAM-Kegel) zuschalten.
    ============================================================================= */
 import { ladeKarte } from "./kartenLader.js";
-import { GYRO, loadTuning, syncCssVars } from "./config.js";
+import { GYRO, loadTuning } from "./config.js";
+import { syncCssVars } from "./questionMenu.js";
 import { GyroFusion } from "./gyroFusion.js";
 import { sound } from "./sound.js";
 import { preflight, showPreflightScreen } from "./preflight.js";

@@ -19,8 +19,20 @@
    Entscheidungen 2026-09-03 (Michael): keine Fußzeile, kein Link-Eintrag,
    Menü bei Tracking-Verlust eingefroren (nicht bedienbar, nicht gedimmt).
    ============================================================================= */
+import { CHOREO } from "./config.js";
 import { sound } from "./sound.js";
 import { buildSupport } from "./supportUI.js";
+
+/* CSS-Variablen der Menü-Einfahrt (css/question-menu.css: --q-reveal-time,
+   --q-reveal-offset) mit CHOREO synchron halten — eine Quelle statt zwei
+   Stellen. Aufrufer: main.js (Boot, nach loadTuning) und devPanel.js (Regler).
+   Bis Build 89 in config.js; seit Stufe 3e hier beim Konsumenten, config.js
+   bleibt reine Daten ohne DOM. */
+export function syncCssVars() {
+  const r = document.documentElement.style;
+  r.setProperty("--q-reveal-time", CHOREO.uiRevealMs / 1000 + "s");
+  r.setProperty("--q-reveal-offset", CHOREO.revealOffset + "px");
+}
 
 // Kompatibilität (2026-09-15): Modul-Konstanten statt `static`-Klassenfeldern —
 // öffentliche statische Felder sind ES2022 (Safari 14.1 / iOS 14.5) und liegen

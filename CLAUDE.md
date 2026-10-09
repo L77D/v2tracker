@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 89 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 90 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -178,6 +178,11 @@ synchron halten.
 - `js/dialogEngine.js` — Zustand + Regeln (unlocked/asked/fresh/vars/asksDone/
   visits/view), kein DOM, kein 3D.
 - `js/cardController.js` — Ablauf: say() paginiert und blättert mit Weiter;
+  kein DOM, kein `window` (Stufe 3e, Build 90; Ausnahme `window.open` der
+  Link-Frage): Dev-Replay über den Hook `onRescan(done)` aus experience.js
+  (Suchrahmen + `CHOREO.replayRescanMs`), Tap-Phasenfragen `acceptsCardTap`/
+  `acceptsFigureTap`, `onCardTapped()` → "start"/"reentry"/false; in Node
+  testbar (`tests/cardController.test.mjs` mit Attrappen);
   Weiter-Knopf NUR zwischen Seiten, vor einer Rückfrage und vor „Seite öffnen"
   (window.open braucht die Nutzergeste). Ausstieg → Fazit → Abschied →
   `activation.playOut()` (Figur klappt ein) → Phase `resting` → Tap auf die
@@ -259,7 +264,8 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   und prüft per no-store-Fetch gegen den live-Stand („neu laden!" bei altem
   Cache).
 - **Keine tuning.json mehr im Repo** (seit 2026-09-09, Branch v2tracker-lean):
-  alle Werte sind Defaults in `js/config.js` (EINE Quelle). Eine tuning.json
+  alle Werte sind Defaults in `js/config.js` (EINE Quelle; reine Daten, seit
+  Build 90 ohne DOM — `syncCssVars` liegt in questionMenu.js). Eine tuning.json
   wird nur mit `?dev`/`?tuning` geholt — Tuning-Werkzeug, nie einchecken
   (sonst wieder die Masking-Falle: config-Änderungen wirken nicht, wenn der
   Block in tuning.json steht).
@@ -507,12 +513,12 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   WebXR-Fusion, Eck-Anker-Karte, Prüfstand) mit Wissen + Vorgehen je Punkt.
   MindAR-Stand (2026-07): B (MindAR-Fork) und C sind auf diesem Branch
   gegenstandslos, A/D/E gelten sinngemäß weiter.
-- Refactoring Stufe 3 (offen, 2026-09-15; erledigt: 3a Tests (Build 86),
+- Refactoring Stufe 3 (2026-09-15; erledigt 2026-10-09: 3a Tests (Build 86),
   3b main.js zerlegt (Build 87, s. „Boot und Szene"), 3c PoseStabilizer in
   Stufen + `snapshot()` + Goldstandard (Build 88), 3d Schalter als Booleans
-  (Build 89); Plan 2026-10-09: 3e Entkopplung — `cardController.replay()`
-  bekommt einen Hook statt `document.body`, `syncCssVars` raus aus config.js):
-  Scale-Lock ausbauen (erst Re-Lock-Zähler am
+  (Build 89), 3e Controller ohne DOM + `syncCssVars` von config.js nach
+  questionMenu.js (Build 90). Offen, jeweils Verhaltensänderung mit
+  Gerätetest, kein Refactoring): Scale-Lock ausbauen (erst Re-Lock-Zähler am
   Gerät prüfen) · Arbiter: `qEarth` ändert sich 60 Hz ohne Dead-Band → kann
   stale Frames als „neu" melden (Vision-Hz in ?stats prüfen) · `SCENE.cardAspect`
   1,60 → 1,40 (63×88 mm) · Tests (`node --test`) für bubbleText, dialogEngine,

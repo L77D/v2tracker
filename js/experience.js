@@ -18,7 +18,7 @@
    `render: false` → der Loop rendert NICHT selbst (AR: das übernimmt der
    Threejs-Pipeline-Modul-Hook onRender der 8th-Wall-Engine, sonst doppelt).
    ============================================================================= */
-import { STAB } from "./config.js";
+import { STAB, CHOREO } from "./config.js";
 import { buildRig } from "./rig.js";
 import { FaceAnimator } from "./faceAnimator.js";
 import { SpeechBubble } from "./speechBubble.js";
@@ -87,7 +87,15 @@ export function buildExperience({ renderer, scene, camera, worldRoot, isRunning,
     onNext: () => controller.onNext(),
     onReentry: () => controller.onCardTapped(),
   });
-  controller = new CardController({ card, nodes, bubble, face: faceAnim, wander, activation, menu, fx });
+  controller = new CardController({
+    card, nodes, bubble, face: faceAnim, wander, activation, menu, fx,
+    // Dev-Replay (Dev-Panel): Suchrahmen wieder an wie nach dem Start, nach
+    // CHOREO.replayRescanMs „Scan" — DOM und Verzögerung liegen hier, nicht im Controller
+    onRescan: (done) => {
+      document.body.classList.add("scanning");
+      setTimeout(() => { document.body.classList.remove("scanning"); done(); }, CHOREO.replayRescanMs);
+    },
+  });
   menu.engine = controller.engine;
   if (devLog) window.__detar = { controller, engine: controller.engine, fx, nodes, camera, renderer, sound }; // Debug-Zugriff (Konsole, nur ?dev/?debug/?stats)
   const debug = DebugOverlay ? new DebugOverlay(worldRoot, nodes, frame) : null;

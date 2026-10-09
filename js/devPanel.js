@@ -5,7 +5,8 @@
    Rückkopier-Schritt mehr. Zustand wird in localStorage gehalten (nur im
    Dev-Modus geladen), Presets speicherbar.
    ============================================================================= */
-import { TYPO, FACE, IDLE, ACT, CHOREO, SCENE, STAB, GYRO, ACTFX, SOUND, syncCssVars, applyTuning } from "./config.js";
+import { TYPO, FACE, IDLE, ACT, CHOREO, SCENE, STAB, GYRO, ACTFX, SOUND, applyTuning } from "./config.js";
+import { syncCssVars } from "./questionMenu.js";
 import { applyNodAxis } from "./rig.js";
 import { sound } from "./sound.js";
 

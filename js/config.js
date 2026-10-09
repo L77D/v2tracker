@@ -339,13 +339,6 @@ export async function loadTuning() {
   }
 }
 
-/* CSS-Variablen mit CHOREO synchron halten (eine Quelle statt zwei Stellen). */
-export function syncCssVars() {
-  const r = document.documentElement.style;
-  r.setProperty("--q-reveal-time", CHOREO.uiRevealMs / 1000 + "s");
-  r.setProperty("--q-reveal-offset", CHOREO.revealOffset + "px");
-}
-
 /* Per-Frame-Lerps aus dem Mattercraft-Code (faceCamLerp, billboardLerp) sind
    fps-abhängig — auf 60-fps-Äquivalent normalisieren (identisch bei 60 fps). */
 export function frameLerp60(lerpPerFrame, dt) {

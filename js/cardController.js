@@ -21,7 +21,10 @@ import { sound } from "./sound.js";
 import { DialogEngine } from "./dialogEngine.js";
 
 export class CardController {
-  constructor({ card, nodes, bubble, face, wander, activation, menu, fx }) {
+  /* onRescan(done): Dev-Replay — der Aufrufer zeigt den Suchrahmen und ruft
+     done() nach seiner Verzögerung (experience.js; Stufe 3e: der Controller
+     fasst kein DOM an). Fehlt der Hook, folgt der „Scan" sofort. */
+  constructor({ card, nodes, bubble, face, wander, activation, menu, fx, onRescan = null }) {
     this.data = card;
     this.engine = new DialogEngine(card);
     this.nodes = nodes;
@@ -31,6 +34,7 @@ export class CardController {
     this.activation = activation;
     this.menu = menu;
     this.fx = fx ?? null;
+    this.onRescan = onRescan;
     // Timer nach Namen (2026-09-15): idle = Lesezeit, next = automatisches
     // Weiter, lost = Menü einfrieren nach Tracking-Verlust. setT/clearT statt
     // drei Feldern mit je eigenem clearTimeout-Block.
@@ -55,13 +59,14 @@ export class CardController {
     this.nodes.FigureRoot.scale.copy(this.nodes.FIGURE_HOME.scale);
     this.wander.reset();
     this.phase = "waiting";
-    document.body.classList.add("scanning"); // Suchrahmen wieder an (wie nach dem Start)
-    window.setTimeout(() => { document.body.classList.remove("scanning"); this.onCardSeen(); }, CHOREO.replayRescanMs);
+    // Suchrahmen wieder an + Verzögerung (CHOREO.replayRescanMs) macht der Aufrufer
+    if (this.onRescan) this.onRescan(() => this.onCardSeen());
+    else this.onCardSeen();
   }
   /* Timer-Verwaltung: ein laufender Timer gleichen Namens wird ersetzt. */
   setT(name, fn, ms) {
     this.clearT(name);
-    this.timers[name] = window.setTimeout(() => { this.timers[name] = null; fn(); }, ms);
+    this.timers[name] = setTimeout(() => { this.timers[name] = null; fn(); }, ms);
   }
   clearT(name) {
     if (this.timers[name]) { clearTimeout(this.timers[name]); this.timers[name] = null; }
