@@ -205,12 +205,12 @@ export class PoseStabilizer {
     // Gyro-Delta JEDEN Frame abholen (hält den internen Zustand frisch).
     // null = KEIN frisches Signal (keine Permission / kein Sensor / stale).
     const dq = this.gyro?.getDelta() ?? null;
-    const gyroOn = GYRO.enabled !== "nein";
+    const gyroOn = GYRO.enabled;
 
     if (this.tracking) this.lastSeenMs = now;
     else { this.holdWhileLost(now, dq, gyroOn); return; } // Pose eingefroren — nie aus einem Lost-Frame lesen (NaN-Quelle)
 
-    if (STAB.enabled === "nein") { this.passThrough(); return; }
+    if (!STAB.enabled) { this.passThrough(); return; }
 
     // Gyro-PREDICTION: echte Kamera-Drehung sofort übernehmen. Das Sehen muss
     // dann nur noch Drift/Translation korrigieren → der Filter darf hart
@@ -265,7 +265,7 @@ export class PoseStabilizer {
     // lange Brücke — die eingefrorene Pose ist kamera-relativ und klebt am
     // BILDSCHIRM, sobald sich das Handy bewegt („Figur hängt im Bild").
     // Dann nur kurzer Flacker-Schutz (lostHoldMs), danach ausblenden.
-    const holdMs = STAB.lostHold === "nein" ? 0 : (dq ? GYRO.bridgeMs : STAB.lostHoldMs);
+    const holdMs = !STAB.lostHold ? 0 : (dq ? GYRO.bridgeMs : STAB.lostHoldMs);
     if (this.everVisible && since > holdMs) {
       this.target.visible = false;
     }
@@ -281,7 +281,7 @@ export class PoseStabilizer {
   /* ---- Rohe kamera-relative Pose lesen + NaN-Schutz (#5) -------------------- */
   readRaw(raw) {
     this.source.matrix.decompose(raw.p, raw.q, raw.s);
-    if (STAB.nanGuard !== "nein" &&
+    if (STAB.nanGuard &&
         (!finiteVec(raw.p) || !finiteQuat(raw.q) || !finiteVec(raw.s) || raw.s.x < 1e-8)) {
       this.diag.nanCount++;
       return false;
@@ -298,7 +298,7 @@ export class PoseStabilizer {
      hängt nur von der Rohpose ab, bitidentische Rohposen bleiben bitidentisch
      → stale Frames werden weiter erkannt. Ohne frisches Gyro-Signal passiv. */
   arbitrate(raw) {
-    const qEarth = STAB.gravityArbiter !== "nein" ? (this.gyro?.getOrientation() ?? null) : null;
+    const qEarth = STAB.gravityArbiter ? (this.gyro?.getOrientation() ?? null) : null;
     this.arb.active = !!qEarth;
     if (qEarth) {
       const was = this.arb.flipped;
@@ -321,7 +321,7 @@ export class PoseStabilizer {
      Sicherung; Ausbau ist ein Stufe-3-Punkt nach Prüfung am Gerät.
      Liefert false, wenn der Frame zu verwerfen ist. */
   lockScale(raw, now) {
-    if (STAB.scaleLock === "nein" || !this.hasScaleLock) return true;
+    if (!STAB.scaleLock || !this.hasScaleLock) return true;
     if (Math.abs(raw.s.x - this.scaleLock) / this.scaleLock > STAB.scaleOutlier) {
       // RE-LOCK (2026-09-07): hält die Abweichung scaleRelockMs am Stück an, war
       // der Lock selbst falsch (schlechter Aufsetz-Frame) → neu aufsetzen, mit
@@ -347,7 +347,7 @@ export class PoseStabilizer {
      Anchor-Scale = Kartenbreite in Szenen-Einheiten ≈ 0,06; MindAR: Target-
      Pixelbreite, Position z. B. z ≈ −4500). */
   normalize(raw) {
-    if (STAB.normalize !== "nein") raw.p.divideScalar(raw.s.x);
+    if (STAB.normalize) raw.p.divideScalar(raw.s.x);
   }
 
   /* ---- Aufsetzen: Filterzustand aus der Median-Pose ------------------------- */
@@ -460,7 +460,7 @@ export class PoseStabilizer {
                 this.smoothQuat.angleTo(raw.q) > STAB.snapAngle;
     if (far) {
       this.farCount++;
-      if (this.farCount >= 2 && STAB.snap !== "nein") {
+      if (this.farCount >= 2 && STAB.snap) {
         this.initialised = false; // nächster Tick setzt hart neu auf
         this.snapCount++;
       }
@@ -556,7 +556,7 @@ export class PoseStabilizer {
       const p = speed > STAB.minSpeed, a = angSpeed > STAB.minAngSpeed;
       this.diag.moveCause = p && a ? "beide" : p ? "Pos" : "Winkel";
     }
-    if (STAB.extrapolate === "nein" || !moving) return moving;
+    if (!STAB.extrapolate || !moving) return moving;
     const tp = (Math.min(now - this.measT, STAB.extrapMaxMs) + STAB.latencyMs) / 1000;
     if (tp <= 0) return moving;
     // VORHERSAGE-KAPPEN (2026-07-13): Strecke und Winkel der Prediction hart
@@ -588,7 +588,7 @@ export class PoseStabilizer {
      Dead-Zone: winzige Restbewegung verwerfen (nur im RUHE-Zustand). */
   filterPosition(p, dt, moving) {
     this.oneEuro(p, this.smoothPos, dt, moving);
-    const dzOn = STAB.deadZones !== "nein";
+    const dzOn = STAB.deadZones;
     if (dzOn && !moving && this.smoothPos.distanceTo(this.xPrev) < STAB.posDeadZone) {
       this.smoothPos.copy(this.xPrev);
     } else {
@@ -602,7 +602,7 @@ export class PoseStabilizer {
      der gemessenen Winkelgeschwindigkeit — Ruhe = dicht, Drehung = wach.
      Dead-Zone (#3) auch hier nur in Ruhe. */
   filterRotation(q, dt, moving) {
-    const dzOn = STAB.deadZones !== "nein";
+    const dzOn = STAB.deadZones;
     const angle = this.smoothQuat.angleTo(q);
     if (angle > STAB.rotDeadZone || moving || !dzOn) {
       const rotCutoff = STAB.rotMinCutoff + STAB.rotBeta * this.angVel.length();
@@ -656,7 +656,7 @@ export class PoseStabilizer {
      normiert → zurück in Anchor-Einheiten. */
   write() {
     _wp.copy(this.smoothPos);
-    if (STAB.normalize !== "nein") _wp.multiplyScalar(this.lastScale.x);
+    if (STAB.normalize) _wp.multiplyScalar(this.lastScale.x);
     this.target.matrix.compose(_wp, this.smoothQuat, this.lastScale);
     this.target.matrixWorldNeedsUpdate = true;
   }

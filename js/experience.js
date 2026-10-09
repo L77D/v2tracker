@@ -61,7 +61,7 @@ export function buildExperience({ renderer, scene, camera, worldRoot, isRunning,
       camera.getWorldPosition(out);
       worldRoot.updateWorldMatrix(true, false);
       worldRoot.worldToLocal(out);
-      if (STAB.nanGuard !== "nein" && !finiteVec(out)) return null;
+      if (STAB.nanGuard && !finiteVec(out)) return null;
       return out;
     },
     /* Welt → Karten-Frame (matrixWorld muss aktuell sein — getCamLocal wird

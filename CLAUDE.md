@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 88 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 89 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -184,7 +184,7 @@ synchron halten.
   Karte → Wiedereinstieg (beiläufige Zeile, Zustand bleibt).
 - `js/speechBubble.js` — `paginate()` schneidet am Satzende (Notfall Komma/
   Gedankenstrich, dann Wortgrenze), gemessen am echten Font. Seitenzähler
-  „1/3" seit Build 30 aus (`TYPO.pageLabel: "nein"`, Michael 2026-09-07);
+  „1/3" seit Build 30 aus (`TYPO.pageLabel: false`, Michael 2026-09-07);
   Seiten + Weiter-Kachel bleiben. Kein stilles Kappen mehr.
 - `js/bubbleText.js` — Markup-Parser, Satz-/Wortgrenzen.
 - `js/questionMenu.js` — Phasen: themen → thema ([←] Kopfzeile mit NEU-Punkt,
@@ -263,6 +263,17 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   wird nur mit `?dev`/`?tuning` geholt — Tuning-Werkzeug, nie einchecken
   (sonst wieder die Masking-Falle: config-Änderungen wirken nicht, wenn der
   Block in tuning.json steht).
+- **Schalter sind Booleans (Build 89, Refactoring Stufe 3d):** `STAB.enabled`,
+  `normalize`, `deadZones`, `lostHold`, `nanGuard`, `snap`, `scaleLock`,
+  `gravityArbiter`, `extrapolate`, `GYRO.enabled`, `SOUND.enabled`,
+  `SOUND.typeTicks`, `CHOREO.requireTap`, `ACTFX.hopper`, `TYPO.pageLabel` sind
+  `true`/`false` — bis Build 88 die Strings `"ja"`/`"nein"`, verglichen mit
+  `!== "nein"` in sieben Modulen. Jedes Einspielen eines Presets läuft über
+  `config.applyTuning()` (tuning.json, Dev-Panel-Presets + localStorage-Stand,
+  `window.__TUNING` des Lokal-Prototyps), das `"ja"`/`"nein"` übersetzt — alte
+  Presets laden also weiter; andere Strings (`SOUND.speech: "aus"`) bleiben.
+  Im Dev-Panel heißen Schalter `bool: true` (Select zeigt ja/nein). Neue
+  Schalter: `if (STAB.x)`, nie wieder Strings.
 - **Schlank-Regeln (v2tracker-lean):** Dev-Module (`debugOverlay`, `statsOverlay`,
   `devPanel`, `timeline`, `desktopMode`+`phoneFrame`) NUR per URL-Flag laden;
   keine CDN-Requests (three.js aus `vendor/three/`, neue THREE.*-Klasse →
@@ -299,7 +310,7 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   die Karte" als Laola-Welle (`wave`-Spans in supportUI) · Karte gefunden: Icon
   springt aus dem Panel (`IconHandy.jumpOut`) und hüpft in 3D auf der
   Kartenmitte mit flachem Pixel-Schatten (`ActivationFX.landIcon/tickHopper`,
-  `ACTFX.hopper="ja"`).
+  `ACTFX.hopper: true`).
 - **Tests (Build 86, Refactoring Stufe 3a):** `node --test 'tests/*.test.mjs'`
   (Node 22, keine Abhängigkeiten, keine package.json — Node erkennt die
   ES-Module am Syntax; das Verzeichnis allein als Argument geht nicht). Geprüft
@@ -498,11 +509,13 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   gegenstandslos, A/D/E gelten sinngemäß weiter.
 - Refactoring Stufe 3 (offen, 2026-09-15; erledigt: 3a Tests (Build 86),
   3b main.js zerlegt (Build 87, s. „Boot und Szene"), 3c PoseStabilizer in
-  Stufen + `snapshot()` + Goldstandard (Build 88); Plan 2026-10-09: 3d
-  Booleans → 3e Entkopplung): Scale-Lock ausbauen (erst Re-Lock-Zähler am
+  Stufen + `snapshot()` + Goldstandard (Build 88), 3d Schalter als Booleans
+  (Build 89); Plan 2026-10-09: 3e Entkopplung — `cardController.replay()`
+  bekommt einen Hook statt `document.body`, `syncCssVars` raus aus config.js):
+  Scale-Lock ausbauen (erst Re-Lock-Zähler am
   Gerät prüfen) · Arbiter: `qEarth` ändert sich 60 Hz ohne Dead-Band → kann
   stale Frames als „neu" melden (Vision-Hz in ?stats prüfen) · `SCENE.cardAspect`
   1,60 → 1,40 (63×88 mm) · Tests (`node --test`) für bubbleText, dialogEngine,
   edition, poseArbiter (erledigt, s. „Konventionen") · `"ja"/"nein"` → Booleans
-  (loadTuning übersetzt alte String-Presets).
+  (erledigt, Build 89; `applyTuning` übersetzt alte String-Presets).
 - Fix-Historie: Code-Kommentare mit Datum (2026-07-08 / -09 / -13 / -14).

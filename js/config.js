@@ -36,7 +36,7 @@ export const TYPO = {
   fxLeiseAlpha: 0.62,       // <leise>: Deckkraft der Füllung
   fxKnallMs: 260,           // <knall>: Dauer des Aufploppens je Zeichen
   fxKnallScale: 1.7,        // <knall>: Start-Vergrößerung
-  pageLabel: "nein",        // Seitenzähler „1/3" in der Blase (Michael 2026-09-07: aus; Seiten + Weiter bleiben)
+  pageLabel: false,         // Seitenzähler „1/3" in der Blase (Michael 2026-09-07: aus; Seiten + Weiter bleiben)
 };
 
 // Emotion-Tags der Kartendatei → heute vorhandene Körper (idle/affirm/think).
@@ -81,8 +81,8 @@ export const ACT = {
 
 // CardController / CSS
 export const CHOREO = {
-  requireTap: "ja",      // "ja" = Aktivier-Phase (Karte leuchtet, Tap startet
-                         // die Figur) · "nein" = Figur kommt direkt beim Scan
+  requireTap: true,      // true = Aktivier-Phase (Karte leuchtet, Tap startet
+                         // die Figur) · false = Figur kommt direkt beim Scan
   uiRevealMs: 1000,      // reine CSS-Einfahr-DAUER (--q-reveal-time), keine Wartezeit
   revealOffset: 60,      // CSS --q-reveal-offset (px)
   idleReturnMs: 5500,    // Haltezeit NACH dem Typewriter — Fallback; eine Karte mit
@@ -144,20 +144,20 @@ export const SCENE = {
 export const STAB = {
   // --- Feature-Schalter (Dev-Panel „Tracking-Features an/aus") ---------------
   // Jeder Baustein einzeln abschaltbar, um sein Verhalten zu isolieren.
-  enabled: "ja",     // 1 PoseStabilizer komplett (nein = rohe Anchor-Pose 1:1)
-  normalize: "ja",   // 2 Einheiten-Normierung auf Kartenbreiten (nein = Pixel-Skala,
+  enabled: true,     // 1 PoseStabilizer komplett (false = rohe Anchor-Pose 1:1)
+  normalize: true,   // 2 Einheiten-Normierung auf Kartenbreiten (false = Pixel-Skala,
                      //   reproduziert den „Filter wirkungslos"-Zustand)
-  deadZones: "ja",   // 3 Snap-to-still (Position + Rotation)
-  lostHold: "ja",    // 4 letzte Pose bei Verlust kurz halten (nein = sofort weg)
-  nanGuard: "ja",    // 5 kaputte Posen verwerfen (nein = alter Verschwinde-Bug möglich!)
-  snap: "ja",        // 6 Re-Found-Snap statt Hinübergleiten
-  scaleLock: "ja",   // 9 Anchor-Scale einfrieren + Scale-Ausreißer-Frames verwerfen
+  deadZones: true,   // 3 Snap-to-still (Position + Rotation)
+  lostHold: true,    // 4 letzte Pose bei Verlust kurz halten (false = sofort weg)
+  nanGuard: true,    // 5 kaputte Posen verwerfen (false = alter Verschwinde-Bug möglich!)
+  snap: true,        // 6 Re-Found-Snap statt Hinübergleiten
+  scaleLock: true,   // 9 Anchor-Scale einfrieren + Scale-Ausreißer-Frames verwerfen
                      //   (MindAR-Stand 2026-07-14: Wackeln aus MindARs elementweisem
                      //   Matrix-Filter/Fehl-Homographien → „Figur schräg/zu groß".)
                      //   Unter 8th Wall ist detail.scale pro Track konstant → die Stufe
                      //   löst strukturell nie aus; bleibt als Sicherung (Stufe 3: Ausbau
                      //   nach Prüfung des Re-Lock-Zählers in ?stats am Gerät).
-  gravityArbiter: "ja", // 10 Schwerkraft-Schiedsrichter gegen den „Pose-Flip" (2026-09-15):
+  gravityArbiter: true, // 10 Schwerkraft-Schiedsrichter gegen den „Pose-Flip" (2026-09-15):
                         //   die ebene Pose-Schätzung hat zwei Lösungen; 8th Wall liefert
                         //   manchmal stabil die gespiegelte (Karte um 2θ gekippt, Figur liegt
                         //   flach zum Betrachter, Kopf unten). Aus der Rohpose wird die
@@ -210,7 +210,7 @@ export const STAB = {
   // Geschwindigkeit WEITERGEFÜHRT (Dead Reckoning), statt treppig zu stehen.
   // Zusätzlich schaltet erkannte Bewegung die Dead-Zone ab: ruhig in Ruhe,
   // flüssig in Bewegung.
-  extrapolate: "ja",
+  extrapolate: true,
   extrapMaxMs: 150,     // max. so lange vorhersagen (dann halten)
   latencyMs: 40,        // Alter der Vision-Messung (Verarbeitungszeit) — wird
                         // im Bewegt-Modus zusätzlich vorhergesagt (weniger Nachlauf)
@@ -248,7 +248,7 @@ export const ACTFX = {
   outlineWidth: 4.44,  // Konturstärke in viewBox-Einheiten (32,59 = Marker-Kante)
   // Handy-Icon springt beim Erkennen aus dem Panel und hüpft auf der Karten-
   // mitte (2026-09-04, seit Build 22 auch live — vorher nur Lokal-Prototyp).
-  hopper: "ja",
+  hopper: true,
   iconHeight: 0.68,    // Icon-Höhe (Anteil Kartenbreite, × SCENE.figureScale); 2026-10-09 (Michael,
                        // Build 85): doppelt so groß, vorher 0.34
   hopHeight: 0.12,     // Sprunghöhe (Anteil Kartenbreite)
@@ -265,13 +265,13 @@ export const ACTFX = {
 // reine Web-Audio-Synthese — keine Audio-Dateien, kein Netzwerk. Das Theme
 // färbt ALLE Sounds gemeinsam ("arcade" = 8-bit/Chiptune, passt zum Pixel-Look).
 export const SOUND = {
-  enabled: "ja",
+  enabled: true,
   theme: "arcade",   // "soft" | "crisp" | "arcade" | "glass"
   volume: 0.3,       // 0–1 (tiks-Default 0.3 — dezent), Master für UI + Stimme
   // Bubble-Text-Vertonung: "silben" = Animalese-Stimme (js/voice.js),
   // "ticks" = alte abstrakte Blips, "aus" = stumm tippen.
   speech: "silben",
-  typeTicks: "ja",   // nur für speech="ticks": Ticks an/aus (Altverhalten)
+  typeTicks: true,   // nur für speech="ticks": Ticks an/aus (Altverhalten)
   typeTickMs: 70,    // min. Abstand zwischen zwei Ticks (ms) — Dichte des Ratterns
   // Stimme (VoiceSynth) — Charakter „aufgeweckt, aber selbstsicher":
   speechPitch: 300,    // Grund-Stimmlage (Hz). Höher = heller/jünger
@@ -284,7 +284,7 @@ export const SOUND = {
 // Gyro-Fusion: Handy-Gyroskop stützt die visuelle Pose (Prediction) und
 // überbrückt kurze Tracking-Aussetzer. Kill-Switch zusätzlich per ?nogyro.
 export const GYRO = {
-  enabled: "ja",
+  enabled: true,
   bridgeMs: 1200,        // wie lange ein Aussetzer gyro-geführt überbrückt wird
   deltaDeadZone: 0.0012, // rad; AKKUMULATIONS-Schwelle (2026-07-14, Finding 4):
                          // qPrev rückt in GyroFusion nur vor, wenn das Delta auch
@@ -303,7 +303,27 @@ export const CAM = {
                          // — Cap 2 statt 3 auf iPhones gibt der Vision-Schleife GPU-Luft.
 };
 
-const ALL = { TYPO, FACE, IDLE, ACT, CHOREO, SCENE, STAB, GYRO, ACTFX, CAM, SOUND };
+export const ALL = { TYPO, FACE, IDLE, ACT, CHOREO, SCENE, STAB, GYRO, ACTFX, CAM, SOUND };
+
+/* Schalter sind seit Build 89 (Refactoring Stufe 3d) Booleans — bis Build 88
+   waren es die Strings "ja"/"nein" (Vergleiche `!== "nein"` in sieben
+   Modulen). Alte Presets tragen die Strings noch: tuning.json, Dev-Panel-
+   Presets und der Regler-Stand in localStorage, der eingebettete Block des
+   Lokal-Prototyps (window.__TUNING). Deshalb läuft JEDES Einspielen eines
+   Presets über applyTuning(), das "ja"/"nein" in true/false übersetzt; andere
+   Strings (SOUND.speech "aus", Farben, Posen) bleiben unberührt. */
+export function uebersetzeSchalter(block) {
+  const out = {};
+  for (const [k, v] of Object.entries(block)) out[k] = v === "ja" ? true : v === "nein" ? false : v;
+  return out;
+}
+export function applyTuning(s) {
+  if (!s || typeof s !== "object") return false;
+  for (const [name, obj] of Object.entries(ALL)) {
+    if (s[name] && typeof s[name] === "object") Object.assign(obj, uebersetzeSchalter(s[name]));
+  }
+  return true;
+}
 
 /* Optional: tuning.json (Preset-Export aus dem Dev-Panel) im Repo-Root
    überschreibt die Defaults. Seit 2026-09-09 liegt KEINE tuning.json mehr im
@@ -313,11 +333,7 @@ export async function loadTuning() {
   try {
     const res = await fetch("./tuning.json", { cache: "no-store" });
     if (!res.ok) return false;
-    const s = await res.json();
-    for (const [name, obj] of Object.entries(ALL)) {
-      if (s[name]) Object.assign(obj, s[name]);
-    }
-    return true;
+    return applyTuning(await res.json());
   } catch (e) {
     return false; // Datei fehlt oder ungültig → Defaults
   }

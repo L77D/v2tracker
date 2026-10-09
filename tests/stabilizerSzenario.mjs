@@ -28,33 +28,34 @@ import { STAB, GYRO } from "../js/config.js";
 export const TICKS = 1300;
 export const DT_MS = 1000 / 60;
 
-// Tracking-Werte, eingefroren am 2026-10-09 (Build 87) — bewusst eine Kopie,
+// Tracking-Werte, eingefroren am 2026-10-09 (Build 87; Schalter seit Build 89 als
+// Booleans, Verhalten gleich) — bewusst eine Kopie,
 // damit späteres Tuning in config.js den Goldstandard nicht bricht.
 export const STAB_FEST = {
-  enabled: "ja", normalize: "ja", deadZones: "ja", lostHold: "ja", nanGuard: "ja", snap: "ja",
-  scaleLock: "ja", gravityArbiter: "ja",
+  enabled: true, normalize: true, deadZones: true, lostHold: true, nanGuard: true, snap: true,
+  scaleLock: true, gravityArbiter: true,
   minCutoff: 0.1, beta: 10, dCutoff: 1.0, rotMinCutoff: 0.5, rotBeta: 4.0,
   posDeadZone: 0.001, rotDeadZone: 0.0015, lostHoldMs: 250, snapDist: 0.25, snapAngle: 0.5,
   scaleOutlier: 0.1, acquireFrames: 10, acquireMaxMs: 700, scaleRelockMs: 600, arbiterMargin: 0.15,
-  extrapolate: "ja", extrapMaxMs: 150, latencyMs: 40, moveDwellMs: 250,
+  extrapolate: true, extrapMaxMs: 150, latencyMs: 40, moveDwellMs: 250,
   maxSpeed: 3, maxAngSpeed: 4, extrapMaxDist: 0.08, extrapMaxAngle: 0.25,
   minSpeed: 0.04, minAngSpeed: 0.09, refHz: 60,
 };
-export const GYRO_FEST = { enabled: "ja", bridgeMs: 1200, deltaDeadZone: 0.0012, deltaMax: 0.2 };
+export const GYRO_FEST = { enabled: true, bridgeMs: 1200, deltaDeadZone: 0.0012, deltaMax: 0.2 };
 
 /* Varianten: jeder Feature-Schalter einmal aus. */
 export const KONFIGS = {
   standard: {},
-  aus: { STAB: { enabled: "nein" } },
-  ohneNormierung: { STAB: { normalize: "nein" } },
-  ohneDeadZones: { STAB: { deadZones: "nein" } },
-  ohneLostHold: { STAB: { lostHold: "nein" } },
-  ohneNanGuard: { STAB: { nanGuard: "nein" } },
-  ohneSnap: { STAB: { snap: "nein" } },
-  ohneScaleLock: { STAB: { scaleLock: "nein" } },
-  ohneArbiter: { STAB: { gravityArbiter: "nein" } },
-  ohneExtrapolation: { STAB: { extrapolate: "nein" } },
-  ohneGyro: { GYRO: { enabled: "nein" } },
+  aus: { STAB: { enabled: false } },
+  ohneNormierung: { STAB: { normalize: false } },
+  ohneDeadZones: { STAB: { deadZones: false } },
+  ohneLostHold: { STAB: { lostHold: false } },
+  ohneNanGuard: { STAB: { nanGuard: false } },
+  ohneSnap: { STAB: { snap: false } },
+  ohneScaleLock: { STAB: { scaleLock: false } },
+  ohneArbiter: { STAB: { gravityArbiter: false } },
+  ohneExtrapolation: { STAB: { extrapolate: false } },
+  ohneGyro: { GYRO: { enabled: false } },
 };
 
 /* Linearer Kongruenzgenerator — gleiche Zahlen in jedem Lauf. */

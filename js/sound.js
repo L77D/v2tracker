@@ -10,7 +10,7 @@
    tiks legt den AudioContext bei der ersten Geste an — gleiche Regel wie die
    iOS-Gyro-Permission (siehe main.js boot()).
 
-   Alle Methoden sind crash-safe: ohne init() oder mit SOUND.enabled="nein"
+   Alle Methoden sind crash-safe: ohne init() oder mit SOUND.enabled=false
    sind sie stille No-Ops — die App läuft auch komplett ohne Sound.
    ============================================================================= */
 import { createTiks } from "./vendor/tiks.js";
@@ -49,7 +49,7 @@ class SoundDesign {
   }
 
   get on() {
-    return this.engine !== null && SOUND.enabled !== "nein";
+    return this.engine !== null && SOUND.enabled;
   }
 
   /* Dev-Panel-Hooks (Regler schreiben in SOUND, dann diese anwenden). */
@@ -79,7 +79,7 @@ class SoundDesign {
   /* Typewriter-Tick (Altverhalten, speech="ticks"): selbst gedrosselt
      (SOUND.typeTickMs) — unabhängig von tiks' Hover-Throttle. */
   typeTick() {
-    if (!this.on || SOUND.typeTicks === "nein") return;
+    if (!this.on || !SOUND.typeTicks) return;
     const now = performance.now();
     if (now - this._lastTypeTick < SOUND.typeTickMs) return;
     this._lastTypeTick = now;

@@ -96,7 +96,7 @@ patch("js/main.js", 'const DESKTOP_MODE = params.has("desktop");',
 patch("js/main.js", 'const DEV_MODE = params.has("dev");',
       'const DEV_MODE = params.has("dev") || !!window.__LOKAL;')
 patch("js/config.js", '    const res = await fetch("./tuning.json", { cache: "no-store" });',
-      '    if (window.__TUNING) { const s = window.__TUNING; for (const [name, obj] of Object.entries(ALL)) if (s[name]) Object.assign(obj, s[name]); return true; }\n'
+      '    if (window.__TUNING) return applyTuning(window.__TUNING); // Lokal-Prototyp: eingebettete tuning.json (übersetzt alte "ja"/"nein"-Presets)\n'
       '    const res = await fetch("./tuning.json", { cache: "no-store" });')
 patch("js/rig.js", "const t = texLoader.load(url);", "const t = texLoader.load(__asset(url));")
 patch("js/kartenLader.js", '  const res = await fetch(url, { cache: "no-store" });',

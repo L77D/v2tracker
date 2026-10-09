@@ -5,7 +5,7 @@
    Rückkopier-Schritt mehr. Zustand wird in localStorage gehalten (nur im
    Dev-Modus geladen), Presets speicherbar.
    ============================================================================= */
-import { TYPO, FACE, IDLE, ACT, CHOREO, SCENE, STAB, GYRO, ACTFX, SOUND, syncCssVars } from "./config.js";
+import { TYPO, FACE, IDLE, ACT, CHOREO, SCENE, STAB, GYRO, ACTFX, SOUND, syncCssVars, applyTuning } from "./config.js";
 import { applyNodAxis } from "./rig.js";
 import { sound } from "./sound.js";
 
@@ -31,7 +31,7 @@ export class DevPanel {
     const nod = () => applyNodAxis(this.nodes);
     return [
       { g: "Choreographie", items: [
-        { o: CHOREO, k: "requireTap", l: "Aktivier-Tap nötig", options: ["ja", "nein"] },
+        { o: CHOREO, k: "requireTap", l: "Aktivier-Tap nötig", bool: true },
         { o: CHOREO, k: "uiRevealMs", l: "UI-Einfahr-Dauer (ms)", min: 0, max: 3000, step: 50, on: syncCssVars },
         { o: CHOREO, k: "revealOffset", l: "Reveal-Offset (px)", min: 0, max: 200, step: 5, on: syncCssVars },
         { o: ACT, k: "durationSec", l: "Pop-In Dauer (s)", min: 0.1, max: 3, step: 0.05 },
@@ -93,7 +93,7 @@ export class DevPanel {
         { o: ACTFX, k: "outline", l: "Marker-Kontur", color: true, on: () => this.fx?.buildPool() },
       ]},
       { g: "Sound", items: [
-        { o: SOUND, k: "enabled", l: "Sound an/aus", options: ["ja", "nein"] },
+        { o: SOUND, k: "enabled", l: "Sound an/aus", bool: true },
         { o: SOUND, k: "theme", l: "Klang-Theme", options: ["soft", "crisp", "arcade", "glass"], on: () => { sound.applyTheme(); sound.uiReveal(); } },
         { o: SOUND, k: "volume", l: "Lautstärke", min: 0, max: 1, step: 0.05, on: () => { sound.applyVolume(); sound.questionTap(); } },
         { o: SOUND, k: "speech", l: "Bubble-Stimme", options: ["silben", "ticks", "aus"], on: () => sound.probeSpeech() },
@@ -102,20 +102,20 @@ export class DevPanel {
         { o: SOUND, k: "speechLively", l: "Lebhaftigkeit (±HT)", min: 0, max: 8, step: 0.25, on: () => sound.probeSpeech() },
         { o: SOUND, k: "speechLen", l: "Silben-Länge (ms)", min: 40, max: 220, step: 5, on: () => sound.probeSpeech() },
         { o: SOUND, k: "speechVolume", l: "Stimm-Pegel", min: 0, max: 1.5, step: 0.05, on: () => { sound.applyVolume(); sound.probeSpeech(); } },
-        { o: SOUND, k: "typeTicks", l: "Ticks (Modus 'ticks')", options: ["ja", "nein"] },
+        { o: SOUND, k: "typeTicks", l: "Ticks (Modus 'ticks')", bool: true },
         { o: SOUND, k: "typeTickMs", l: "Tick-Abstand (ms)", min: 30, max: 250, step: 5 },
       ]},
       { g: "Tracking-Features an/aus (nur AR)", items: [
-        { o: STAB, k: "enabled", l: "1 Glättung (PoseStabilizer)", options: ["ja", "nein"] },
-        { o: STAB, k: "normalize", l: "2 Einheiten-Normierung", options: ["ja", "nein"] },
-        { o: STAB, k: "deadZones", l: "3 Dead-Zones (Ruhe-Snap)", options: ["ja", "nein"] },
-        { o: STAB, k: "lostHold", l: "4 Lost-Hold", options: ["ja", "nein"] },
-        { o: STAB, k: "nanGuard", l: "5 NaN-Schutz", options: ["ja", "nein"] },
-        { o: STAB, k: "snap", l: "6 Re-Found-Snap", options: ["ja", "nein"] },
-        { o: GYRO, k: "enabled", l: "7 Gyro-Fusion", options: ["ja", "nein"] },
-        { o: STAB, k: "extrapolate", l: "8 Bewegungs-Extrapolation", options: ["ja", "nein"] },
-        { o: STAB, k: "scaleLock", l: "9 Scale-Lock (Anti-Verzerrung)", options: ["ja", "nein"] },
-        { o: STAB, k: "gravityArbiter", l: "10 Schwerkraft-Schiedsrichter (Pose-Flip)", options: ["ja", "nein"] },
+        { o: STAB, k: "enabled", l: "1 Glättung (PoseStabilizer)", bool: true },
+        { o: STAB, k: "normalize", l: "2 Einheiten-Normierung", bool: true },
+        { o: STAB, k: "deadZones", l: "3 Dead-Zones (Ruhe-Snap)", bool: true },
+        { o: STAB, k: "lostHold", l: "4 Lost-Hold", bool: true },
+        { o: STAB, k: "nanGuard", l: "5 NaN-Schutz", bool: true },
+        { o: STAB, k: "snap", l: "6 Re-Found-Snap", bool: true },
+        { o: GYRO, k: "enabled", l: "7 Gyro-Fusion", bool: true },
+        { o: STAB, k: "extrapolate", l: "8 Bewegungs-Extrapolation", bool: true },
+        { o: STAB, k: "scaleLock", l: "9 Scale-Lock (Anti-Verzerrung)", bool: true },
+        { o: STAB, k: "gravityArbiter", l: "10 Schwerkraft-Schiedsrichter (Pose-Flip)", bool: true },
       ]},
       { g: "Tracking (nur AR)", items: [
         { o: STAB, k: "minCutoff", l: "Glättung Ruhe (minCutoff)", min: 0.05, max: 5, step: 0.05 },
@@ -250,7 +250,15 @@ export class DevPanel {
     lab.textContent = it.l; lab.title = it.k;
     row.appendChild(lab);
     const apply = (v) => { it.o[it.k] = v; it.on?.(); this.saveLocal(); };
-    if (it.options) {
+    if (it.bool) {
+      // Schalter (Booleans seit Build 89): Auswahl zeigt „ja"/„nein", schreibt true/false
+      const sel = document.createElement("select");
+      for (const o of ["ja", "nein"]) sel.add(new Option(o, o));
+      sel.value = anzeige(it);
+      sel.onchange = () => apply(sel.value === "ja");
+      row.appendChild(sel);
+      it._els = [sel];
+    } else if (it.options) {
       const sel = document.createElement("select");
       for (const o of it.options) sel.add(new Option(o, o));
       sel.value = it.o[it.k];
@@ -279,7 +287,7 @@ export class DevPanel {
 
   refresh() {
     for (const it of this._items ?? [])
-      for (const el of it._els ?? []) el.value = it.o[it.k];
+      for (const el of it._els ?? []) el.value = anzeige(it);
   }
   refreshPresets(selected) {
     const sel = this.panel.querySelector("#devPresetSel");
@@ -306,10 +314,12 @@ export class DevPanel {
   }
 }
 
+/* Anzeige-Wert eines Reglers: Booleans als „ja"/„nein" im Select, sonst roh. */
+function anzeige(it) { return it.bool ? (it.o[it.k] ? "ja" : "nein") : it.o[it.k]; }
 function snapshot() { return JSON.parse(JSON.stringify(ALL)); }
-function applySnapshot(s) {
-  for (const [name, obj] of Object.entries(ALL)) if (s[name]) Object.assign(obj, s[name]);
-}
+/* Presets und localStorage-Stand über config.applyTuning: übersetzt alte
+   "ja"/"nein"-Presets (bis Build 88) in Booleans. */
+function applySnapshot(s) { applyTuning(s); }
 function getPresets() {
   try { return JSON.parse(localStorage.getItem(PRESET_KEY)) || {}; } catch (e) { return {}; }
 }

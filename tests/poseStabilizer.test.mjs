@@ -89,7 +89,7 @@ test("NaN-Frame wird verworfen, letzte gute Pose bleibt; ohne Schutz vergiftet e
     assert.deepEqual(t.ziel(), vorher);
     assert.equal(t.s.snapshot().nanCount, 1);
   } finally { t.ende(); }
-  const u = aufbau({ stab: { nanGuard: "nein" } });
+  const u = aufbau({ stab: { nanGuard: false } });
   try {
     u.s.onFound(); aufsetzen(u);
     u.pose(NaN, 0, -0.3); u.schritt();
@@ -175,7 +175,7 @@ test("reacquire: zählt, überspringt die alte Rohpose und setzt per Median neu 
 });
 
 test("Stabilizer aus (#1): Rohpose 1:1 durchgereicht", () => {
-  const t = aufbau({ stab: { enabled: "nein" } });
+  const t = aufbau({ stab: { enabled: false } });
   try {
     t.s.onFound();
     t.pose(0.123, 0.4, -0.9); t.schritt();

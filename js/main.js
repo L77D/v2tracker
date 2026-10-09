@@ -148,7 +148,7 @@ async function boot() {
     sound.uiTap();
     // Gyro-Permission MUSS direkt in der User-Geste angefragt werden (iOS) —
     // deshalb hier, VOR allen awaits. Fail-safe: ohne Gyro läuft alles normal.
-    if (!DESKTOP_MODE && GYRO.enabled !== "nein" && !params.has("nogyro")) {
+    if (!DESKTOP_MODE && GYRO.enabled && !params.has("nogyro")) {
       ctx.gyro = new GyroFusion();
       ctx.gyro.enable(); // bewusst nicht awaiten (Geste nicht verlieren)
     }

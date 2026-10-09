@@ -20,7 +20,7 @@ import { progress } from "./util.js";
 const VB = 32.5934;
 const L_PATH = [[18.5188, 2.2219], [18.5188, 14.0744], [30.3713, 14.0744], [30.3713, 30.3713],
                 [2.2219, 30.3713], [2.2219, 2.2219]];
-// Lokal-Prototyp 2026-09-04 (ACTFX.hopper="ja"): Handy-Icon hüpft auf der
+// Lokal-Prototyp 2026-09-04 (ACTFX.hopper): Handy-Icon hüpft auf der
 // Kartenmitte — Icon-Sprite aufrecht (wie die Figur), Schatten als schwarze
 // Silhouette flach auf der Karte, beides NearestFilter (harte Pixelkanten).
 const ICON_URL = "./assets/ui/icon-handy/neutral.png";
@@ -68,14 +68,14 @@ export class ActivationFX {
     this.buildPool();
     this.applySizes();
 
-    // --- Hüpfendes Icon (nur ACTFX.hopper="ja", lazy) ----------------------------
+    // --- Hüpfendes Icon (nur ACTFX.hopper, lazy) ----------------------------
     this.hopIcon = null;
     this.hopShadow = null;
     this.hopState = "aus"; // aus | drop | squash | pause | hop
     this.hopT = 0;
     // Textur VOR dem ersten Landen laden (sonst blitzt live kurz ein weißes
     // Rechteck auf, bis das PNG vom Server da ist)
-    if (ACTFX.hopper === "ja") this.buildHopper();
+    if (ACTFX.hopper) this.buildHopper();
   }
 
   buildHopper() {
@@ -103,7 +103,7 @@ export class ActivationFX {
 
   /* Icon landet auf der Kartenmitte (nach dem Raussprung aus dem Panel). */
   landIcon() {
-    if (ACTFX.hopper !== "ja" || this.state !== "attract") return;
+    if (!ACTFX.hopper || this.state !== "attract") return;
     if (!this.hopIcon) this.buildHopper();
     this.hopState = "drop";
     this.hopT = 0;

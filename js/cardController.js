@@ -79,13 +79,13 @@ export class CardController {
     if (this.phase !== "waiting" || !this.data) return;
     this.wander.setBusy(true);
     this.activation.prime(); // Figur SOFORT verstecken (kein Aufblitzen)
-    if (this.fx && CHOREO.requireTap !== "nein") {
+    if (this.fx && CHOREO.requireTap) {
       this.phase = "attract";
       sound.cardFound(); // Ping: „da ist was auf der Karte"
       this.fx.play();          // Eck-Marker auf der Karte
       this.menu.showAttract(); // „Karte gefunden / → Tipp sie an!"
       // Lokal-Prototyp: Icon springt aus dem Panel und landet auf der Karte
-      if (ACTFX.hopper === "ja") this.menu.jumpIconOut(() => this.fx.landIcon());
+      if (ACTFX.hopper) this.menu.jumpIconOut(() => this.fx.landIcon());
     } else {
       this.phase = "intro";
       this.menu.hideOnboarding();

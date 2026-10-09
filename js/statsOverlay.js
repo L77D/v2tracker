@@ -34,7 +34,7 @@ const FAELLE = ["F0 Stativ", "F1 abgestützt", "F2 freihändig", "F3 Schwenk", "
 const toggleCode = () => [
   STAB.enabled, STAB.normalize, STAB.deadZones, STAB.lostHold, STAB.nanGuard,
   STAB.snap, GYRO.enabled, STAB.extrapolate, STAB.scaleLock, STAB.gravityArbiter,
-].map((v) => (v === "nein" ? "0" : "1")).join("");
+].map((v) => (v ? "1" : "0")).join("");
 
 const fx = (v, d) => (v == null || !Number.isFinite(v) ? "—" : v.toFixed(d));
 
@@ -103,7 +103,7 @@ export class StatsOverlay {
       "margin-top:6px;width:100%;pointer-events:auto;cursor:pointer;" +
       "font:bold 10px monospace;border:none;border-radius:6px;padding:4px 8px";
     this.btn.onclick = () => {
-      GYRO.enabled = GYRO.enabled === "nein" ? "ja" : "nein";
+      GYRO.enabled = !GYRO.enabled;
       this.paintBtn();
     };
     this.paintBtn();
@@ -218,7 +218,7 @@ export class StatsOverlay {
     this.toggle.title = h ? "Stats einblenden" : "Stats ausblenden";
   }
   paintBtn() {
-    const on = GYRO.enabled !== "nein";
+    const on = GYRO.enabled;
     this.btn.textContent = on ? "Gyro AN — tippen: aus" : "Gyro AUS — tippen: an";
     this.btn.style.background = on ? "#ffdd00" : "#555";
     this.btn.style.color = on ? "#111" : "#eee";
@@ -246,7 +246,7 @@ export class StatsOverlay {
         };
         if (st.newMeas) {
           // Rohmessung nach Schiedsrichter; in Kartenbreiten, wenn normiert wird
-          const norm = STAB.normalize !== "nein";
+          const norm = STAB.normalize;
           const r = st.rawPos;
           sample.rp = norm ? [r.x, r.y, r.z] : [r.x / sc, r.y / sc, r.z / sc];
           sample.rq = [st.rawQuat.x, st.rawQuat.y, st.rawQuat.z, st.rawQuat.w];
@@ -267,7 +267,7 @@ export class StatsOverlay {
     if (now - this.lastDom < 500) return;
     this.lastDom = now;
     this.capBtn.textContent = this.cap ? `läuft … ${Math.ceil((CAPTURE_MS - (now - this.cap.t0)) / 1000)} s` : "Messung 10 s";
-    const gy = GYRO.enabled === "nein" ? "DEAKTIVIERT (Toggle)"
+    const gy = !GYRO.enabled ? "DEAKTIVIERT (Toggle)"
       : !this.gyro ? "aus (?nogyro/Desktop)"
       : !this.gyro.enabled ? "keine Permission"
       : this.gyro.active ? "AKTIV" : "enabled, keine Events";
@@ -275,7 +275,7 @@ export class StatsOverlay {
     const cam = v && v.videoWidth ? `${v.videoWidth}×${v.videoHeight}` : "—";
     const pr = this.env?.renderer ? this.env.renderer.getPixelRatio().toFixed(1) : "—";
     const arb = st.arb;
-    const arbState = STAB.gravityArbiter === "nein" ? "AUS (Toggle)" : !arb.active ? "kein Gyro" : arb.flipped ? "GESPIEGELT→korrigiert" : "roh ok";
+    const arbState = !STAB.gravityArbiter ? "AUS (Toggle)" : !arb.active ? "kein Gyro" : arb.flipped ? "GESPIEGELT→korrigiert" : "roh ok";
     // Engine-Variante (2026-09-09): SIMD oder Nicht-SIMD-Fallback (arSession.js
     // wählt per WebAssembly.validate; Konsole: „8th Wall XR Version: …s"
     // = SIMD, ohne s = nicht-SIMD)
