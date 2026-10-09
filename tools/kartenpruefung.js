@@ -58,6 +58,21 @@ const SEITE_HINWEIS = /\bseite\b|\blink\b/i;
 const WANDEL_FEHLER = /€|\beuro\b|gehalt|vergütung|\blohn\b/i;
 const WANDEL_HINWEIS = /verdien|urlaub|übernomm|übernahme|prämie|zuschuss|frist|bewerbungsschluss/i;
 
+/* Schreibweisen nach dem Tonality Guide von DEIN ERSTER TAG (Regelwerk A7,
+   übernommen 2026-10-09). Geprüft wird auf dem Text ohne Auszeichnung. */
+export const MAX_AUSRUFE = 3; // Ausrufezeichen je Fassung, über alle Texte
+export const MAX_GLEICHER_ANFANG = 3; // Texte, die mit demselben Wort beginnen
+const ohneTags = (t) => ohneAnnahme(t).replace(/<[^>]*>/g, "");
+// falsches Genderzeichen: Gendern nur mit * (Kolleg*innen)
+const GENDER_ZEICHEN = /[a-zäöüß](\/in(nen)?|:in(nen)?|_in(nen)?|\(in(nen)?\)|Innen)\b/;
+// generisches Maskulinum, das oft auch neutral ginge — nur Hinweis
+const MASKULINUM = /\b(Ansprechpartner|Kollegen|Kunden|Mitarbeiter|Ausbilder|Lehrer|Schüler|Meister|Patienten|Bewohner|Bewerber|Ingenieure|Techniker|Elektriker)\b/;
+// „du/dich/dir/dein…" mitten im Satz großgeschrieben
+const DU_GROSS = /[a-zäöüß0-9,;)\]–—]\s+(Du|Dich|Dir|Dein|Deine|Deinen|Deinem|Deiner|Deines)\b/;
+const ABKUERZUNG = /\b(z\.\s?B\.|zB\b|bzw\.|ca\.|usw\.|etc\.|ggf\.|inkl\.|evtl\.|d\.\s?h\.|u\.\s?a\.|z\.\s?T\.|Nr\.)/;
+// weiche Versprechen und Broschürenwörter — nur Hinweis
+const WEICH = /arbeitsklima|tolle[snm]? team|familiär|abwechslungsreich|vielfältig|spannend|herausforder|entwicklungsmöglich|karrierechance|perspektive|zukunftssicher|attraktiv/i;
+
 /* Alle Textstellen der Karte mit Ort, Feldname und Objekt. */
 function textstellen(k) {
   const out = [];
@@ -265,6 +280,41 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
     }
   }
 
+  /* --- Schreibweisen (A7: Gendern, Schreibweisen, Satzzeichen) ----------- */
+  for (const s of stellen) {
+    for (const feld of [s.feld, s.feld + "Public"]) {
+      if (typeof s.obj[feld] !== "string") continue;
+      const t = ohneTags(s.obj[feld]);
+      const wo = s.ort + (feld.endsWith("Public") ? " (neutrale Fassung)" : "");
+      if (GENDER_ZEICHEN.test(t)) F(wo + ": gegendert wird mit * (Kolleg*innen) — oder besser neutral (A7).");
+      const m = t.match(MASKULINUM);
+      if (m) H(wo + ": „" + m[1] + "“ — gibt es eine neutrale Form (Leute, Team, Ansprechperson, Kundschaft)? Sonst *.");
+      if (/\bdu\b[^.!?]*\bals [A-ZÄÖÜ][a-zäöüß]+(er|mann)\b/.test(t)) H(wo + ": „du … als …er“ — die Nutzerin nicht im Maskulinum ansprechen.");
+      if (DU_GROSS.test(t)) F(wo + ": „du“ wird im Satz kleingeschrieben.");
+      if (t.includes("&")) F(wo + ": „&“ → „und“.");
+      const ab = t.match(ABKUERZUNG);
+      if (ab) F(wo + ": Abkürzung „" + ab[1] + "“ ausschreiben — die Figur spricht.");
+      if (/[´`]/.test(t)) F(wo + ": Apostroph als ’ oder ' schreiben, nicht als Akzent (´ `).");
+      if (WEICH.test(t)) H(wo + ": klingt nach Broschüre oder weichem Versprechen — konkret sagen, was es ist (A10).");
+    }
+  }
+  // Rhetorische Fragen: in Antworten und Reaktionen beantwortet die Figur sie
+  // selbst — danach gibt es keine Antwortkacheln (Begrüßung, Wiedereinstieg
+  // und Rückfragen dürfen mit einer Frage enden, dort folgt eine Auswahl).
+  for (const s of stellen) {
+    const antwort = (s.feld === "text" && s.ort.startsWith("Frage ")) || s.feld === "reply";
+    if (!antwort) continue;
+    for (const feld of [s.feld, s.feld + "Public"]) {
+      if (typeof s.obj[feld] !== "string") continue;
+      if (/\?["“”»«„]?\s*$/.test(ohneTags(s.obj[feld]).trim())) F(s.ort + (feld.endsWith("Public") ? " (neutrale Fassung)" : "") + ": endet mit einer Frage — die Figur beantwortet sie im selben Text selbst (A7).");
+    }
+  }
+  // Berufsbezeichnung aus daten.json (nur bei ganzer Karte)
+  if (typeof k.profession === "string") {
+    if (/\([mwd]\s*\/\s*[mwd]\s*\/\s*[mwd]\)/i.test(k.profession)) F("profession: „(w/m/d)“ weglassen — Schreibweise nach A7 (Verkäufer*in, Industriekaufmann*frau).");
+    else if (GENDER_ZEICHEN.test(k.profession) || /[a-zäöüß]\/[a-zäöüß]/.test(k.profession)) F("profession: gegendert wird mit * (Verkäufer*in, Industriekaufmann*frau) oder neutral (Pflegefachkraft).");
+  }
+
   /* --- Firmenname, Firmenbegriffe, Verweise, schnell veraltende Angaben ---
      Gemeinsame Texte (ohne Public-Fassung) und Public-Fassungen erscheinen in
      der neutralen Fassung — dort darf nichts den Betrieb kenntlich machen. */
@@ -311,7 +361,19 @@ export function pruefeKarte(karte, { seiten = null, firma = "" } = {}) {
       const n = fassung.questions.filter((q) => q.thema === t.id && !q.requires).length;
       if (n < MIN_JE_THEMA) F("Thema „" + t.label + "“ hat in der " + label + "-Fassung nur " + n + " Fragen (mind. " + MIN_JE_THEMA + ", Zweigfragen zählen nicht).");
     }
-    for (const s of textstellen(fassung)) {
+    const fs = textstellen(fassung);
+    const ausrufe = fs.reduce((n, s) => n + (ohneTags(s.obj[s.feld]).match(/!/g) ?? []).length, 0);
+    if (ausrufe > MAX_AUSRUFE) F(label + "-Fassung: " + ausrufe + " Ausrufezeichen — höchstens " + MAX_AUSRUFE + " je Karte (A7).");
+    if (!publicMode) {
+      const anfang = new Map();
+      for (const s of fs) {
+        if (s.feld === "label") continue;
+        const w = (ohneTags(s.obj[s.feld]).trim().match(/[A-Za-zÄÖÜäöüß]+/) ?? [""])[0];
+        if (w) anfang.set(w, (anfang.get(w) ?? 0) + 1);
+      }
+      for (const [w, n] of anfang) if (n > MAX_GLEICHER_ANFANG) H(n + " Texte beginnen mit „" + w + "“ — Satzanfänge abwechseln (A7).");
+    }
+    for (const s of fs) {
       if (s.feld === "label") continue; // Beschriftungen stehen in Kacheln, nicht in der Blase
       const text = String(s.obj[s.feld] ?? "");
       const ohne = ohneAnnahme(text);

@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-08 · Build 76 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 77 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -157,7 +157,7 @@ Public-Fassung, `persona` als Feld, kein `quelle`. Build 68 (Michael
 deckungsgleich ohne Logo/Link/Firmenbezüge; nichts, was sich schnell ändert
 (kein Gehalt — Pflichtfrage `geld` ersetzt durch `berufsschule`); keine
 Eigennamen aus dem Betrieb; `firmenbegriffe` (Liste in dialog.json) dürfen nur
-in Firmenfassungen stehen; Prüfseite zeigt die Lesefassung beider Fassungen. Build 70: Aussagen ohne Quelle tragen `[Annahme]` im Text (App zeigt die Marke; vor der Freigabe auflösen; zählt nicht zur Länge); Ziel eine Seite, Sinn auf der ersten Seite. Build 71: Schätzfrage mit vier Optionen (drei Schätzungen + „Keine Ahnung", 2×2-Raster). Vorbild:
+in Firmenfassungen stehen; Prüfseite zeigt die Lesefassung beider Fassungen. Build 70: Aussagen ohne Quelle tragen `[Annahme]` im Text (App zeigt die Marke; vor der Freigabe auflösen; zählt nicht zur Länge); Ziel eine Seite, Sinn auf der ersten Seite. Build 71: Schätzfrage mit vier Optionen (drei Schätzungen + „Keine Ahnung", 2×2-Raster). Build 77 (Michael 2026-10-09): Gendern, Schreibweisen und Satzzeichen aus dem Tonality Guide von DEIN ERSTER TAG (Regelwerk A7: neutral zuerst, sonst `*`; `profession` mit `*`, kein (w/m/d); „du" klein; kein „&", keine Abkürzungen; max. 3 Ausrufezeichen je Fassung; Antworten enden nicht mit einer Frage; Satzanfänge abwechseln) — Prüfseite prüft das mit. Vorbild:
 `karten/000/dialog.json`. Prüfseite
 `tools/kartenpruefung.html` (+ `kartenpruefung.js`, reine Regeln) misst mit
 `SpeechBubble.paginate()` am echten Font — Prüfregeln dort und Regelwerk

@@ -1,6 +1,6 @@
 {
   "_hinweis": [
-    "Dialog der Karte (Regeln: docs/dialog-regelwerk.md, Prüfen: tools/kartenpruefung.html?k=000). Die Kartendaten stehen daneben in daten.json. Dialog aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026), am 2026-10-08 (Build 67) aufs Regelwerk gebracht.",
+    "Dialog der Karte (Regeln: docs/dialog-regelwerk.md, Prüfen: tools/kartenpruefung.html?k=000). Die Kartendaten stehen daneben in daten.json. Dialog aus Dialogsystem/detar_dialog_v2.html (Stand 03.09.2026), am 2026-10-08 (Build 67) aufs Regelwerk gebracht, am 2026-10-09 (Build 77) auf die Schreibweisen aus dem Tonality Guide (Gendern).",
     "Quelle der Fachangaben: Siemens-Stellenausschreibung (Elektroniker/in für Betriebstechnik, Frankfurt, abgerufen 2026-10-08). Alles, was dort nicht steht, ist mit [Annahme] markiert (Regelwerk A1) und muss vor der Freigabe bestätigt oder ersetzt werden. Formulierungen ohne Arbeitgeber-Freigabe.",
     "Emotion-Tags (geschlossenes Vokabular): neutral · winken · erklaeren · denken · bestaetigen · halten · schulterzucken · stolz · erschoepft · zeigen · zweihaendig. Hat figur.posen einen Eintrag mit genau diesem Namen, gilt er; sonst die Standard-Zuordnung in js/config.js → POSES; sonst idle.",
     "Highlight-Tags im Text: <welle> <zittern> <knall> <marker> <gross> <leise> (welle/zittern werden geparst, aber noch nicht bewegt). Zwei Fassungen: Firmenfassung (Standard) und neutrale Fassung (?k=000P, ohne Logo, Link und Firmenbezüge). Texte mit {firma}, einem Firmenbegriff oder einem Verweis auf Seite/Link tragen die neutrale Fassung im Feld <name>Public (z. B. textPublic); alle anderen Texte gelten für beide (js/edition.js).",
@@ -230,7 +230,7 @@
       "thema": "beruf",
       "label": "Und was kommt danach?",
       "tag": "stolz",
-      "text": "Die Ausbildung dauert dreieinhalb Jahre. Danach arbeitest du als Elektroniker — oder lernst weiter, zum Beispiel zum Techniker.",
+      "text": "Die Ausbildung dauert dreieinhalb Jahre. Danach arbeitest du als Fachkraft — oder lernst weiter, etwa an der Technikerschule.",
       "unlocks": [
         "bewerbung",
         "praktikum_wie"
@@ -282,7 +282,7 @@
       "link": true,
       "branded": true,
       "url": "https://www.ausbildung.siemens.com/offer/elektroniker-w-m-d-fur-betriebstech/21edd4e8-bc72-47bd-8846-689054d2832e?showApplicationForm=false",
-      "text": "Ich mach dir die Seite auf. Da steht das Offizielle drin — Voraussetzungen, Ansprechpartner, alles Aktuelle."
+      "text": "Ich mach dir die Seite auf. Da steht das Offizielle drin — Voraussetzungen, Ansprechpersonen, alles Aktuelle."
     },
     {
       "id": "ende",

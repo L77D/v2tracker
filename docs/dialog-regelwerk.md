@@ -1,6 +1,6 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 08.10.2026 (Build 71). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
+Stand 09.10.2026 (Build 77). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
 im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
 Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 **Kontrakt** geschrieben: Jede Regel ist prüfbar.
@@ -29,6 +29,11 @@ Begleitend:
 - **Begründungen:** `Dialogsystem/DETAR_Dialogsystem.md` und
   `DETAR_Dialogsystem_Konzept.md` im Projektordner (warum Hub statt Baum,
   warum eine Variable, Haltung der Rückfragen).
+- **Tonality Guide** von DEIN ERSTER TAG (Version 9, 13.06.2023):
+  `Kunde/DET_Tonality_Guide_V9.pdf` im Projektordner. Übernommen sind Gendern,
+  Schreibweisen und Satzzeichen (A7). Bewusst nicht übernommen: Benefits mit
+  Beträgen (widerspricht A10) und die Wir-Perspektive des Unternehmens — hier
+  spricht die Figur als Azubi.
 
 ---
 
@@ -300,10 +305,15 @@ Berufsbild.
 - **Kontext vor Detail.** Erst wofür, dann was.
 - **Eine konkrete Angabe pro Antwort:** Zahl, Gegenstand, Uhrzeit, Ort oder
   Beispiel. Antworten ohne konkrete Angabe werden neu geschrieben.
-- **Keine HR-Sprache, keine angebiederte Jugendsprache.** Weder „vielfältige
-  Herausforderungen" noch „krass". Die Figur ist zwei, drei Jahre älter als
-  die Zielgruppe und redet normal.
+- **Keine HR-Sprache, keine weichen Versprechen, keine angebiederte
+  Jugendsprache.** Weder „vielfältige Herausforderungen" noch „gutes
+  Arbeitsklima", „tolles Team" oder „krass". Statt eines Versprechens sagt die
+  Figur, woran man es merkt. Die Figur ist zwei, drei Jahre älter als die
+  Zielgruppe und redet normal.
 - **Auch die harte Seite** gehört in dieselbe Sprache wie die schöne.
+- **Satzanfänge abwechseln.** Wer mehrere Antworten hintereinander liest,
+  merkt gleiche Muster sofort. Nicht jede Antwort mit „Ich" beginnen;
+  höchstens drei Texte beginnen mit demselben Wort.
 
 **Ersetzungsmuster** (pro Branche erweitern)
 
@@ -328,6 +338,45 @@ Berufsbild.
   die ich am Anfang nur halten durfte."
 - ✗ „Dann bist du hier goldrichtig."
   ✓ „Kenn ich. Der Tag geht fast komplett für den Kasten drauf."
+
+### Gendern
+
+Die App von DEIN ERSTER TAG gendert durchgehend mit `*` (Tonality Guide). Für
+die Figur gilt:
+
+- **Neutral zuerst.** Gibt es ein neutrales Wort, steht es: Leute, Team,
+  Azubis, Fachkraft, Ansprechperson, Kundschaft, Lehrkraft. Das klingt in der
+  Sprechblase wie gesprochen.
+- **Sonst mit Sternchen:** `Kolleg*innen`, `Kund*innen`. Kein anderes Zeichen
+  (`/in`, `:in`, `_in`, `(in)`, `KollegInnen`).
+- **Beschriftungen** (Kacheln, Optionen) nur mit neutralen Formen, ohne
+  Sternchen — wie der Guide es für Überschriften verlangt.
+- **Über sich selbst** spricht die Figur in ihrer eigenen Form („Ich mache
+  eine Ausbildung zur Elektronikerin"). Die Form folgt der Persona.
+- **Die Nutzerin nie im Maskulinum ansprechen:** nicht „Danach arbeitest du als
+  Elektroniker", sondern „Danach arbeitest du als Fachkraft".
+
+**Berufsbezeichnung** (`profession` in `daten.json`, Splash, gedruckte Karte)
+in der Schreibweise des Guides: `Verkäufer*in`, `Industriekaufmann*frau`
+(erst -mann, dann *frau), neutral, wo die Bezeichnung es hergibt
+(`Pflegefachkraft`). Eine Spezialisierung folgt nach Gedankenstrich:
+`Verkäufer*in – Wursttheke`. Kein `(w/m/d)`.
+
+### Schreibweisen und Satzzeichen
+
+- **„du"** (dich, dir, dein …) im Satz klein.
+- **„und"** statt „&".
+- **Keine Abkürzungen** — die Figur spricht: „zum Beispiel", „ungefähr".
+  Erlaubt sind Kurzformen der gesprochenen Sprache („gibt's", „geht's", „kenn
+  ich"). Apostroph als ’ oder ', nie als Akzent (´).
+- **Korrekte Satzzeichen**, auch wenn der Ton locker ist.
+- **Höchstens drei Ausrufezeichen pro Karte** (je Fassung, alle Texte
+  zusammen). Dann wirken sie.
+- **Rhetorische Fragen** sind erlaubt, um den Satzbau zu wechseln
+  („Kabelsalat? Nicht bei mir."), aber die Figur beantwortet sie im selben
+  Text. Eine Antwort oder Reaktion endet nie mit einer Frage — danach kommen
+  keine Antwortkacheln. Begrüßung, Wiedereinstieg und Rückfragen dürfen mit
+  einer Frage enden, dort folgt eine Auswahl.
 
 ## A8. Auszeichnung im Text
 
@@ -408,7 +457,8 @@ kommen nach A7 gar nicht vor.
    Ausbildungsseite („steht auf der Ausbildungsseite"); die neutrale Fassung
    erklärt allgemein, ohne Verweis.
 2. **Keine Werbung.** Keine Aufforderung zur Bewerbung, kein Anpreisen des
-   Betriebs, keine Superlative. Die Figur informiert über den Beruf.
+   Betriebs, keine Superlative, keine weichen Versprechen („gutes
+   Arbeitsklima"). Die Figur informiert über den Beruf.
 3. **Keine erfundenen Fakten** (A1).
 4. **Keine realen Personen**, auch nicht die Ansprechpartner aus der
    Ausschreibung.
@@ -601,6 +651,14 @@ Geprüft wird:
 - [ ] Kein Text länger als zwei Seiten, in beiden Fassungen (zwei Seiten →
       Hinweis, Ziel ist eine; `[Annahme]` zählt nicht mit).
 - [ ] Alle `[Annahme]`-Marken werden als Hinweis aufgelistet.
+- [ ] Schreibweisen (A7): gegendert nur mit `*`; „du" im Satz klein; kein
+      „&"; keine Abkürzungen; kein ´ als Apostroph. Generisches Maskulinum,
+      „du … als …er" und Broschürenwörter → Hinweis.
+- [ ] Höchstens drei Ausrufezeichen je Fassung.
+- [ ] Keine Antwort und keine Reaktion endet mit einer Frage.
+- [ ] Mehr als drei Texte beginnen mit demselben Wort → Hinweis.
+- [ ] `profession` (bei einer Karte aus dem Repo): Sternchen statt `/in`, kein
+      `(w/m/d)`.
 
 ## C2. Inhaltlich — liest ein Mensch
 
@@ -622,6 +680,9 @@ Betrieb? Verweist etwas auf eine Seite, die es dort nicht gibt?
 - [ ] Klingt eine Zeile nach Werbung, Broschüre oder Personalabteilung?
 - [ ] Ich-Form und Präsens durchgehend? Klingt alles nach **einer** Person
       (`persona.haltung`)?
+- [ ] Wiederholt sich der Satzbau über mehrere Antworten?
+- [ ] Steht eine neutrale Form, wo es eine gibt? Wird die Nutzerin irgendwo im
+      Maskulinum angesprochen?
 - [ ] Liest sich die neutrale Fassung natürlich, ohne Lücke, wo der Betrieb
       stand — und sagt sie inhaltlich dasselbe wie die Firmenfassung?
 - [ ] Steht Betriebseigenes als eigene Erfahrung der Figur da, nicht als Regel
@@ -652,7 +713,8 @@ Eine Karte besteht aus zwei Dateien (seit Build 72, 2026-10-08): `daten.json`
 Nummer: `karten/001/`, Aufruf `?k=001`.
 
 1. Ordner `karten/<nr>/` anlegen (Vorlage: `karten/000/`),
-   `daten.json` setzen: `format` (2), `id` (= Nummer), `profession`,
+   `daten.json` setzen: `format` (2), `id` (= Nummer), `profession`
+   (Schreibweise A7, z. B. `Elektroniker*in für Betriebstechnik`),
    `company`, `companyLogo`, `companyNeutral`, `idleReturnMs`, `figur`,
    `designs`, `vorschau`.
 2. Den geprüften Dialogteil als `dialog.json` daneben legen (`persona`,
