@@ -1,7 +1,8 @@
 {
+  "art": "ausbildung",
   "persona": {
     "name": "Jonas",
-    "lehrjahr": 2,
+    "jahr": 2,
     "haltung": "ruhig und direkt, erzählt aus der Werkstatt mit Gegenständen und Größen, ab und zu ein trockener Satz"
   },
   "firmenbegriffe": [],
@@ -160,7 +161,7 @@
       "text": "Um halb sieben geht's los: kurz besprechen, dann an den Kasten [Annahme]. Vormittags schrauben, nachmittags messen [Annahme].",
       "unlocks": [
         "anstrengend",
-        "berufsschule"
+        "lernort"
       ]
     },
     {
@@ -170,7 +171,7 @@
       "tag": "erklaeren",
       "text": "Bei uns brauchst du Mittlere Reife. Physik und Mathe sollten dir liegen. Und: Bei Strom ist Schludern <marker>keine Option</marker>.",
       "unlocks": [
-        "berufsschule",
+        "lernort",
         "bewerbung"
       ]
     },
@@ -199,7 +200,7 @@
       "text": "Technischer als gedacht. Ist der Kasten fertig, messe ich, ob der Strom überall richtig ankommt. Stimmt was nicht, suche ich den Fehler."
     },
     {
-      "id": "berufsschule",
+      "id": "lernort",
       "thema": "beruf",
       "label": "Was lernst du in der Berufsschule?",
       "tag": "erklaeren",

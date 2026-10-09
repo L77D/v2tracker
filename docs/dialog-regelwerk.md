@@ -1,6 +1,6 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 09.10.2026 (Build 78). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
+Stand 09.10.2026 (Build 79). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
 im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
 Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
 **Kontrakt** geschrieben: Jede Regel ist prüfbar.
@@ -42,7 +42,7 @@ Begleitend:
 ## A1. Auftrag und Eingaben
 
 Erzeuge den **Dialogteil** einer Karte als JSON nach dem Ausgabekontrakt (A11):
-`persona`, `firmenbegriffe`, `themen`, `initial`, `greeting`, `asks`,
+`art`, `persona`, `firmenbegriffe`, `themen`, `initial`, `greeting`, `asks`,
 `questions`, `reentry`. Erst die Firmenfassung schreiben, dann jeden Text
 prüfen, ob er eine neutrale Fassung braucht (A9).
 Kopfdaten (`id`, `profession`, `company`, `companyLogo`), Figur und
@@ -66,20 +66,29 @@ Satzzeichen: `Einmal die Woche Berufsschule [Annahme]: …`
 - Jede Lücke steht zusätzlich im **Prüfbericht** nach dem JSON (siehe
   Aufrufmuster).
 
-## A2. Persona
+## A2. Art und Persona
+
+**Art** (`art`) aus dem Faktenblatt:
+
+- `"ausbildung"` — betriebliche Ausbildung, auch mit Pflegeschule oder einer
+  eigenen Schule des Betriebs statt Berufsschule;
+- `"dual"` — duales Studium, praxisintegriert oder mit integrierter
+  Ausbildung. Dafür gilt zusätzlich A3a.
 
 Vor dem Dialog wird die Figur festgelegt und als Feld `persona` ausgegeben:
 
 ```json
-"persona": { "name": "Jonas", "lehrjahr": 2, "haltung": "ruhig und direkt, erzählt aus der Werkstatt …" }
+"persona": { "name": "Jonas", "jahr": 2, "haltung": "ruhig und direkt, erzählt aus der Werkstatt …" }
 ```
 
 - **name:** Vorname, frei erfunden, unauffällig, nicht der Name einer realen
   Person aus Faktenblatt oder Interview.
-- **lehrjahr:** 2 oder 3.
+- **jahr:** Lehrjahr bzw. Studienjahr, 2 oder 3. Bei einem dualen Studium ist
+  die Figur Studentin oder Student mit Abitur oder Fachhochschulreife und
+  entsprechend etwas älter — das gilt auch für die Zeichnung.
 - **haltung:** ein Satz Sprechhaltung, aus dem Interview abgeleitet.
 
-Die App liest `persona` nicht. Das Feld hält beim Gegenlesen und beim
+Die App liest `art` und `persona` nicht. Das Feld hält beim Gegenlesen und beim
 Neu-Generieren fest, nach wem die Karte klingen soll. Sichtbar wird der Name
 nur, wenn die Figur ihn sagt — in der Begrüßung stellt sie sich vor. Die
 Haltung färbt den Ton, hebelt aber keine Regel aus A7 aus.
@@ -107,8 +116,8 @@ Rolle, ID und Thema nicht.
 | `anstrengend` | alltag | Was hart, unbequem oder langweilig ist |
 | `purpose` | beruf | Wem die Arbeit nützt, was ohne sie passieren würde |
 | `koennen` | beruf | Voraussetzungen: Abschluss, Fächer, Eigenschaften |
-| `berufsschule` | beruf | Was man in der Berufsschule lernt und wie oft man dort ist |
-| `danach` | beruf | Dauer der Ausbildung, wie es danach weitergeht |
+| `lernort` | beruf | Wo man außer im Betrieb lernt — Berufsschule, Pflegeschule, Hochschule oder Akademie —, was dort und wie oft; Beschriftung nennt den Ort („Was lernst du in der Berufsschule?") |
+| `danach` | beruf | Dauer der Ausbildung oder des Studiums, Abschluss, wie es danach weitergeht |
 | `jetzt_tun` | wege | Was man jetzt schon tun kann |
 | `bewerbung` | wege | Wie man sich bewirbt — ohne Termine; Firmenfassung verweist auf die Seite, neutrale Fassung erklärt allgemein |
 | `praktikum_wie` | wege | Wie man an ein Praktikum kommt |
@@ -133,6 +142,28 @@ eine Pflichtfrage freigeschaltet (deren `unlocks` wird ergänzt), stehen nie in
 in der Public-Fassung. Zweigfragen (A5) zählen nicht mit, weil sie nicht jeder
 Nutzer sieht.
 
+## A3a. Duales Studium (`art: "dual"`)
+
+Raster, IDs und Freischaltungen bleiben gleich. Anders ist der Schwerpunkt
+(Tonality Guide):
+
+- **Übergreifende Fähigkeiten statt einzelner Handgriffe:** planen, rechnen,
+  Probleme im Team lösen, Verantwortung für ein Projekt. Auch hier mit einer
+  konkreten Angabe pro Antwort (A7) — ein Projekt, eine Aufgabe, ein Gerät.
+- **Zwei Lernorte gehören zum Alltag:** `tag_ablauf` beschreibt einen Tag im
+  Betrieb und sagt, wie sich Hochschule und Betrieb abwechseln; `lernort` sagt,
+  was an der Hochschule passiert und in welchem Rhythmus. Bei einem Studium
+  mit integrierter Ausbildung nennt `lernort` beide Orte (Hochschule und
+  Berufsschule).
+- **`danach`:** Dauer, Abschluss (Bachelor; mit integrierter Ausbildung auch
+  der Berufsabschluss) und typische Wege.
+- **`koennen`:** Abitur oder Fachhochschulreife nach Faktenblatt, Fächer,
+  Eigenschaften.
+- **Begrüßung:** Die Figur stellt sich mit dem Studiengang vor („Ich studiere
+  Elektrotechnik, dual bei {firma}").
+- Die Sprachregeln (A7) gelten unverändert — auch Studienkarten müssen eine
+  Achtklässlerin verstehen.
+
 ## A4. Startfragen und Freischaltungen
 
 ```json
@@ -144,11 +175,11 @@ Ausstieg. Die Freischaltungen sind fest:
 
 ```
 was           → tag_ablauf, purpose
-tag_ablauf    → anstrengend, berufsschule
+tag_ablauf    → anstrengend, lernort
 anstrengend   → danach
 purpose       → anstrengend
-koennen       → berufsschule, bewerbung
-berufsschule  → danach
+koennen       → lernort, bewerbung
+lernort       → danach
 danach        → bewerbung, praktikum_wie
 jetzt_tun     → praktikum_wie
 bewerbung     → link
@@ -361,6 +392,11 @@ in der Schreibweise des Guides: `Verkäufer*in`, `Industriekaufmann*frau`
 (erst -mann, dann *frau), neutral, wo die Bezeichnung es hergibt
 (`Pflegefachkraft`). Eine Spezialisierung folgt nach Gedankenstrich:
 `Verkäufer*in – Wursttheke`. Kein `(w/m/d)`.
+**Duales Studium:** der Studiengang ungegendert, ohne „Studium" und ohne
+Abschlusskürzel, dahinter „– duales Studium":
+`Elektro- und Informationstechnik – duales Studium`. Anders als in der App
+von DEIN ERSTER TAG steht auf der Karte nichts daneben, das den Studiengang
+als Studium kenntlich macht.
 
 ### Schreibweisen und Satzzeichen
 
@@ -479,7 +515,8 @@ Ausgabe ist ein JSON-Objekt mit genau diesen Feldern, danach der Prüfbericht
 
 ```jsonc
 {
-  "persona": { "name": "…", "lehrjahr": 2, "haltung": "…" },
+  "art": "ausbildung",
+  "persona": { "name": "…", "jahr": 2, "haltung": "…" },
   "firmenbegriffe": ["…"],
   "themen": [ /* fest, siehe A3 */ ],
   "initial": ["was", "koennen", "jetzt_tun", "ende"],
@@ -542,9 +579,12 @@ Ausschreibung übernommen. **Ohne dieses Blatt wird nicht generiert.**
 
 ```
 BERUF
-  Offizielle Bezeichnung:
+  Art: Ausbildung / duales Studium (praxisintegriert oder mit integrierter Ausbildung)
+  Offizielle Bezeichnung (Beruf oder Studiengang):
+  Bezeichnung auf der Karte (Schreibweise A7):
   Betrieb (Name, wird nur als {firma} verwendet) und Standort (Ort reicht):
-  Dauer der Ausbildung:
+  Dauer:
+  Abschluss (bei integrierter Ausbildung beide):
 
 FIRMENBEGRIFFE (nur Firmenfassung)
   Standort, eigene Bezeichnungen, die die Figur nennen darf
@@ -558,8 +598,11 @@ TÄTIGKEITEN (in Alltagssprache, 3–5 Stichpunkte)
 EIN ARBEITSTAG
   Beginn, grober Ablauf, Feierabend
 
-BERUFSSCHULE
-  Wie oft (Tage pro Woche oder Block), was dort gelernt wird
+LERNORT AUSSER DEM BETRIEB
+  Wo: Berufsschule, Pflegeschule, Hochschule, Akademie (bei integrierter
+  Ausbildung beide Orte)
+  Wie oft (Tage pro Woche, Block, Wechsel zwischen Hochschule und Betrieb),
+  was dort gelernt wird
 
 VORAUSSETZUNGEN
   Schulabschluss:
@@ -625,8 +668,9 @@ Text die Seitenzahl in beiden Fassungen.
 
 Geprüft wird:
 
-- [ ] Pflichtfelder `persona` (name, lehrjahr, haltung), `themen`, `initial`,
-      `greeting`, `asks`, `questions`, `reentry`.
+- [ ] Pflichtfelder `art` (`ausbildung` oder `dual`), `persona` (name, jahr,
+      haltung), `themen`, `initial`, `greeting`, `asks`, `questions`,
+      `reentry`.
 - [ ] Themen exakt wie A3; alle Pflichtfragen da, im richtigen Thema.
 - [ ] `initial` exakt wie A4; Freischaltungen der Pflichtfragen wie A4,
       darüber hinaus nur zu Zusatzfragen; höchstens zwei Zusatzfragen.
@@ -664,7 +708,9 @@ Geprüft wird:
 - [ ] Keine Antwort und keine Reaktion endet mit einer Frage.
 - [ ] Mehr als drei Texte beginnen mit demselben Wort → Hinweis.
 - [ ] `profession` (bei einer Karte aus dem Repo): Sternchen statt `/in`, kein
-      `(w/m/d)`.
+      `(w/m/d)`; bei `art: "dual"` endet sie auf „– duales Studium", ohne
+      Sternchen und Abschlusskürzel.
+- [ ] Bei `art: "dual"` nennt der Dialog die Hochschule (sonst Hinweis).
 
 ## C2. Inhaltlich — liest ein Mensch
 
@@ -687,6 +733,8 @@ Betrieb? Verweist etwas auf eine Seite, die es dort nicht gibt?
 - [ ] Ich-Form und Präsens durchgehend? Klingt alles nach **einer** Person
       (`persona.haltung`)?
 - [ ] Wiederholt sich der Satzbau über mehrere Antworten?
+- [ ] Duales Studium: Stehen übergreifende Fähigkeiten im Vordergrund, und
+      kommt der Wechsel zwischen Hochschule und Betrieb vor (A3a)?
 - [ ] Steht eine neutrale Form, wo es eine gibt? Wird die Nutzerin irgendwo im
       Maskulinum angesprochen?
 - [ ] Liest sich die neutrale Fassung natürlich, ohne Lücke, wo der Betrieb
@@ -725,7 +773,7 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
    |---|---|
    | `format` | 2 |
    | `id` | Kartennummer, dreistellig (`"001"`) |
-   | `profession` | Beruf, Schreibweise A7, z. B. „Elektroniker*in für Betriebstechnik" |
+   | `profession` | Beruf oder Studiengang, Schreibweise A7, z. B. „Elektroniker*in für Betriebstechnik" oder „Elektro- und Informationstechnik – duales Studium" |
    | `company` | Firmenname (für `{firma}` und den Splash) |
    | `companyLogo` | `logo.webp` (fehlt in der Public-Fassung automatisch) |
    | `companyNeutral` | „der Betrieb" (Notnagel, falls `{firma}` in der Public-Fassung steht) |
@@ -744,7 +792,7 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
      (Pflicht), `body_<tag>` je weitere Pose (Tag-Namen aus A11), `head`,
      `face_neutral`, `face_blink`, `face_talk`. Ungenutzte Posen aus `posen`
      streichen.
-2. Den geprüften Dialogteil als `dialog.json` daneben legen (`persona`,
+2. Den geprüften Dialogteil als `dialog.json` daneben legen (`art`, `persona`,
    `firmenbegriffe`, `themen`, `initial`, `greeting`, `asks`, `questions`,
    `reentry`).
 3. Karte in `karten/katalog.json` eintragen. Kartenbilder fürs Tracking:

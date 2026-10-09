@@ -27,11 +27,11 @@ export const THEMEN = [
 // Pflichtfragen: Thema und Mindest-Freischaltungen (feste Topologie)
 export const PFLICHT = {
   was:           { thema: "alltag", unlocks: ["tag_ablauf", "purpose"] },
-  tag_ablauf:    { thema: "alltag", unlocks: ["anstrengend", "berufsschule"] },
+  tag_ablauf:    { thema: "alltag", unlocks: ["anstrengend", "lernort"] },
   anstrengend:   { thema: "alltag", unlocks: ["danach"] },
   purpose:       { thema: "beruf",  unlocks: ["anstrengend"] },
-  koennen:       { thema: "beruf",  unlocks: ["berufsschule", "bewerbung"] },
-  berufsschule:  { thema: "beruf",  unlocks: ["danach"] },
+  koennen:       { thema: "beruf",  unlocks: ["lernort", "bewerbung"] },
+  lernort:       { thema: "beruf",  unlocks: ["danach"] }, // Berufsschule, Pflegeschule, Hochschule … (bis Build 78: berufsschule)
   danach:        { thema: "beruf",  unlocks: ["bewerbung", "praktikum_wie"] },
   jetzt_tun:     { thema: "wege",   unlocks: ["praktikum_wie"] },
   bewerbung:     { thema: "wege",   unlocks: ["link"] },
@@ -41,6 +41,7 @@ export const PFLICHT = {
   ende:          { thema: null,     unlocks: [] },
 };
 export const INITIAL = ["was", "koennen", "jetzt_tun", "ende"];
+export const ARTEN = ["ausbildung", "dual"]; // Regelwerk A2 (Build 79)
 export const TAGS = ["neutral", "winken", "erklaeren", "denken", "bestaetigen", "halten",
   "schulterzucken", "stolz", "erschoepft", "zeigen", "zweihaendig"];
 export const FX = ["welle", "zittern", "knall", "marker", "gross", "leise"];
@@ -51,10 +52,10 @@ export const MAX_FIRMA = 2;
 const UNBEKANNT = "unbekannt";
 // Erlaubte Felder (Regelwerk A11): nur, was App oder Prüfseite lesen — auch kein
 // _hinweis. Notizen zur Karte gehören in den Prüfbericht im Projektordner.
-export const FELDER_DIALOG = ["persona", "firmenbegriffe", "themen", "initial", "greeting", "asks", "questions", "reentry"];
+export const FELDER_DIALOG = ["art", "persona", "firmenbegriffe", "themen", "initial", "greeting", "asks", "questions", "reentry"];
 export const FELDER_DATEN = ["format", "id", "profession", "company", "companyLogo", "companyNeutral", "idleReturnMs", "vorschau", "figur", "designs"];
 const FELDER = {
-  persona: ["name", "lehrjahr", "haltung"],
+  persona: ["name", "jahr", "haltung"],
   thema: ["id", "label"],
   greeting: ["tag", "text", "textPublic"],
   ask: ["id", "trigger", "tag", "prompt", "promptPublic", "options"],
@@ -145,12 +146,15 @@ export function pruefeKarte(karte, { seiten = null, firma = "", dateien = null }
   const byId = new Map();
 
   /* --- Pflichtfelder --------------------------------------------------- */
-  for (const feld of ["themen", "initial", "persona", "firmenbegriffe", "greeting", "asks", "questions", "reentry"]) {
+  for (const feld of ["art", "themen", "initial", "persona", "firmenbegriffe", "greeting", "asks", "questions", "reentry"]) {
     if (k[feld] == null) F("Feld „" + feld + "“ fehlt.");
   }
   if (k.firmenbegriffe != null && !Array.isArray(k.firmenbegriffe)) F("firmenbegriffe muss eine Liste sein (darf leer sein).");
   const p = k.persona;
-  if (p && (!p.name || !p.lehrjahr || !p.haltung)) F("persona braucht name, lehrjahr und haltung.");
+  if (p && (!p.name || !p.jahr || !p.haltung)) F("persona braucht name, jahr (Lehr- oder Studienjahr) und haltung.");
+  if (p && "lehrjahr" in p) F("persona.lehrjahr heißt seit Build 79 persona.jahr.");
+  if (k.art != null && !ARTEN.includes(k.art)) F("art muss " + ARTEN.map((a) => "„" + a + "“").join(" oder ") + " sein.");
+  if (fragen.some((q) => q.id === "berufsschule")) F("Die Pflichtfrage „berufsschule“ heißt seit Build 79 „lernort“ (auch in unlocks).");
 
   /* --- Nur vorgesehene Felder (A11) ------------------------------------- */
   if (dateien) { // aus dem Repo geladen: jede Datei für sich
@@ -356,8 +360,15 @@ export function pruefeKarte(karte, { seiten = null, firma = "", dateien = null }
       if (/\?["“”»«„]?\s*$/.test(ohneTags(s.obj[feld]).trim())) F(s.ort + (feld.endsWith("Public") ? " (neutrale Fassung)" : "") + ": endet mit einer Frage — die Figur beantwortet sie im selben Text selbst (A7).");
     }
   }
+  // Duales Studium: die Hochschule muss im Dialog vorkommen (A3a)
+  if (k.art === "dual" && !stellen.some((s) => /hochschule|\bstudi|\buni\b/i.test(String(s.obj[s.feld] ?? "")))) {
+    H("art „dual“, aber der Dialog nennt weder Hochschule noch Studium (A3a).");
+  }
   // Berufsbezeichnung aus daten.json (nur bei ganzer Karte)
-  if (typeof k.profession === "string") {
+  if (typeof k.profession === "string" && k.art === "dual") {
+    if (!/ – duales Studium$/.test(k.profession)) F("profession: bei einem dualen Studium „<Studiengang> – duales Studium“ (A7).");
+    if (/\*|\(B\.|\bB\.\s?(Eng|Sc|A)\b|Bachelor/.test(k.profession)) F("profession: Studiengang ohne Sternchen und ohne Abschlusskürzel (A7).");
+  } else if (typeof k.profession === "string") {
     if (/\([mwd]\s*\/\s*[mwd]\s*\/\s*[mwd]\)/i.test(k.profession)) F("profession: „(w/m/d)“ weglassen — Schreibweise nach A7 (Verkäufer*in, Industriekaufmann*frau).");
     else if (GENDER_ZEICHEN.test(k.profession) || /[a-zäöüß]\/[a-zäöüß]/.test(k.profession)) F("profession: gegendert wird mit * (Verkäufer*in, Industriekaufmann*frau) oder neutral (Pflegefachkraft).");
   }
