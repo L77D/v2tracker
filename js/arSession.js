@@ -26,6 +26,7 @@
 import * as THREE from "../vendor/three/three.module.js";
 import { SCENE, CAM } from "./config.js";
 import { PoseStabilizer } from "./poseStabilizer.js";
+import { Tracker } from "./tracker.js";
 import { buildExperience } from "./experience.js";
 import { buildSupport } from "./supportUI.js";
 import { el } from "./util.js";
@@ -50,7 +51,13 @@ function hasWasmSimd() {
     ]));
   } catch (e) { return false; }
 }
-const NOSIMD = new URLSearchParams(location.search).has("nosimd");
+const PARAMS = new URLSearchParams(location.search);
+const NOSIMD = PARAMS.has("nosimd");
+// ?tracker=neu (Build 91): messgetriebener Tracker (js/tracker.js) statt des
+// PoseStabilizers — gleiche Schnittstelle, zusätzlich measure() je neuer
+// Messung. Standard bleibt der alte Filter bis zum Gerätevergleich (?stats).
+export const TRACKER_NEU = PARAMS.get("tracker") === "neu";
+export const TRACKER_NAME = TRACKER_NEU ? "neu (tracker.js)" : "alt (poseStabilizer.js)";
 const ENGINE_SIMD = !NOSIMD && hasWasmSimd();
 export const ENGINE_VARIANT = ENGINE_SIMD ? "SIMD" : (NOSIMD ? "nicht-SIMD (?nosimd)" : "nicht-SIMD (Fallback)");
 export const XR_ENGINE_URL = ENGINE_SIMD ? "./vendor/8thwall/xr.js" : "./vendor/8thwall-nosimd/xr.js";
@@ -199,6 +206,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
   let exp = null, stab = null, stats = null, cam = null;
   let anchor = null, stabRoot = null;
   let latest = null;                                  // letzte Bildpose (detail) — null = nicht getrackt
+  let fresh = false;                                  // seit dem letzten Tick kam eine NEUE Messung (für tracker.measure)
   const video = { videoWidth: 0, videoHeight: 0 };    // für ?stats (Kamera-Auflösung)
   const _img = new THREE.Matrix4(), _camInv = new THREE.Matrix4();
   const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
@@ -232,6 +240,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
 
   function onFound(detail) {
     latest = detail;
+    fresh = true;
     document.body.classList.remove("scanning");
     if (hint.classList.contains("show")) { hint.classList.remove("show"); lost.icon.stop(); }
     updateAnchor(cam); // Pose steht, BEVOR der Stabilizer aufsetzt
@@ -293,7 +302,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
       // Geglätteter Träger als KIND DER KAMERA (kamera-relative Pose)
       stabRoot = new THREE.Group();
       camera.add(stabRoot);
-      stab = new PoseStabilizer(anchor, stabRoot, gyro);
+      stab = TRACKER_NEU ? new Tracker(stabRoot, gyro) : new PoseStabilizer(anchor, stabRoot, gyro);
 
       // Karten-Frame unter dem stabRoot: X = rechts, Y = hoch von der Karte,
       // Z = zur Karten-Unterkante. (+90° X: Anchor-Z "aus dem Bild" wird zu Y.)
@@ -304,7 +313,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
 
       // ?stats — Live-Diagnose am Gerät (Tracking/Gyro/Jitter in Zahlen)
       stats = StatsOverlay
-        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design })
+        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design, tracker: TRACKER_NAME })
         : null;
 
       exp = buildExperience({
@@ -312,7 +321,15 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
         /* Behavior-Ticks nur, solange die Figur sichtbar ist — verhindert, dass
            Lost-Frames (NaN-Quelle) in die Zustands-Lerps einsickern. */
         isRunning: () => stabRoot.visible,
-        preTick: () => { updateAnchor(camera); stab.tick(); stats?.tick(); },
+        preTick: () => {
+          updateAnchor(camera);
+          // Neuer Tracker: jede neue Messung (imagefound/imageupdated) als Ereignis
+          // übergeben; der alte Filter liest anchor.matrix selbst und erkennt stale Frames.
+          if (fresh && stab.measure) stab.measure(anchor.matrix);
+          fresh = false;
+          stab.tick();
+          stats?.tick();
+        },
         render: false, // rendert XR8.Threejs in onRender
         relocalize: () => stab.reacquire(), // Neu-Aufsetzen per Median auf Figur-/Karten-Tap
       }, ctx);
@@ -329,7 +346,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
     listeners: [
       { event: "reality.imagescanning", process: () => log("DETAR Target geladen, suche Karte …") },
       { event: "reality.imagefound",   process: ({ detail }) => { if (exp) onFound(detail); } },
-      { event: "reality.imageupdated", process: ({ detail }) => { latest = detail; } },
+      { event: "reality.imageupdated", process: ({ detail }) => { latest = detail; fresh = true; } },
       { event: "reality.imagelost",    process: () => { if (exp) onLost(); } },
     ],
   };

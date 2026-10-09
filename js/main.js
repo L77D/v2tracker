@@ -28,7 +28,7 @@ import { syncCssVars } from "./questionMenu.js";
 import { GyroFusion } from "./gyroFusion.js";
 import { sound } from "./sound.js";
 import { preflight, showPreflightScreen } from "./preflight.js";
-import { startAR, preloadEngine, ENGINE_VARIANT, XR_ENGINE_URL } from "./arSession.js";
+import { startAR, preloadEngine, ENGINE_VARIANT, XR_ENGINE_URL, TRACKER_NAME } from "./arSession.js";
 import { el } from "./util.js";
 
 const params = new URLSearchParams(location.search);
@@ -107,7 +107,7 @@ async function boot() {
   // entscheidet arSession.js am Gerät). Im Desktop-Modus wird die Engine nie gebraucht.
   if (!DESKTOP_MODE) {
     preloadEngine();
-    log("DETAR Engine-Variante:", ENGINE_VARIANT, "→", XR_ENGINE_URL);
+    log("DETAR Engine-Variante:", ENGINE_VARIANT, "→", XR_ENGINE_URL, "· Tracker:", TRACKER_NAME);
   }
   // tuning.json nur in Tuning-Sessions holen (?dev oder ?tuning) — im Normalfall
   // gibt es die Datei nicht, alle Werte sind Defaults in config.js (2026-09-09).

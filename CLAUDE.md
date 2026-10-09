@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 90 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 91 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + neuer messgetriebener Tracker `js/tracker.js` per `?tracker=neu`) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -325,7 +325,8 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
   `tools/kartenpruefung.js` — die Prototyp-Karte 000 muss dort fehlerfrei
   bleiben. Datengrundlage lädt `tests/karte.mjs`. Seit Build 88 auch der
   **PoseStabilizer**: `tests/stabilizerSzenario.mjs` (gefälschte Uhr + Gyro,
-  feste Tracking-Werte `STAB_FEST`, 1300 Ticks durch alle Stufen) gegen den
+  feste Tracking-Werte `STAB_FEST`, 1300 Ticks durch alle Stufen; läuft auch
+  durch `js/tracker.js`, s. „Tracker neu") gegen den
   Goldstandard `tests/fixtures/poseStabilizer.golden.json` (Stand Build 87)
   je Feature-Schalter-Variante, Toleranz 1e-9. Der Goldstandard bricht bei
   JEDER Verhaltensänderung im Filter — gewollt; bei einer gewollten Änderung
@@ -406,6 +407,41 @@ adaptives Rotations-SLERP → Dead-Zones (nur Ruhe). GyroFusion liefert
 Kamera-Dreh-Deltas (Akkumulations-Dead-Band: qPrev rückt nur bei angewendetem
 Delta vor) als Prediction + Verlust-Brücke.
 
+## Tracker neu (Build 91, 2026-10-09, `?tracker=neu`)
+
+`js/tracker.js` ist der messgetriebene Nachfolger des PoseStabilizers, baugleich
+in der Schnittstelle (onFound/onLost/reacquire/tick/snapshot), zusätzlich
+`measure(matrix)`, das arSession.js bei jedem `reality.imagefound`/`imageupdated`
+ruft (Flag `fresh` im Pipeline-Modul). Standard bleibt der alte Filter, bis der
+Gerätevergleich (?stats, Fälle F0–F4) entschieden ist. Zwei Takte: Messungen
+(20–30 Hz) filtern mit dem Messtakt als dt, Render-Frames (60 Hz) nur Gyro-
+Kompensation, Verlust-Haltung, Extrapolation, Schreiben.
+
+Was gegenüber dem alten Filter anders ist (alles aus dem Code hergeleitet,
+`tests/tracker.test.mjs` belegt es mit einem Vergleichsszenario mit bekannter
+Wahrheit, 0,2 mm/0,1° Rauschen):
+- **Ausreißer** = Sprung gegenüber der LETZTEN Messung, nicht „fern vom
+  geglätteten Zustand": eine einzelne ferne Messung wird exakt gehalten (alt:
+  2,5 mm und 7° Nachziehen über ~1 s). Fern vom Zustand, aber zusammenhängend
+  = der Filter hinkt → Bewegt-Modus erzwingen statt Snap (alt snappt bei
+  Anfahrt > ~4 cm/s aus der Ruhe: neun Snaps im Goldstandard-Szenario). Ein
+  Sprung mit zusammenhängender Folgemessung ist echt → Snap + Median.
+- **Verlust-Haltung** nach „Gyro lebt" (`getOrientation()` liefert) und
+  Schalter 7 — nicht nach dem einzelnen Delta, das bei ruhiger Hand fehlt
+  (alt: 250 ms statt 1,2 s Brücke, sobald die Hand still ist).
+- **Schiedsrichter** nur auf echten Messungen; keine Stale-Erkennung, kein
+  Scale-Lock, keine Normierungsstufe (Kartenbreiten ab der Messung).
+- **beta-Gate bleibt** (nur im Bewegt-Modus): beta 10 ist als Öffnung bei
+  Bewegung kalibriert; ungegated öffnet schon 0,2 mm Rauschen den Filter auf
+  ~0,6 Hz (Befund beim Bau, Szenario-Ruhezittern 0,37 mm).
+- Schalter ohne Wirkung: 2 normalize, 5 nanGuard (immer an), 9 scaleLock.
+- Gleich gut wie alt im Vergleichsszenario: Ruhe (0,12 mm Lagefehler, 0 Zittern),
+  Bewegung 3 cm/s (0,6 mm / 0,9° Nachlauf).
+
+Offen: Gerätevergleich; danach entweder Umschalten (Standard = neu, alter
+Filter + Goldstandard raus) oder Befunde in den alten übernehmen. Die
+One-Euro-Werte sind unverändert übernommen (Cutoffs in Hz, taktunabhängig).
+
 ## Aktuelle Kern-Werte (config.js)
 
 - `CAM`: unter 8th Wall wählt die Engine die Auflösung selbst (Constraint-
@@ -433,7 +469,8 @@ Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
 oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Pflicht — ohne: Auffang-Seite; Karte aus
 `karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
-`?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?k=<nr>P` (Public-Edition, steht im
+`?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?tracker=neu` (messgetriebener
+Tracker `js/tracker.js` statt PoseStabilizer, s. „Tracker neu"; `?stats` zeigt die Wahl) · `?k=<nr>P` (Public-Edition, steht im
 QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
 `?preflight=aus` · Branch pruefstand: `?record`, `?replay`, `?metrics`.

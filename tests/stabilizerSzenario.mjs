@@ -19,7 +19,9 @@
         1250–1299 wahre Pose (Schiedsrichter kippt zurück)
 
    Vision-Messungen kommen nur jeden 3. Tick (sonst bleibt die Matrix
-   bitidentisch = „stale"), Render-Takt 60 Hz. Genutzt vom Goldstandard
+   bitidentisch = „stale"), Render-Takt 60 Hz. Läuft für beide Tracker: der
+   alte liest source.matrix je Tick, der neue (js/tracker.js) bekommt jede
+   neue Messung über measure() — dieselben Zahlen, derselbe Takt. Genutzt vom Goldstandard
    tests/fixtures/poseStabilizer.golden.json (erzeugt mit dem Stand VOR dem
    Umbau, Build 87) und von tests/poseStabilizer.test.mjs. */
 import * as THREE from "../vendor/three/three.module.js";
@@ -108,7 +110,9 @@ function lauf(PoseStabilizer, jederTick, uhr) {
   const source = new THREE.Group();
   source.matrixAutoUpdate = false;
   const target = new THREE.Group();
-  const stab = new PoseStabilizer(source, target, gyro);
+  // Alter Filter liest source.matrix (Konstruktor source, target, gyro); der neue
+  // Tracker bekommt Messungen über measure() (Konstruktor target, gyro).
+  const stab = PoseStabilizer.prototype.measure ? new PoseStabilizer(target, gyro) : new PoseStabilizer(source, target, gyro);
 
   const SCALE = 0.059;
   const baseP = new THREE.Vector3(0.01, -0.02, -0.30);
@@ -121,6 +125,7 @@ function lauf(PoseStabilizer, jederTick, uhr) {
   const gyroDelta = new THREE.Quaternion();
   const out = { ticks: [], zaehler: null };
   const rp = new THREE.Vector3(), rq = new THREE.Quaternion(), rs = new THREE.Vector3();
+  let neu = false; // in diesem Tick kam eine neue Messung (→ tracker.measure)
 
   const rausch = (sigma) => (rnd() + rnd() + rnd() - 1.5) * sigma * 2; // grob normalverteilt
   function messung(center, quat, { sigma = 0.0005, rot = 0.3 * DEG, scale = SCALE, nan = false } = {}) {
@@ -130,6 +135,7 @@ function lauf(PoseStabilizer, jederTick, uhr) {
     s.setScalar(scale);
     if (nan) p.x = NaN;
     source.matrix.compose(p, q, s);
+    neu = true;
   }
 
   for (let i = 0; i < TICKS; i++) {
@@ -168,6 +174,7 @@ function lauf(PoseStabilizer, jederTick, uhr) {
       else if (vision) messung(c, rq2);
     } else if (i >= 700 && i < 760) {
       gyroCtl.delta = gyroDelta.setFromAxisAngle(Y, 0.002); // Brücke
+      gyroCtl.qEarth = aufrecht;                              // Gyro lebt (wie GyroFusion: Delta ⇒ Lage)
     } else if (i >= 760 && i < 800) {
       if (vision) messung(bP, baseQ);
     } else if (i >= 800 && i < 900) {
@@ -186,6 +193,10 @@ function lauf(PoseStabilizer, jederTick, uhr) {
       gyroCtl.qEarth = t45.qEarth;
     }
 
+    // Neuer Tracker (js/tracker.js): jede neue Messung als Ereignis; der alte
+    // Filter liest source.matrix selbst und erkennt stale Frames.
+    if (neu && stab.measure) stab.measure(source.matrix);
+    neu = false;
     stab.tick();
 
     if (i % jederTick === 0) {

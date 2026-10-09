@@ -286,6 +286,8 @@ export class StatsOverlay {
       // Kompakt seit Build 62 (mehr Kennzahl-Zeilen, Panel ist auf 45 vh gedeckelt)
       `Track: ${st.tracking ? "FOUND" : "LOST"} · sichtbar: ${this.stabRoot.visible ? "ja" : "nein"} · Gyro: ${gy}\n` +
       `Cam: ${cam} PR: ${pr} · Build: ${build} · Engine: ${this.env?.engine ?? "—"}\n` +
+      // Tracker-Wahl (Build 91): ?tracker=neu = js/tracker.js, sonst der PoseStabilizer
+      `Tracker: ${this.env?.tracker ?? "—"}\n` +
       this.metricLines() +
       `Roh↔Stab: ${st.rawSkewDeg.toFixed(1)}°  ${(st.rawOffset * 1000).toFixed(1)}‰KB  Re-Erk.: ${st.relocCount}\n` +
       // Pose-Flip-Diagnose (2026-09-15): Schiedsrichter-Zustand, Kippwinkel der
