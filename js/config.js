@@ -249,7 +249,8 @@ export const ACTFX = {
   // Handy-Icon springt beim Erkennen aus dem Panel und hüpft auf der Karten-
   // mitte (2026-09-04, seit Build 22 auch live — vorher nur Lokal-Prototyp).
   hopper: "ja",
-  iconHeight: 0.34,    // Icon-Höhe (Anteil Kartenbreite)
+  iconHeight: 0.68,    // Icon-Höhe (Anteil Kartenbreite, × SCENE.figureScale); 2026-10-09 (Michael,
+                       // Build 85): doppelt so groß, vorher 0.34
   hopHeight: 0.12,     // Sprunghöhe (Anteil Kartenbreite)
   hopSec: 0.32,        // Dauer eines Sprungs
   squashSec: 0.14,     // Stauchen beim Aufkommen (bis Build 60 Literal)
