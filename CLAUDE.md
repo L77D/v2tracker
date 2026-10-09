@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-09 · Build 81 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene auf 80 %) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-09 · Build 82 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.4) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -47,7 +47,8 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   Start, aus bei der ersten Erkennung.
 - **Build 27 (Michael 2026-09-07):** `SCENE.figureScale 0.85` skaliert Figur +
   Sprechblase (rig.js) und Hüpf-Icon — Eck-Marker bleiben Kartengeometrie
-  (Build 81, Michael 2026-10-09: Szene auf 80 % davon → `figureScale 0.68`) ·
+  (Build 81, Michael 2026-10-09: Szene auf 80 % davon → `figureScale 0.68`;
+  Build 82, Michael 2026-10-09: `figureScale 0.4`) ·
   Panel-Raster in Titelzeilen-Blau, beginnt 20 % unter der Panel-Oberkante
   (Splash-Raster bleibt gelb) · Icon ohne Schlagschatten · „Ich muss weiter"
   nur im Hauptmenü · Ruhezustand + Karte verloren: Panel-Zeile wechselt auf
