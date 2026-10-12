@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-12 · Build 94 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh`) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-12 · Build 95 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, altes `card` aussortiert) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -123,8 +123,9 @@ karten/<id>/vorschau.jpg       Kartenbild für ?desktop
   `config.js → poseFor(tag, posen)`: Pose mit genau dem Tag-Namen (auch
   Sonderposen einer Karte) → sonst `POSES[tag]`, falls die Karte den Körper
   hat → sonst idle.
-- **Designs** (seit Build 57: mehrere Kartenbilder derselben Karte, heute
-  `card` + `tarn`): `designs[{id, name, target, breiteMm, notiz}]` in
+- **Designs** (seit Build 57: mehrere Kartenbilder derselben Karte; Karte 000
+  heute `p04` als Standard, `tarn`, Testdrucke `p01`–`p35`; das alte `card` ist
+  seit Build 95 aussortiert, Michael 2026-10-12): `designs[{id, name, target, breiteMm, notiz}]` in
   daten.json. `physicalWidthInMeters` = `breiteMm/1000` (Standard 63 mm,
   Druckspezifikation) — NICHT `SCENE.cardWidth` (Szenen-Einheit 0.059).
   `?stats` zeigt „Design: id · targets/<d>.json · mm". Übersicht mit QR-Codes:
@@ -211,13 +212,15 @@ synchron halten.
 - Build 16 ist vom ungemergten Branch `tracking-runde5` belegt (nur in
   `main`), deshalb springt main von 15 auf 17.
 
-**Tracking-Target:** liegt im Kartenordner `karten/<id>/targets/` (`card.json` +
-`card_luminance.png` aus `@8thwall/image-target-cli`, weitere Designs per
-`?design`, s. „Engine und Karten"). Vorlage der Standard-Karte: beschnittene
-Demo-Karte 070926 (`Assets/September/demo_skat_070926_mind_cropped.png`,
-1346×2156 px, Aspekt 1,60 → `SCENE.cardAspect`, Szenen-Geometrie der Eck-
-Marker/Tap-Fläche). Desktop-Kartenbild: `karten/000/vorschau.jpg`
-(1200 px, aus der Druckdatei `Assets/September/demo_skat_070926.jpg`).
+**Tracking-Target:** liegt im Kartenordner `karten/<id>/targets/` (`<design>.json` +
+`<design>_luminance.png` aus `@8thwall/image-target-cli`; Standard = erstes
+Design in daten.json, weitere per `?design`, s. „Engine und Karten"). Karte 000:
+Standard seit Build 95 `p04` (Testdruck 04_2809_1 aus Figma, Export 1488×2078,
+Aspekt 1,40 = 63×88 mm). Das frühere `card` (beschnittene Demo-Karte 070926,
+1346×2156 px, Aspekt 1,60) ist aussortiert und gelöscht — zwei Reste davon:
+`SCENE.cardAspect` steht noch auf 1,60 (Eck-Marker/Tap-Fläche; Angleich auf
+1,40 ist der offene Stufe-3-Punkt), und `karten/000/vorschau.jpg` (Desktop-
+Kartenbild) ist noch das alte Druckbild — P04 aus Figma als 1200-px-JPG nachziehen.
 Physische Breite fürs Tracking = `breiteMm` des Designs in daten.json (63 mm,
 Druckspezifikation 63 × 88 mm); `SCENE.cardWidth 0.059` ist nur noch die
 Szenen-Einheit (worldRoot-Skalierung). Die Figur ist relativ zur Kartenbreite
@@ -233,7 +236,7 @@ wählt per `WebAssembly.validate`, `?nosimd` erzwingt) — `xr.js` +
 kein API-Key. Engine wird erst in der Start-Geste geladen; `js/preflight.js`
 prüft vorher In-App-Browser/HTTPS/Kamera-API/WASM/WebP und zeigt sonst
 `#preflightScreen`. Production-Härtung + Gate-Tabelle:
-`docs/8thwall-migration.md` Abschnitt 7. Target: `karten/<id>/targets/card.json` + `card_luminance.png` aus
+`docs/8thwall-migration.md` Abschnitt 7. Target: `karten/<id>/targets/<design>.json` + `<design>_luminance.png` aus
 `@8thwall/image-target-cli`; weitere Designs daneben, gewählt per `?design`
 (s. „Engine und Karten"). Alles dazu: `docs/8thwall-migration.md`.
 `main` läuft weiter auf `mind-ar@1.2.5` (dort: mind-ar ist gegen three 0.160

@@ -23,7 +23,7 @@ des Designs, `karten.html` zeigt sie so, und der Kartenlader löst
 - **Dateien:** `karten/<karte>/targets/<id>.json` + `<id>_luminance.png`. Das
   Luminanzbild wird neben der JSON gesucht (`resources.luminanceImage`).
 - **Aufruf:** `index.html?k=<karte>&design=<id>`. Ohne `&design` gilt das
-  **erste** Design der Liste (heute `card`) — gedruckte QR-Codes brauchen den
+  **erste** Design der Liste (heute `p04`; das alte `card` ist seit Build 95 aussortiert) — gedruckte QR-Codes brauchen den
   Parameter also nicht. Unbekannte id → Hinweis in der Fehlerzeile des Splash
   („Unbekanntes Design … — bekannt: …"), der Start-Button bleibt aus.
 - **Breite:** `physicalWidthInMeters` = `breiteMm / 1000` (Standard 63 mm
@@ -48,7 +48,7 @@ des Designs, `karten.html` zeigt sie so, und der Kartenlader löst
 ## Neues Design hinzufügen
 
 1. **Kartenbild exportieren** — die ganze Karte ohne Beschnittrand, hochkant,
-   mindestens ~1300 px breit (das Standard-Target ist 1346 × 2156). PNG oder
+   mindestens ~1300 px breit (P04 ist 1488 × 2078). PNG oder
    JPG. Layout-Regeln fürs Tracking: `Produktion/Kartenlayout/DETAR_Kartenlayout_Eckpfeiler_Tracking.md`
    im Projektordner; Bewertung mit TrackingScore (`Tracking-Pruefstand/TrackingScore/`).
 2. **Target erzeugen** (Node ≥ 18; die CLI ist interaktiv, Pipe-Variante
@@ -77,7 +77,7 @@ des Designs, `karten.html` zeigt sie so, und der Kartenlader löst
 5. Committen und pushen (Testseite erst nach Merge in `main`, sonst Tunnel,
    s. u.) — `karten.html` zeigt das neue Design mit QR-Code sofort.
 
-Ein Design **wechseln** heißt also nie, `card.json` zu überschreiben: neue
+Ein Design **wechseln** heißt also nie, `p04.json` zu überschreiben: neue
 Dateien, neuer Eintrag. Soll ein Design Standard werden, wird sein Eintrag
 an die erste Stelle von `designs` verschoben.
 

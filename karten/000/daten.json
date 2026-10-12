@@ -22,11 +22,12 @@
   },
   "designs": [
     {
-      "id": "card",
-      "name": "Demo-Karte 070926 (aktueller Stand)",
-      "target": "targets/card.json",
+      "id": "p04",
+      "name": "Testdruck P04 — 04_2809_1",
+      "target": "targets/p04.json",
       "breiteMm": 63,
-      "notiz": "Quelle Assets/September/demo_skat_070926_mind_cropped.png (1346×2156), image-target-cli 1.0.0, Standard-Crop 3:4 zentriert, 2026-09-09"
+      "qr": "l77d.github.io/v2tracker/?karte=p04",
+      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
     },
     {
       "id": "tarn",
@@ -58,14 +59,6 @@
       "breiteMm": 63,
       "qr": "l77d.github.io/v2tracker/?karte=p03",
       "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 03_2509_det_brand_values_ditherCopyBG (646:601) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
-    },
-    {
-      "id": "p04",
-      "name": "Testdruck P04 — 04_2809_1",
-      "target": "targets/p04.json",
-      "breiteMm": 63,
-      "qr": "l77d.github.io/v2tracker/?karte=p04",
-      "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
     },
     {
       "id": "p05",

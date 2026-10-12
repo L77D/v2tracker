@@ -17,7 +17,7 @@ Regeln, nach denen umgebaut wurde:
 3. **Lazy Start.** Die Engine wird erst im Klick auf „Scan starten" per Skript-
    Tag geladen (`loadEngine()`); Kamera erst mit `XR8.run()` danach. Der Splash
    war schon vorher da — neu ist, dass vor dem Klick kein Engine-Code läuft.
-4. **1:1.** Eine Seite = eine Karte = ein Target (heute `karten/<id>/targets/card.json`).
+4. **1:1.** Eine Seite = eine Karte = ein Target (heute `karten/<id>/targets/<design>.json`, Standard = erstes Design in daten.json; Karte 000: `p04`).
 5. **DSGVO / Selbst-Hosting.** Engine unter `vendor/8thwall/` im Repo, relative
    Pfade, kein CDN für 8th Wall, kein API-Key, keine Analytics. Die Engine-
    Quellen wurden auf Netzaufrufe geprüft (s. u.). three.js liegt seit

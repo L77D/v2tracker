@@ -194,9 +194,10 @@ das Test-Design `tarn`) liegen daneben in `karten/<id>/targets/` und stehen in
 `designs` der `daten.json`; Aufruf per `?design=<id>`. Schritt für Schritt inkl. Tracking-Vergleich
 der Designs und lokalem Test über cloudflared: `docs/kartendesigns.md`.
 
-Das Standard-Target `card` der Elektroniker-Karte ist aus dem beschnittenen
-Kartenbild erzeugt (`Assets/September/demo_skat_070926_mind_cropped.png`,
-1346×2156; Druckdatei `demo_skat_070926.jpg`). Bei neuem Karten-Layout:
+Das Standard-Design der Karte 000 ist seit Build 95 `p04` (Testdruck
+04_2809_1 aus Figma, Export 1488×2078, `targets/p04.json`); das frühere `card`
+aus der Demo-Karte 070926 ist aussortiert. Standard = erstes Design in
+`daten.json`. Bei neuem Karten-Layout:
 
 1. `npx @8thwall/image-target-cli@latest` — Bildpfad, Typ `flat`, Default-Crop,
    Name = Design-id (Details und Pipe-Variante: `docs/8thwall-migration.md`,
