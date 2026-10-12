@@ -22,10 +22,12 @@
 import { STAB } from "./config.js";
 import { PoseStabilizer } from "./poseStabilizer.js";
 import { Tracker } from "./tracker.js";
+import { Tracker8roh } from "./tracker8roh.js";
 
 export const TRACKER_VARIANTEN = {
   alt: { Klasse: PoseStabilizer, beschreibung: "PoseStabilizer (Zapworks-Port, liest anchor.matrix je Frame)" },
   neu: { Klasse: Tracker, beschreibung: "tracker.js (messgetrieben, 2026-10-09)" },
+  "8roh": { Klasse: Tracker8roh, beschreibung: "8th Wall roh: jede Messung 1:1, kein Filter, kein Gyro, bei Verlust sofort weg (Nulllinie)" },
 };
 export const TRACKER_STANDARD = "alt";
 

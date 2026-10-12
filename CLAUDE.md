@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-12 · Build 92 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-12 · Build 93 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh`) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -421,6 +421,7 @@ raus, die Engine wird bereinigt ausgeliefert.
 |---|---|---|
 | `alt` | `js/poseStabilizer.js` | Zapworks-Port, liest `anchor.matrix` je Frame, Monate Gerätetests, Goldstandard-Test |
 | `neu` | `js/tracker.js` | messgetrieben (Build 91), nur Szenario-Tests, kein Gerätetest |
+| `8roh` | `js/tracker8roh.js` | Nulllinie (Build 93): jede Messung 1:1, kein Filter, kein Gyro, kein Schiedsrichter, bei Verlust sofort weg; in `?stats` ist roh = stab, die Rauschzahl ist die der Engine; Pose-Flip und Treppensignal absichtlich sichtbar; Schalter 1–10 ohne Wirkung. Jede Filtervariante muss das messbar schlagen. (Nicht dasselbe wie Schalter 1 „Glättung aus" im alten Filter — dort laufen Haltezeit und Rest der Kette weiter.) |
 
 **Vertrag einer Variante** (steht im Kopf von trackerWahl.js): Konstruktor
 `(target, gyro)` mit `measure(matrix)` je neuer Messung ODER `(source, target,
@@ -453,8 +454,10 @@ Takte — Messungen (20–30 Hz) filtern mit dem Messtakt als dt, Render-Frames
   ~0,6 Hz (Befund beim Bau, Szenario-Ruhezittern 0,37 mm).
 - Schalter ohne Wirkung bei `neu`: 2 normalize, 5 nanGuard (immer an), 9 scaleLock.
 - Gleich gut im Vergleichsszenario: Ruhe (0,12 mm Lagefehler, 0 Zittern),
-  Bewegung 3 cm/s (0,6 mm / 0,9° Nachlauf). Offen: Gerätevergleich (?stats,
-  F0–F4); die One-Euro-Werte sind unverändert übernommen (Cutoffs in Hz).
+  Bewegung 3 cm/s (0,6 mm / 0,9° Nachlauf). Nulllinie `8roh` im selben
+  Szenario: Ruhe 0,34 mm Fehler / 0,16 mm Zittern, Ausreißer voll (80 mm, 40°),
+  bei Verlust 0 Frames sichtbar. Offen: Gerätevergleich (?stats, F0–F4); die
+  One-Euro-Werte sind unverändert übernommen (Cutoffs in Hz).
 
 ## Aktuelle Kern-Werte (config.js)
 
@@ -484,7 +487,7 @@ n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
 oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Pflicht — ohne: Auffang-Seite; Karte aus
 `karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
 `?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?tracker=<name>` (Tracker-Variante
-`alt`/`neu`, s. „Tracker-Varianten"; ohne = `STAB.tracker`; `?stats` zeigt die Wahl) · `?k=<nr>P` (Public-Edition, steht im
+`alt`/`neu`/`8roh`, s. „Tracker-Varianten"; ohne = `STAB.tracker`; `?stats` zeigt die Wahl) · `?k=<nr>P` (Public-Edition, steht im
 QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
 `?preflight=aus` · Branch pruefstand: `?record`, `?replay`, `?metrics`.

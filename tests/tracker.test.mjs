@@ -6,6 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as THREE from "../vendor/three/three.module.js";
 import { Tracker } from "../js/tracker.js";
+import { Tracker8roh } from "../js/tracker8roh.js";
 import { PoseStabilizer } from "../js/poseStabilizer.js";
 import { STAB, GYRO } from "../js/config.js";
 import { laufSzenario, STAB_FEST, GYRO_FEST, DT_MS } from "./stabilizerSzenario.mjs";
@@ -90,7 +91,14 @@ function kennzahlen(r) {
 test("Vergleichsszenario: alt gegen neu, Eigenschaften des neuen Trackers", (t) => {
   const alt = kennzahlen(vergleich(PoseStabilizer));
   const neu = kennzahlen(vergleich(Tracker));
-  for (const k of Object.keys(neu)) t.diagnostic(`${k}: alt ${JSON.stringify(alt[k])} · neu ${JSON.stringify(neu[k])}`);
+  const roh = kennzahlen(vergleich(Tracker8roh)); // Nulllinie: die Engine selbst
+  for (const k of Object.keys(neu)) t.diagnostic(`${k}: 8roh ${JSON.stringify(roh[k])} · alt ${JSON.stringify(alt[k])} · neu ${JSON.stringify(neu[k])}`);
+  // Nulllinie: Rohrauschen und Ausreißer voll sichtbar, bei Verlust sofort weg — jeder Filter muss das schlagen
+  assert.ok(roh.ruhe1ZitterMm > 0.05 && roh.ruhe1ZitterMm > neu.ruhe1ZitterMm * 5, "8roh zittert: " + roh.ruhe1ZitterMm);
+  assert.ok(roh.ausreisser570_572.mm > 50 && roh.ausreisser570_572.deg > 30, JSON.stringify(roh.ausreisser570_572));
+  assert.equal(roh.sichtbarGyroLebt, 0);
+  assert.equal(roh.sichtbarGyroTot, 0);
+  assert.equal(roh.snap + roh.relock + roh.reloc, 0);
   // In Ruhe wird die Karte als ruhig erkannt (Drift-Detektor) und die Figur steht
   assert.equal(neu.ruhe1BewegtTicks, 0, "Ruhe 1 bewegt");
   assert.ok(neu.ruhe2BewegtTicks <= 3, "Ruhe 2 bewegt: " + neu.ruhe2BewegtTicks); // Rest der Verweilzeit nach der Bewegung
