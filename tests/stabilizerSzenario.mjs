@@ -26,6 +26,7 @@
    Umbau, Build 87) und von tests/poseStabilizer.test.mjs. */
 import * as THREE from "../vendor/three/three.module.js";
 import { STAB, GYRO } from "../js/config.js";
+import { baueTracker } from "../js/trackerWahl.js";
 
 export const TICKS = 1300;
 export const DT_MS = 1000 / 60;
@@ -110,9 +111,9 @@ function lauf(PoseStabilizer, jederTick, uhr) {
   const source = new THREE.Group();
   source.matrixAutoUpdate = false;
   const target = new THREE.Group();
-  // Alter Filter liest source.matrix (Konstruktor source, target, gyro); der neue
-  // Tracker bekommt Messungen über measure() (Konstruktor target, gyro).
-  const stab = PoseStabilizer.prototype.measure ? new PoseStabilizer(target, gyro) : new PoseStabilizer(source, target, gyro);
+  // Bauweg wie in arSession.js (js/trackerWahl.js): messgetriebene Klassen
+  // bekommen (target, gyro), lesende (source, target, gyro).
+  const stab = baueTracker(PoseStabilizer, source, target, gyro);
 
   const SCALE = 0.059;
   const baseP = new THREE.Vector3(0.01, -0.02, -0.30);

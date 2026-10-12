@@ -25,8 +25,7 @@
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { SCENE, CAM } from "./config.js";
-import { PoseStabilizer } from "./poseStabilizer.js";
-import { Tracker } from "./tracker.js";
+import { waehleTracker, baueTracker } from "./trackerWahl.js";
 import { buildExperience } from "./experience.js";
 import { buildSupport } from "./supportUI.js";
 import { el } from "./util.js";
@@ -53,11 +52,10 @@ function hasWasmSimd() {
 }
 const PARAMS = new URLSearchParams(location.search);
 const NOSIMD = PARAMS.has("nosimd");
-// ?tracker=neu (Build 91): messgetriebener Tracker (js/tracker.js) statt des
-// PoseStabilizers — gleiche Schnittstelle, zusätzlich measure() je neuer
-// Messung. Standard bleibt der alte Filter bis zum Gerätevergleich (?stats).
-export const TRACKER_NEU = PARAMS.get("tracker") === "neu";
-export const TRACKER_NAME = TRACKER_NEU ? "neu (tracker.js)" : "alt (poseStabilizer.js)";
+// Tracker-Variante (Build 92, js/trackerWahl.js): ?tracker=<name>, sonst
+// STAB.tracker aus config.js. Erst beim Start ausgewertet, damit loadTuning
+// (tuning.json, ?dev) den Standard noch überschreiben kann.
+export const trackerWahl = () => waehleTracker(PARAMS);
 const ENGINE_SIMD = !NOSIMD && hasWasmSimd();
 export const ENGINE_VARIANT = ENGINE_SIMD ? "SIMD" : (NOSIMD ? "nicht-SIMD (?nosimd)" : "nicht-SIMD (Fallback)");
 export const XR_ENGINE_URL = ENGINE_SIMD ? "./vendor/8thwall/xr.js" : "./vendor/8thwall-nosimd/xr.js";
@@ -302,7 +300,10 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
       // Geglätteter Träger als KIND DER KAMERA (kamera-relative Pose)
       stabRoot = new THREE.Group();
       camera.add(stabRoot);
-      stab = TRACKER_NEU ? new Tracker(stabRoot, gyro) : new PoseStabilizer(anchor, stabRoot, gyro);
+      const wahl = trackerWahl();
+      if (wahl.warnung) console.warn("DETAR", wahl.warnung);
+      stab = baueTracker(wahl.Klasse, anchor, stabRoot, gyro);
+      log("DETAR Tracker:", wahl.name, "·", wahl.beschreibung);
 
       // Karten-Frame unter dem stabRoot: X = rechts, Y = hoch von der Karte,
       // Z = zur Karten-Unterkante. (+90° X: Anchor-Z "aus dem Bild" wird zu Y.)
@@ -313,7 +314,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
 
       // ?stats — Live-Diagnose am Gerät (Tracking/Gyro/Jitter in Zahlen)
       stats = StatsOverlay
-        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design, tracker: TRACKER_NAME })
+        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design, tracker: trackerWahl().name + " · " + trackerWahl().beschreibung })
         : null;
 
       exp = buildExperience({
@@ -323,8 +324,8 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
         isRunning: () => stabRoot.visible,
         preTick: () => {
           updateAnchor(camera);
-          // Neuer Tracker: jede neue Messung (imagefound/imageupdated) als Ereignis
-          // übergeben; der alte Filter liest anchor.matrix selbst und erkennt stale Frames.
+          // Messgetriebene Varianten bekommen jede neue Messung (imagefound/
+          // imageupdated) als Ereignis; lesende Varianten holen anchor.matrix selbst.
           if (fresh && stab.measure) stab.measure(anchor.matrix);
           fresh = false;
           stab.tick();

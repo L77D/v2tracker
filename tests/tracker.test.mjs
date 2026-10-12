@@ -9,6 +9,7 @@ import { Tracker } from "../js/tracker.js";
 import { PoseStabilizer } from "../js/poseStabilizer.js";
 import { STAB, GYRO } from "../js/config.js";
 import { laufSzenario, STAB_FEST, GYRO_FEST, DT_MS } from "./stabilizerSzenario.mjs";
+import { baueTracker } from "../js/trackerWahl.js";
 
 /* ---- Vergleichsszenario alt vs. neu mit bekannter Wahrheit ----------------
    Realistisches Rauschen (0,2 mm, 0,1°; CLAUDE.md: roh in der Hand 0,13–0,4 mm),
@@ -32,7 +33,7 @@ function vergleich(Klasse) {
     const gyro = { getDelta: () => null, getOrientation: () => gy.lage };
     const source = new THREE.Group(); source.matrixAutoUpdate = false;
     const target = new THREE.Group();
-    const tr = Klasse.prototype.measure ? new Klasse(target, gyro) : new Klasse(source, target, gyro);
+    const tr = baueTracker(Klasse, source, target, gyro);
     const A = new THREE.Vector3(0.01, -0.02, -0.30), qA = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.3, 0.1, 0.05));
     const Y = new THREE.Vector3(0, 1, 0);
     const wahr = { p: new THREE.Vector3(), q: new THREE.Quaternion() };

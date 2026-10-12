@@ -142,6 +142,11 @@ export const SCENE = {
 // = 1/1000 Kartenbreite (≈ 0,15 mm bei 15-cm-Karte); beta bezieht sich auf
 // Geschwindigkeit in Kartenbreiten/s.
 export const STAB = {
+  // Tracker-Variante (Build 92, js/trackerWahl.js): "alt" = PoseStabilizer,
+  // "neu" = tracker.js (messgetrieben). ?tracker=<name> in der URL hat
+  // Vorrang. Die Entscheidung am Ende: hier den Gewinner eintragen, Verlierer
+  // samt Tests entfernen, Engine bereinigt ausliefern.
+  tracker: "alt",
   // --- Feature-Schalter (Dev-Panel „Tracking-Features an/aus") ---------------
   // Jeder Baustein einzeln abschaltbar, um sein Verhalten zu isolieren.
   enabled: true,     // 1 PoseStabilizer komplett (false = rohe Anchor-Pose 1:1)
