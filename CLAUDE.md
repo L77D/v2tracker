@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-12 · Build 100 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
+Stand: 2026-10-12 · Build 101 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
 
 ## Projekt
 
@@ -45,7 +45,8 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   Tap. Glow + Partikel sind weg. Seit Build 99 (Michael 2026-10-12) bleiben
   sie nach dem Plopp STILL auf den Ecken stehen (Zustand `stay`) — mit der
   Figur, im Ruhezustand, beim Verlust faden sie mit der Szene; `stop()` nur
-  noch beim Dev-Replay.
+  noch beim Dev-Replay. Build 101: `renderOrder -1` (vorher 0.5 = zwischen
+  Körper 0 und Kopf 1 → Ecke hinter der Figur lag über dem Körper).
 - Suchrahmen `#scanFrame` (weiße Ecken) über `body.scanning` — an nach dem
   Start, aus bei der ersten Erkennung; seit Build 99 auch nach
   `CHOREO.trackingLostMs` (1,5 s) Verlust wieder an (s. „Randzustände").

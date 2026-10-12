@@ -11,9 +11,14 @@
    • tapPlane: unsichtbare Karten-Plane NUR für den Tap-Raycast (three.js-
      Raycaster ignoriert das visible-Flag — bewusst genutzt).
    Optik-Werte im ACTFX-Dashboard (js/config.js) → Dev-Panel-Regler.
-   Painter's-Algorithm-Regeln: depthTest false, KEIN depthWrite, renderOrder
-   unter der Figur (0.5 — Figur ab 0..3, die Figur steht also immer vor den
-   Markern).
+   Painter's-Algorithm-Regeln: depthTest false, KEIN depthWrite, Reihenfolge
+   allein über renderOrder: Marker -1 · Icon-Schatten 0.4 · Hüpf-Icon 0.6 ·
+   Körper 0 · Kopf 1 · Gesicht 2 (rig.js) · Blase 20 (speechBubble.js).
+   2026-10-12 (Michael, Build 101): Marker von 0.5 auf -1 — mit 0.5 lagen sie
+   zwischen Körper und Kopf, eine Ecke HINTER der Figur wurde über den Körper
+   gezeichnet (fiel erst auf, seit die Marker mit der Figur stehen bleiben).
+   Die Marker liegen flach auf der Karte, die Figur steht darauf → die Figur
+   verdeckt sie immer.
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { ACTFX, SCENE } from "./config.js";
@@ -62,7 +67,7 @@ export class ActivationFX {
         depthTest: false, depthWrite: false, side: THREE.DoubleSide,
       });
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
-      mesh.renderOrder = 0.5;
+      mesh.renderOrder = -1; // unter allem (s. Kopf): Figur verdeckt die Marker
       mesh.rotation.set(-Math.PI / 2, 0, c.rot);
       mesh.visible = false;
       this.group.add(mesh);
