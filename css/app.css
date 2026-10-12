@@ -221,14 +221,16 @@ body.launched.scanning #scanFrame { display: block; }
 #scanFrame .c-bl { left: 0;  bottom: 0; }
 
 /* ============================================================================
-   KARTE VERLOREN — Support-Zeile mittig im Bild (mock 05: Icon oben 414/874,
-   Balken 449/874). Das Menü bleibt darunter stehen (eingefroren).
+   KARTE VERLOREN — Support-Zeile mittig im Bild (mock 05). Seit Build 99
+   (Michael 2026-10-12) erst nach CHOREO.trackingLostMs, zusammen mit dem
+   Suchrahmen, und UNTER ihm: Rahmen-Unterkante = 40 % + 147,5 px (bis Build
+   98: top 47 %, lag im Rahmen). Das Menü bleibt darunter stehen (eingefroren).
    ============================================================================ */
 #lostHint {
   position: fixed;
   left: 0;
   right: 0;
-  top: 47%;
+  top: calc(40% + 160px);
   z-index: 6;
   display: none;
   pointer-events: none;

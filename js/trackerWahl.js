@@ -10,7 +10,9 @@
                                           über measure(matrix)  — ODER —
      constructor(source, target, gyro)    liest source.matrix selbst in tick()
      onFound() · onLost() · reacquire() · tick() · snapshot()
-     Ausgabe: target.matrix (stabRoot) = Pose × Scale, Scale = Kartenbreite
+     Ausgabe: target.matrix = Pose × Scale, Scale = Kartenbreite; target.visible =
+     Sichtbarkeits-Wunsch (target = poseTarget in arSession.js, seit Build 99 ein
+     Proxy — stabRoot blendet SceneFade weich nach)
    snapshot() liefert die Felder, die statsOverlay.js liest (s. poseStabilizer.js).
    Das Szenario tests/stabilizerSzenario.mjs und der Vergleich in
    tests/tracker.test.mjs laufen mit jeder Klasse, die den Vertrag hält.

@@ -6,6 +6,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { CardController } from "../js/cardController.js";
+import { CHOREO } from "../js/config.js";
 import { prototypKarte } from "./karte.mjs";
 
 function attrappen() {
@@ -105,23 +106,52 @@ test("Ausstieg: collapse → resting; Karten-Tap → „reentry“ → live, Bes
   c.clearTimers();
 });
 
-test("Tracking verloren/gefunden: Timer friert das Menü ein, Fund gibt frei", () => {
-  const { c, calls, menu } = controller();
+test("Tracking verloren/gefunden: nach trackingLostMs Menü eingefroren + Suchrahmen, Fund gibt sofort frei", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const search = [];
+  const { c, calls, menu } = controller({ onSearch: (on) => search.push(on) });
   c.onTrackingLost(); // waiting: nichts
   assert.equal(c.timers.lost, undefined);
-  c.onCardSeen(); c.onCardTapped();
+  // Aktivier-Phase: Suchrahmen kommt ebenfalls zurück (seit Build 99)
+  c.onCardSeen();
+  c.onTrackingLost();
+  t.mock.timers.tick(CHOREO.trackingLostMs);
+  assert.deepEqual(search, [true]);
+  c.onTrackingFound();
+  assert.deepEqual(search, [true, false]);
+  c.onCardTapped();
   assert.equal(c.lostHintWanted, true);
   c.onTrackingLost();
   assert.ok(c.timers.lost);
-  c.onTrackingFound();
+  t.mock.timers.tick(CHOREO.trackingLostMs - 1);
+  assert.equal(c.searching, false, "vor Ablauf kein Suchrahmen");
+  c.onTrackingFound(); // kurzer Aussetzer: kein Suchrahmen, kein Einfrieren-Rest
   assert.equal(c.timers.lost, null);
+  assert.deepEqual(search, [true, false]);
+  c.onTrackingLost();
+  t.mock.timers.tick(CHOREO.trackingLostMs);
+  assert.equal(c.searching, true);
   assert.ok(calls.includes("menu.setFrozen"));
-  // Ruhezustand: Panel-Zeile wechselt statt Hinweis
+  c.onTrackingFound();
+  assert.equal(c.searching, false);
+  assert.deepEqual(search, [true, false, true, false]);
+  // Ruhezustand: Panel-Zeile wechselt erst nach Ablauf
   c.collapse();
   c.onTrackingLost();
+  assert.equal(menu.phase, "idle");
+  t.mock.timers.tick(CHOREO.trackingLostMs);
   assert.equal(menu.phase, "idle-lost");
   c.onTrackingFound();
   assert.equal(menu.phase, "idle");
+  // Ausstieg, während die Karte weg ist: Panel sofort auf „Halte auf die Karte"
+  c.phase = "live";
+  c.onTrackingLost();
+  t.mock.timers.tick(CHOREO.trackingLostMs);
+  c.collapse();
+  assert.equal(menu.phase, "idle-lost");
+  // Replay räumt den Suchrahmen-Zustand ab
+  c.replay();
+  assert.equal(c.searching, false);
   c.clearTimers();
 });
 

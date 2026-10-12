@@ -33,9 +33,12 @@ import { sound } from "./sound.js";
 import { el, finiteVec } from "./util.js";
 
 /**
- * @param szene { renderer, scene, camera, worldRoot, isRunning?, preTick?, render?, relocalize? }
+ * @param szene { renderer, scene, camera, worldRoot, isRunning?, preTick?, postTick?, onSearch?, render?, relocalize? }
  *   isRunning   () → Behavior-Ticks nur, solange true (AR: Figur sichtbar)
  *   preTick     () → vor den Ticks (AR: Anchor + PoseStabilizer + ?stats)
+ *   postTick    () → nach den Ticks, vor dem Rendern (AR: SceneFade-Deckkraft, Build 99)
+ *   onSearch    (on) → AR: Suchrahmen + „Halte auf die Karte" an/aus, ruft der
+ *               CardController nach CHOREO.trackingLostMs Verlust bzw. beim Fund
  *   relocalize  AR: () → stab.reacquire(), NEU-AUFSETZEN auf Tap (2026-09-07):
  *               Figur-Tap (Hüpfer kaschiert den Sprung) und Karten-Tap in der
  *               „Karte gefunden"-Phase setzen den PoseStabilizer per Median neu
@@ -46,7 +49,7 @@ import { el, finiteVec } from "./util.js";
  *              des Debug-Overlays (nur mit ?debug geladen), devLog = window.__detar
  *              anlegen (nur ?dev/?debug/?stats)
  */
-export function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTick, render = true, relocalize = null }, ctx) {
+export function buildExperience({ renderer, scene, camera, worldRoot, isRunning, preTick, postTick, onSearch = null, render = true, relocalize = null }, ctx) {
   const { card, DebugOverlay = null, devLog = false } = ctx;
   const frame = {
     worldRoot,
@@ -95,6 +98,7 @@ export function buildExperience({ renderer, scene, camera, worldRoot, isRunning,
       document.body.classList.add("scanning");
       setTimeout(() => { document.body.classList.remove("scanning"); done(); }, CHOREO.replayRescanMs);
     },
+    onSearch,
   });
   menu.engine = controller.engine;
   if (devLog) window.__detar = { controller, engine: controller.engine, fx, nodes, camera, renderer, sound }; // Debug-Zugriff (Konsole, nur ?dev/?debug/?stats)
@@ -143,6 +147,7 @@ export function buildExperience({ renderer, scene, camera, worldRoot, isRunning,
       bubble.tick(dt);
       debug?.tick();
     }
+    postTick?.();
     if (render) renderer.render(scene, camera);
   }
 

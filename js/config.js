@@ -107,7 +107,13 @@ export const CHOREO = {
   continueDelayMs: 350,   // automatisches Weiter nach einer Antwort (kein Knopf)
   collapseDelayMs: 900,   // Abschiedszeile steht so lange, bevor die Figur einklappt
   collapseSec: 0.5,       // Dauer des Einklappens (Figur → Karte)
-  trackingLostMs: 1500,   // ab dieser Verlustdauer friert das Menü sichtbar ein
+  trackingLostMs: 1500,   // ab dieser Verlustdauer friert das Menü ein; seit Build 99 kommen dann
+                          // auch Suchrahmen + „Halte auf die Karte" zurück (Michael 2026-10-12)
+  // Szene ein-/ausblenden (Build 99, Michael 2026-10-12): bei Verlust kein harter
+  // Schnitt mehr — nach der Haltezeit des Trackers (lostHoldMs / Gyro-Brücke)
+  // faded die ganze Szene (Figur, Blase, Eck-Marker) aus; beim Wiederfinden ein.
+  lostFadeMs: 300,
+  foundFadeMs: 300,
 };
 
 // Szene (Skalierung + Nick-Achse). cardWidth koppelt die Prototyp-Einheiten an

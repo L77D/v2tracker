@@ -1,7 +1,7 @@
 /* =============================================================================
    DETAR — CardController: das Gehirn. Choreographie (Stand 2026-09-03):
    Karte gefunden → AKTIVIER-PHASE (gelbe Eck-Marker auf der Karte, „Karte
-   gefunden / Tipp sie an!") → Tap auf die Karte → Marker ploppen → Pop-In → Begrüßung (Typewriter)
+   gefunden / Tipp sie an!") → Tap auf die Karte → Marker ploppen (bleiben seit Build 99 auf den Ecken) → Pop-In → Begrüßung (Typewriter)
    → Menü fährt ein → HUB (Themen → Fragen) → Antwort → ggf. Weiter-Schritt
    → ggf. Rückfrage der Figur (nach der 1. und 3. Antwort) → zurück in den Hub
    → Ausstieg „Ich muss weiter" → Fazit-Rückfrage → Verabschiedung → Figur
@@ -23,8 +23,10 @@ import { DialogEngine } from "./dialogEngine.js";
 export class CardController {
   /* onRescan(done): Dev-Replay — der Aufrufer zeigt den Suchrahmen und ruft
      done() nach seiner Verzögerung (experience.js; Stufe 3e: der Controller
-     fasst kein DOM an). Fehlt der Hook, folgt der „Scan" sofort. */
-  constructor({ card, nodes, bubble, face, wander, activation, menu, fx, onRescan = null }) {
+     fasst kein DOM an). Fehlt der Hook, folgt der „Scan" sofort.
+     onSearch(on): Suchrahmen + „Halte auf die Karte" an/aus (Build 99) — nach
+     CHOREO.trackingLostMs Verlust an, beim Fund sofort aus (arSession.js). */
+  constructor({ card, nodes, bubble, face, wander, activation, menu, fx, onRescan = null, onSearch = null }) {
     this.data = card;
     this.engine = new DialogEngine(card);
     this.nodes = nodes;
@@ -35,6 +37,8 @@ export class CardController {
     this.menu = menu;
     this.fx = fx ?? null;
     this.onRescan = onRescan;
+    this.onSearch = onSearch;
+    this.searching = false;   // Suchrahmen nach Verlust steht (onSearch(true) gerufen)
     // Timer nach Namen (2026-09-15): idle = Lesezeit, next = automatisches
     // Weiter, lost = Menü einfrieren nach Tracking-Verlust. setT/clearT statt
     // drei Feldern mit je eigenem clearTimeout-Block.
@@ -48,6 +52,7 @@ export class CardController {
   /* Replay (Dev-Panel): kompletter Reset + erneuter „Scan". */
   replay() {
     this.clearTimers();
+    this.setSearching(false);
     this.activation.cancel();
     this.fx?.stop();
     this.bubble.hide();
@@ -254,7 +259,10 @@ export class CardController {
     this.wander.setAttending(false);
     this.wander.setBusy(true);
     this.setPose("idle");
-    this.menu.showIdle();
+    // Karte gerade weg (Suchrahmen steht): Panel trägt gleich „Halte auf die Karte",
+    // der mittige Hinweis geht (lostHintWanted ist im Ruhezustand false)
+    this.menu.showIdle(this.searching);
+    if (this.searching) this.onSearch?.(true);
     this.activation.playOut(() => {
       this.nodes.FigureRoot.position.copy(this.nodes.FIGURE_HOME.pos);
     }, CHOREO.collapseSec);
@@ -275,17 +283,31 @@ export class CardController {
   }
 
   /* ---- Tracking verloren --------------------------------------------------- */
+  /* Build 99 (Michael 2026-10-12): die Szene faded nach der Haltezeit des
+     Trackers aus (arSession.js/SceneFade); erst nach CHOREO.trackingLostMs
+     friert das Menü ein UND Suchrahmen + „Halte auf die Karte" kommen zurück
+     wie am Anfang (onSearch). Im Ruhezustand trägt die Panel-Zeile den Text,
+     ebenfalls erst dann (bis Build 98 wechselte sie sofort). Gilt jetzt auch
+     in der Aktivier-Phase (attract). */
   onTrackingLost() {
-    if (this.phase === "waiting" || this.phase === "attract") return;
-    // Ruhezustand: Panel-Zeile wechselt auf „Halte auf die Karte" (kein zweiter Hinweis)
-    if (this.phase === "resting" && this.menu.phase === "idle") this.menu.showIdle(true);
+    if (this.phase === "waiting") return;
     if (this.timers.lost) return;
-    this.setT("lost", () => this.menu.setFrozen(true), CHOREO.trackingLostMs);
+    this.setT("lost", () => {
+      this.menu.setFrozen(true);
+      if (this.phase === "resting" && this.menu.phase === "idle") this.menu.showIdle(true);
+      this.setSearching(true);
+    }, CHOREO.trackingLostMs);
   }
   onTrackingFound() {
     this.clearT("lost");
     this.menu.setFrozen(false);
     if (this.phase === "resting" && this.menu.phase === "idle-lost") this.menu.showIdle(false);
+    this.setSearching(false);
+  }
+  setSearching(on) {
+    if (this.searching === on) return;
+    this.searching = on;
+    this.onSearch?.(on);
   }
   /* Karte-verloren-Hinweis mittig nur, wenn das Panel ihn nicht selbst trägt */
   get lostHintWanted() { return this.greeted && this.phase !== "resting"; }

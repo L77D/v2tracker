@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-12 · Build 98 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-12 · Build 99 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -42,9 +42,13 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   über Textkasten 178×73, ±2,34° Tilt. Maße 1:1 aus dem 402-px-Figma-Frame.
 - `js/activationFX.js` — vier gelbe Eck-Marker auf den Kartenecken (Canvas-
   Textur aus dem Figma-Pfad), wabern (`ACTFX.bobHeight/bobSec`), ploppen beim
-  Tap. Glow + Partikel sind weg.
+  Tap. Glow + Partikel sind weg. Seit Build 99 (Michael 2026-10-12) bleiben
+  sie nach dem Plopp STILL auf den Ecken stehen (Zustand `stay`) — mit der
+  Figur, im Ruhezustand, beim Verlust faden sie mit der Szene; `stop()` nur
+  noch beim Dev-Replay.
 - Suchrahmen `#scanFrame` (weiße Ecken) über `body.scanning` — an nach dem
-  Start, aus bei der ersten Erkennung.
+  Start, aus bei der ersten Erkennung; seit Build 99 auch nach
+  `CHOREO.trackingLostMs` (1,5 s) Verlust wieder an (s. „Randzustände").
 - **Build 27 (Michael 2026-09-07):** `SCENE.figureScale 0.85` skaliert Figur +
   Sprechblase (rig.js) und Hüpf-Icon — Eck-Marker bleiben Kartengeometrie
   (Build 81, Michael 2026-10-09: Szene auf 80 % davon → `figureScale 0.68`;
@@ -203,10 +207,18 @@ synchron halten.
   ungenutzt.
 - `config.js → POSES`: Emotion-Tag → Körper (idle/affirm/think), bis der Rig
   die elf Posen liefert; die Posenliste der Karte hat Vorrang (s. „Engine und Karten"). `CHOREO`: continueDelayMs, collapseDelayMs,
-  collapseSec, trackingLostMs (Menü friert nach Verlust ein).
+  collapseSec, trackingLostMs (Menü friert nach Verlust ein, Suchrahmen kommt),
+  lostFadeMs/foundFadeMs (Szene aus-/einblenden, je 300 ms).
 - Randzustände: Kamera abgelehnt → `body.camera-denied` (eigener Bildschirm im
-  Splash); Tracking verloren → `menu.setFrozen()` + `#lostHint` (Icon-Zeile
-  mittig, Menü bleibt ungedimmt stehen).
+  Splash). **Tracking verloren (Build 99, Michael 2026-10-12):** nach der
+  Haltezeit des Trackers (`STAB.lostHoldMs` 250 ms / Gyro-Brücke bis
+  `GYRO.bridgeMs` 1,2 s) faded die ganze Szene in `CHOREO.lostFadeMs` aus statt
+  hart zu verschwinden; nach `CHOREO.trackingLostMs` (1,5 s) friert das Menü
+  ein und Suchrahmen + `#lostHint` („Halte auf die Karte", Icon-Zeile mittig
+  UNTER dem Rahmen) kommen zurück — Hook `onSearch` des CardControllers
+  (`controller.searching`), gilt ab der Aktivier-Phase; im Ruhezustand trägt
+  die Panel-Zeile den Text (ebenfalls erst nach 1,5 s). Beim Fund: Rahmen +
+  Hinweis sofort weg, Szene faded in `CHOREO.foundFadeMs` ein.
 - Tap-Entprellung in `js/tapInput.js` (pointerup + click-Fallback binnen 120 ms) —
   seit dem Dialogsystem wäre Doppel-Auslösung NICHT mehr harmlos.
 - Splash: `card.companyLogo` (Pfad) oder Firmenname als Text; `card.jobUrl`
@@ -379,8 +391,9 @@ StatsOverlay, attachDevTools}` an die Module:
   └─ anchor.matrix (arSession.js: Kamera⁻¹ × Bildpose, Scale = Kartenbreite; Gruppe
      außerhalb der Szene — Ersatz für MindARs anchor.group)
        └─ PoseStabilizer.tick() (jeden Frame im onUpdate des Pipeline-Moduls)
-            └─ stabRoot (geglättet, KIND DER KAMERA; trägt Figur)
-                 └─ worldRoot (Karten-Frame: rot.x=+90°, scale=1/SCENE.cardWidth)
+            └─ poseTarget (Proxy außerhalb der Szene: geglättete Pose + visible = Wunsch des Trackers)
+                 └→ stabRoot (KIND DER KAMERA; Pose kopiert, Sichtbarkeit über SceneFade, Build 99)
+                      └─ worldRoot (Karten-Frame: rot.x=+90°, scale=1/SCENE.cardWidth)
 Rendern: XR8.Threejs.onRender (experience.js → buildExperience({render:false}))
 ```
 
@@ -435,7 +448,9 @@ raus, die Engine wird bereinigt ausgeliefert.
 **Vertrag einer Variante** (steht im Kopf von trackerWahl.js): Konstruktor
 `(target, gyro)` mit `measure(matrix)` je neuer Messung ODER `(source, target,
 gyro)` mit eigenem Lesen in `tick()`; `onFound/onLost/reacquire/tick/snapshot`;
-Ausgabe `stabRoot.matrix` = Pose × Scale. `baueTracker()` wählt den Bauweg,
+Ausgabe `target.matrix` = Pose × Scale + `target.visible` (target = `poseTarget`
+in arSession, seit Build 99 nicht mehr stabRoot selbst — SceneFade blendet
+weich). `baueTracker()` wählt den Bauweg,
 arSession ruft `measure()` nur, wenn es die Klasse hat (Flag `fresh` bei
 `imagefound`/`imageupdated`). Dritte Variante: Modul anlegen, in
 `TRACKER_VARIANTEN` eintragen, in `tests/tracker.test.mjs` in den Vergleich

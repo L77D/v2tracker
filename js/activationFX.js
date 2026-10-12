@@ -4,13 +4,16 @@
    schwarzer Kontur, assets/ui/corner-gelb.svg) sitzen auf den Kartenecken,
    Kerbe zur Kartenmitte, und wabern leicht auf und ab. Glow + Partikel der
    Vorversion sind entfernt (Entscheidung Michael). burst(): Marker ploppen
-   kurz auf und faden, dann kommt die Figur.
+   kurz auf, dann kommt die Figur. Build 99 (Michael 2026-10-12): die Marker
+   bleiben danach STILL auf den Ecken stehen (Zustand „stay", kein Wabern) —
+   mit der Figur, im Ruhezustand und beim Verlust (faden mit der Szene,
+   js/sceneFade.js). Bis Build 98 fadeten sie im Burst aus.
    • tapPlane: unsichtbare Karten-Plane NUR für den Tap-Raycast (three.js-
      Raycaster ignoriert das visible-Flag — bewusst genutzt).
    Optik-Werte im ACTFX-Dashboard (js/config.js) → Dev-Panel-Regler.
    Painter's-Algorithm-Regeln: depthTest false, KEIN depthWrite, renderOrder
-   unter der Figur (0.5 — Figur ab 0..3, Marker sind nur sichtbar, solange
-   die Figur versteckt ist).
+   unter der Figur (0.5 — Figur ab 0..3, die Figur steht also immer vor den
+   Markern).
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { ACTFX, SCENE } from "./config.js";
@@ -37,7 +40,7 @@ const CORNERS = [
 
 export class ActivationFX {
   constructor(worldRoot) {
-    this.state = "idle"; // idle | attract | burst
+    this.state = "idle"; // idle | attract | burst | stay
     this.clock = 0;
     this.burstT = 0;
     this.onBurstDone = null;
@@ -202,7 +205,8 @@ export class ActivationFX {
     this.setVisible(true);
   }
 
-  /* Tap-Feedback: Marker ploppen auf und faden, dann onDone (einmalig). */
+  /* Tap-Feedback: Marker ploppen auf (1 → 1,6 → 1), dann onDone (einmalig);
+     danach bleiben sie still stehen (stay). */
   burst(onDone) {
     if (this.state !== "attract") { onDone?.(); return; }
     this.state = "burst";
@@ -210,6 +214,7 @@ export class ActivationFX {
     this.onBurstDone = onDone ?? null;
   }
 
+  /* Nur Dev-Replay: Marker weg, zurück auf Anfang. */
   stop() {
     this.state = "idle";
     this.setVisible(false);
@@ -217,7 +222,7 @@ export class ActivationFX {
   }
 
   tick(dt) {
-    if (this.state === "idle") return;
+    if (this.state === "idle" || this.state === "stay") return;
     this.clock += dt;
     const w = SCENE.cardWidth;
     const base = w * ACTFX.markerSize;
@@ -230,17 +235,19 @@ export class ActivationFX {
       k = progress(this.burstT, ACTFX.burstSec);
     }
     for (const m of this.markers) {
-      const lift = 0.5 + 0.5 * Math.sin(this.clock * omega + m.phase);
+      // Wabern klingt im Burst aus, Plopp als Sinus-Bogen (Endgröße = Grundgröße)
+      const lift = (0.5 + 0.5 * Math.sin(this.clock * omega + m.phase)) * (1 - k);
       m.mesh.position.y = 0.002 + bob * lift;
-      const s = base * (1 + k * 0.6);
+      const s = base * (1 + 0.6 * Math.sin(Math.PI * k));
       m.mesh.scale.set(s, s, 1);
-      m.mesh.material.opacity = 1 - k;
     }
     this.tickHopper(dt);
     if (this.state === "burst" && k >= 1) {
       const cb = this.onBurstDone;
       this.onBurstDone = null;
-      this.stop();
+      this.state = "stay";
+      this.applySizes(); // exakt Grundgröße und -höhe
+      this.hideHopper();
       cb?.();
     }
   }

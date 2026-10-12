@@ -28,6 +28,7 @@ import { SCENE, CAM } from "./config.js";
 import { waehleTracker, baueTracker } from "./trackerWahl.js";
 import { buildExperience } from "./experience.js";
 import { buildSupport } from "./supportUI.js";
+import { SceneFade } from "./sceneFade.js";
 import { el } from "./util.js";
 
 // 8th-Wall-Engine, selbst gehostet (Open-Source-Build, MIT — s. vendor/8thwall/
@@ -126,9 +127,11 @@ async function loadTargetData(card, design) {
    Rohpose und Figur — die Figur hängt unter stabRoot (Kind der KAMERA, weil
    der Stabilizer kamera-relativ arbeitet); `anchor` ist eine Gruppe außerhalb
    der Szene, deren Matrix pro Frame aus der 8th-Wall-Bildpose gebaut wird
-   (Kamera⁻¹ × Bild, Scale = Kartenbreite). Der Stabilizer kopiert die Pose
-   geglättet nach stabRoot und steuert auch die Sichtbarkeit. NaN-Schutz und
-   Behavior-Pause bei Verlust bleiben wie gehabt.
+   (Kamera⁻¹ × Bild, Scale = Kartenbreite). Der Stabilizer schreibt die
+   geglättete Pose + Sichtbarkeits-WUNSCH in `poseTarget` (Proxy außerhalb der
+   Szene, Build 99); preTick kopiert die Pose nach stabRoot, SceneFade macht aus
+   dem Wunsch eine Deckkraft-Rampe (kein harter Schnitt bei Verlust). NaN-Schutz
+   und Behavior-Pause bei Verlust bleiben wie gehabt.
 
    Aufgelöst wird das Promise, sobald die Kamera läuft und die Szene steht
    (onStart); verworfen bei Kamera-Fehler (onCameraStatusChange „failed" →
@@ -202,15 +205,17 @@ export async function startAR(ctx) {
 function detarPipelineModule(XR8, ctx, { resolve, reject }) {
   const { card, design, gyro, log, StatsOverlay } = ctx;
   let exp = null, stab = null, stats = null, cam = null;
-  let anchor = null, stabRoot = null;
+  let anchor = null, stabRoot = null, poseTarget = null, fade = null;
+  let cameraFailed = false;
   let latest = null;                                  // letzte Bildpose (detail) — null = nicht getrackt
   let fresh = false;                                  // seit dem letzten Tick kam eine NEUE Messung (für tracker.measure)
   const video = { videoWidth: 0, videoHeight: 0 };    // für ?stats (Kamera-Auflösung)
   const _img = new THREE.Matrix4(), _camInv = new THREE.Matrix4();
   const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
 
-  // Karte verloren: Support-Zeile mit Icon mittig im Bild (mock 05), das Menü
-  // bleibt stehen und friert nach CHOREO.trackingLostMs ein.
+  // Karte verloren: Support-Zeile mit Icon mittig unter dem Suchrahmen (mock 05;
+  // seit Build 99 erst nach CHOREO.trackingLostMs, zusammen mit dem Suchrahmen,
+  // Hook onSearch des CardControllers). Das Menü bleibt stehen und friert ein.
   const hint = el("lostHint");
   const lost = buildSupport("gefunden", [{ text: "Halte auf die Karte" }]);
   lost.icon.stop();
@@ -236,26 +241,35 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
     anchor.matrix.multiplyMatrices(_camInv, _img);
   }
 
+  /* Suchrahmen + „Halte auf die Karte" (Build 99, Michael 2026-10-12): kommen
+     nach CHOREO.trackingLostMs Verlust zurück wie am Anfang, beim Fund sofort
+     weg. Der Text steht mittig unter dem Rahmen — außer im Ruhezustand, dort
+     trägt ihn die Panel-Zeile (controller.lostHintWanted). */
+  function setSearch(on) {
+    document.body.classList.toggle("scanning", on);
+    if (cameraFailed) return; // „Kamera unterbrochen" bleibt stehen
+    const show = on && exp.controller.lostHintWanted;
+    hint.classList.toggle("show", show);
+    if (show) lost.icon.setMode("suchen"); else lost.icon.stop();
+  }
+
   function onFound(detail) {
     latest = detail;
     fresh = true;
-    document.body.classList.remove("scanning");
-    if (hint.classList.contains("show")) { hint.classList.remove("show"); lost.icon.stop(); }
+    document.body.classList.remove("scanning"); // erste Erkennung (danach regelt es setSearch)
     updateAnchor(cam); // Pose steht, BEVOR der Stabilizer aufsetzt
     stab.onFound();
     const { controller } = exp;
     controller.onCardSeen(); // greeted-Flag: Choreographie nur beim ersten Mal
-    controller.onTrackingFound(); // Menü wieder freigeben
+    controller.onTrackingFound(); // Menü frei, Suchrahmen + Hinweis weg (onSearch)
   }
 
   function onLost() {
     latest = null;
     stab.onLost();
-    const { controller } = exp;
-    if (controller.greeted) {
-      if (controller.lostHintWanted) { hint.classList.add("show"); lost.icon.setMode("suchen"); }
-      controller.onTrackingLost(); // nach CHOREO.trackingLostMs friert das Menü ein; im Ruhezustand wechselt die Panel-Zeile
-    }
+    // nach CHOREO.trackingLostMs: Menü friert ein, Suchrahmen + Hinweis (onSearch);
+    // vor der ersten Erkennung (Phase waiting) tut der Controller nichts
+    exp.controller.onTrackingLost();
   }
 
   let settled = false;
@@ -265,6 +279,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
   const fail = (err) => {
     if (!settled) { settled = true; reject(err); return; }
     console.error("DETAR Kamera/Engine nach dem Start:", err);
+    cameraFailed = true;
     hint.innerHTML = "";
     hint.appendChild(buildSupport("suchen", [{ text: "Kamera unterbrochen", kind: "gelb" }, { text: "→ Seite neu laden", einzug: true }]));
     hint.classList.add("show");
@@ -297,12 +312,18 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
       anchor = new THREE.Group();
       anchor.matrixAutoUpdate = false;
 
-      // Geglätteter Träger als KIND DER KAMERA (kamera-relative Pose)
+      // Geglätteter Träger als KIND DER KAMERA (kamera-relative Pose). Der
+      // Tracker schreibt in den Proxy poseTarget (nicht in der Szene; visible =
+      // Wunsch des Trackers), preTick überträgt die Pose, SceneFade die
+      // Sichtbarkeit als Rampe (Build 99).
       stabRoot = new THREE.Group();
+      stabRoot.matrixAutoUpdate = false;
       camera.add(stabRoot);
+      poseTarget = new THREE.Group();
+      fade = new SceneFade(stabRoot);
       const wahl = trackerWahl();
       if (wahl.warnung) console.warn("DETAR", wahl.warnung);
-      stab = baueTracker(wahl.Klasse, anchor, stabRoot, gyro);
+      stab = baueTracker(wahl.Klasse, anchor, poseTarget, gyro);
       log("DETAR Tracker:", wahl.name, "·", wahl.beschreibung);
 
       // Karten-Frame unter dem stabRoot: X = rechts, Y = hoch von der Karte,
@@ -314,7 +335,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
 
       // ?stats — Live-Diagnose am Gerät (Tracking/Gyro/Jitter in Zahlen)
       stats = StatsOverlay
-        ? new StatsOverlay(anchor, stabRoot, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design, tracker: trackerWahl().name + " · " + trackerWahl().beschreibung })
+        ? new StatsOverlay(anchor, poseTarget, stab, gyro, { getVideo: () => video, renderer, camera, card, engine: ENGINE_VARIANT, design, tracker: trackerWahl().name + " · " + trackerWahl().beschreibung })
         : null;
 
       exp = buildExperience({
@@ -323,14 +344,20 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
            Lost-Frames (NaN-Quelle) in die Zustands-Lerps einsickern. */
         isRunning: () => stabRoot.visible,
         preTick: () => {
+          fade.begin(); // Basis-Deckkraft zurück, bevor die Ticks laufen
           updateAnchor(camera);
           // Messgetriebene Varianten bekommen jede neue Messung (imagefound/
           // imageupdated) als Ereignis; lesende Varianten holen anchor.matrix selbst.
           if (fresh && stab.measure) stab.measure(anchor.matrix);
           fresh = false;
           stab.tick();
+          stabRoot.matrix.copy(poseTarget.matrix);
+          stabRoot.matrixWorldNeedsUpdate = true;
+          fade.update(poseTarget.visible); // setzt stabRoot.visible (alpha > 0)
           stats?.tick();
         },
+        postTick: () => fade.apply(), // Deckkraft × alpha, nach den Ticks
+        onSearch: setSearch,          // Suchrahmen + Hinweis nach CHOREO.trackingLostMs
         render: false, // rendert XR8.Threejs in onRender
         relocalize: () => stab.reacquire(), // Neu-Aufsetzen per Median auf Figur-/Karten-Tap
       }, ctx);
