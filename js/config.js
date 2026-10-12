@@ -63,7 +63,11 @@ export const FACE = {
 
 // IdleWander → IDLE
 export const IDLE = {
-  markerWidth: 0.09, markerHeight: 0.125, roamFraction: 0.8,
+  // Lauffeld (Füße der Figur, Karten-Frame, Einheit SCENE.cardWidth = 0.059):
+  // markerWidth/-Height = Kartenformat 63 × 88 mm, roamFraction 1.1 = höchstens
+  // 10 % größer als die Karte. 2026-10-12 (Michael, Build 97) — vorher
+  // 0.09 × 0.125 × 0.8 = 122 % × 121 % der Karte.
+  markerWidth: 0.059, markerHeight: 0.0824, roamFraction: 1.1,
   bopAmplitude: 0.015, bopFrequency: 0.5,
   walkSpeed: 0.04, walkFrequency: 2.2, walkRollMax: 0.18, stepSquash: 0.05,
   headLookMax: 0.5, headPitchMax: 0.35,

@@ -57,8 +57,13 @@ export function buildRig(parent, figur) {
   parent.add(BeatRoot);
 
   const FigureRoot = new THREE.Group();
-  FigureRoot.position.set(0, 0.06241394743147513, 0);
-  FigureRoot.scale.setScalar(0.12759215518606418 * (SCENE.figureScale ?? 1)); // Szenengröße s. SCENE.figureScale
+  // Höhe UND Scale mit figureScale: die Füße (Unterkante BodyPivot) liegen bei
+  // y = 0.0624 − 0.4898 · 0.1276 ≈ 0 nur, wenn beide gleich skaliert werden.
+  // 2026-10-12 (Build 97): bis Build 96 wurde nur die Scale verkleinert, die Höhe
+  // blieb — bei figureScale 0.5 schwebte die Figur eine halbe Kartenbreite hoch.
+  const fs = SCENE.figureScale ?? 1;
+  FigureRoot.position.set(0, 0.06241394743147513 * fs, 0);
+  FigureRoot.scale.setScalar(0.12759215518606418 * fs); // Szenengröße s. SCENE.figureScale
   BeatRoot.add(FigureRoot);
 
   const BodyPivot = new THREE.Group();
