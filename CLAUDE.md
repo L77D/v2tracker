@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-12 · Build 99 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-12 · Build 100 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
 
 ## Projekt
 
@@ -8,7 +8,7 @@ Mobile WebAR-Demo (Studio2B / „DEIN ERSTER TAG"): Karte scannen → Comic-Figu
 steht auf der Karte und führt einen Dialog nach RPG-NPC-Vorbild (Hub mit
 Freischaltungen, Rückfragen der Figur, Sprechblase mit Seiten, Posen,
 Gesichtsanimation). Port des Zapworks/Mattercraft-Prototyps auf Open-Source-
-Bildtracking (dieser Branch: 8th-Wall-Engine; `main`: MindAR) — kein LLM,
+Bildtracking (8th-Wall-Engine; das alte Repo `L77D/detar` lief auf MindAR) — kein LLM,
 keine API, kein Build-Schritt, statische Site. v1 enthält NUR den Dialog
 (Scope 31.08.2026); der Einblick (Portal/Galerie) ist seit der Entschlackung
 (Build 49) aus dem Repo entfernt und lebt nur noch in der Historie.
@@ -223,8 +223,8 @@ synchron halten.
   seit dem Dialogsystem wäre Doppel-Auslösung NICHT mehr harmlos.
 - Splash: `card.companyLogo` (Pfad) oder Firmenname als Text; `card.jobUrl`
   wird seit Build 18 nicht mehr angezeigt (DET-Label raus).
-- Build 16 ist vom ungemergten Branch `tracking-runde5` belegt (nur in
-  `main`), deshalb springt main von 15 auf 17.
+- Build 16 ist vom ungemergten Branch `tracking-runde5` belegt (nur im alten
+  Repo `L77D/detar`), deshalb springt die Zählung von 15 auf 17.
 
 **Tracking-Target:** liegt im Kartenordner `karten/<id>/targets/` (`<design>.json` +
 `<design>_luminance.png` aus `@8thwall/image-target-cli`; Standard = erstes
@@ -240,7 +240,7 @@ Physische Breite fürs Tracking = `breiteMm` des Designs in daten.json (63 mm,
 Druckspezifikation 63 × 88 mm); `SCENE.cardWidth 0.059` ist nur noch die
 Szenen-Einheit (worldRoot-Skalierung). Die Figur ist relativ zur Kartenbreite
 definiert. (MindAR-Target `card.mind`, Compiler-Skript, `targets/old/`: nur
-in `main`.)
+im alten Repo `L77D/detar`.)
 
 **Stack (seit 2026-09-09):** `three@0.160` als schlankes Bundle in
 `vendor/three/` (relativer Import `../vendor/three/three.module.js`, KEINE
@@ -254,31 +254,32 @@ prüft vorher In-App-Browser/HTTPS/Kamera-API/WASM/WebP und zeigt sonst
 `docs/8thwall-migration.md` Abschnitt 7. Target: `karten/<id>/targets/<design>.json` + `<design>_luminance.png` aus
 `@8thwall/image-target-cli`; weitere Designs daneben, gewählt per `?design`
 (s. „Engine und Karten"). Alles dazu: `docs/8thwall-migration.md`.
-`main` läuft weiter auf `mind-ar@1.2.5` (dort: mind-ar ist gegen three 0.160
-gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
+Das alte Repo `L77D/detar` läuft auf `mind-ar@1.2.5` (Archiv, nicht mehr
+anfassen). Vanilla ES-Module, GitHub Pages (liefert NUR `main` aus).
 
-## Branches
+## Repos und Branches (seit 2026-10-12, Michael)
 
-- `main` — live (Pages deployt automatisch)
-- `v2tracker-prod` — auf `v2tracker-lean` aufgesetzt: Production-Härtung
-  (2026-09-09, Build 50–55: Importmap raus, Vorabprüfung, Nicht-SIMD-Engine,
-  WebP, Font-Subsetting). **Das ist der Stand für den Merge.**
-  **Testdeployment:** Spiegel-Repo `L77D/v2tracker` (Branch → dessen `main`)
-  → https://l77d.github.io/v2tracker/ — nach jedem Push nachziehen:
-  `git push https://github.com/L77D/v2tracker.git v2tracker-prod:main`.
-- `v2tracker-lean` — Entschlackung (Build 49; Michael am Handy: Tracker
-  „deutlich besser als MindAR"). Referenz.
-- `8thwall-image-targets` — Tracking auf 8th Wall Image Targets, Stand vor der
-  Entschlackung (Build 48). Bleibt als Referenz.
-- `pruefstand` — Strategie E: `?record` / `?replay` / `?metrics`
-  (Session-Aufnahme am Gerät, Replay + Vergleichszahlen am Desktop).
-  Noch nicht gemerged; `?record` braucht HTTPS = erst nach Merge am Handy nutzbar.
+- **Haupt-Repo: `L77D/v2tracker`** (dieses Repo). `main` ist der Stand, den
+  GitHub Pages ausliefert → https://l77d.github.io/v2tracker/ (Testlink und
+  einziger aktueller Stand). Gearbeitet wird auf eigenen Branches; erst der
+  Merge nach `main` bringt eine Änderung auf den Link. **Kein Spiegel-Push
+  mehr** — bis 2026-10-12 war dieses Repo nur der Spiegel von
+  `L77D/detar` → Branch `v2tracker-prod` (`git push … v2tracker-prod:main`).
+- Weitere Branches hier: `daten-dialog` (Stand Build 76, 2026-10-08, nicht in
+  `main`), `uebergabe-studio2b` (Engine + Beispielkarte für Studio2B,
+  2026-10-09), dazu Arbeits-Branches `claude/*`.
+- **Veraltet: `L77D/detar`** (Archiv, nicht mehr pushen). Dessen `main` =
+  Build 33 auf MindAR (https://l77d.github.io/detar). Dort liegen auch die
+  Historien-Branches `v2tracker-prod` (bis 2026-10-12 der Arbeitsstand, hierher
+  gespiegelt), `v2tracker-lean` (Entschlackung, Build 49), `8thwall-image-targets`
+  (Build 48), `pruefstand` (Strategie E: `?record`/`?replay`/`?metrics`,
+  MindAR-basiert, ungemergt) und `tracking-runde5`.
 
 ## Konventionen
 
 - **Versionierung:** `js/version.js` → `BUILD` = freilaufender Zähler,
-  **bei JEDEM Push +1** (früher = Commit-Anzahl; seit dem Spiegel-Repo stimmt
-  das nicht mehr, Build 60 = 50 Commits). `?stats` zeigt den laufenden Build
+  **bei JEDEM Push +1** (früher = Commit-Anzahl; seit dem Spiegel-Betrieb
+  stimmt das nicht mehr, Build 60 = 50 Commits). `?stats` zeigt den laufenden Build
   und prüft per no-store-Fetch gegen den live-Stand („neu laden!" bei altem
   Cache).
 - **Keine tuning.json mehr im Repo** (seit 2026-09-09, Branch v2tracker-lean):
@@ -355,7 +356,7 @@ gebaut, nicht bumpen). Vanilla ES-Module, GitHub Pages (served NUR `main`).
 - Kommentare/Commits auf Deutsch, Commit-Trailer `Co-Authored-By: Claude`.
 - Änderungen an Tracking-Werten immer mit Datum + Begründung im Kommentar
   (Fix-Log lebt in den Code-Kommentaren; „(MindAR-Stand …)" = Historie aus
-  `main`, gilt unter 8th Wall nur als Begründung des Aufbaus).
+  `L77D/detar`, gilt unter 8th Wall nur als Begründung des Aufbaus).
 - Gemeinsame Helfer in `js/util.js` (`el`, `rand`, `normalizeAngle`,
   `finiteVec/finiteQuat`, `progress`) — nicht je Modul neu schreiben.
 - `.gitignore` hält `tuning.json`, `beats.theatre.json`, den Lokal-Prototyp und
@@ -397,7 +398,7 @@ StatsOverlay, attachDevTools}` an die Module:
 Rendern: XR8.Threejs.onRender (experience.js → buildExperience({render:false}))
 ```
 
-(main/MindAR: `anchor.group.matrix` roh pixel-skaliert, stabRoot auf Szenen-
+(detar/MindAR: `anchor.group.matrix` roh pixel-skaliert, stabRoot auf Szenen-
 Ebene, `renderer.setAnimationLoop` — Rest identisch.)
 
 PoseStabilizer (seit Build 88, Stufe 3c: `tick()` ist Dirigent über benannte
@@ -487,7 +488,7 @@ Takte — Messungen (20–30 Hz) filtern mit dem Messtakt als dt, Render-Frames
 
 - `CAM`: unter 8th Wall wählt die Engine die Auflösung selbst (Constraint-
   Leiter mit Retry); `maxPixelRatio: 2` gilt weiter (Canvas-Pixelgröße in
-  arSession.js). (main/MindAR: 960×540 per getUserMedia-Wrap, `?res=`.)
+  arSession.js). (detar/MindAR: 960×540 per getUserMedia-Wrap, `?res=`.)
 - `STAB`: `minCutoff 0.1` · `beta 10` (gated) · `rotMinCutoff 0.5` ·
   `rotBeta 4` · `minSpeed 0.04` · `minAngSpeed 0.09` · `scaleOutlier 0.1`
   (Scale-Lock löst unter 8th Wall strukturell nie aus, s. Gotchas).
@@ -514,8 +515,8 @@ oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) 
 `alt`/`neu`/`8roh`, s. „Tracker-Varianten"; ohne = `STAB.tracker`; `?stats` zeigt die Wahl) · `?k=<nr>P` (Public-Edition, steht im
 QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
-`?preflight=aus` · Branch pruefstand: `?record`, `?replay`, `?metrics`.
-(`?res=` gibt es nur in `main`/MindAR.)
+`?preflight=aus` · Branch `pruefstand` (nur `L77D/detar`): `?record`, `?replay`, `?metrics`.
+(`?res=` gab es nur in `L77D/detar` mit MindAR.)
 
 ## Qualitäts-Richtwerte (?stats, Ruhe, 3–5 s Fenster füllen lassen)
 
@@ -573,7 +574,7 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
 - Kompatibilität: keine `static`-Klassenfelder im Live-Code (ES2022, iOS 14.5
   — das Inline-Gate in index.html prüft nur `?.`/`??` und ließe iOS 13.4–14.4
   ohne Hinweis hängen; Build 61 hat genau das in questionMenu.js behoben).
-- **Nur main/MindAR:** mindar-image-three legt IMMER einen CSS3DRenderer-Layer
+- **Nur detar/MindAR (Archiv):** mindar-image-three legt IMMER einen CSS3DRenderer-Layer
   an, der Pointer-Events schluckt → `pointerEvents:none`; MindARs elementweiser
   Matrix-Filter erzeugt nicht-starre Matrizen → Grund für den Scale-Lock; MindAR
   schätzt das Kamera-FOV nur (Kipp-Wobble, Strategie A3).

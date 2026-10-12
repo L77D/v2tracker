@@ -6,7 +6,7 @@ Rückfragen der Figur) mit Sprechblase, Posen und Gesichtsanimation. Kompletter 
 des Zapworks/Mattercraft-Prototyps auf **Open-Source-Tracking** — keine
 Lizenzkosten, kein Build-Schritt, eine einzige statische Website.
 
-**Tracking (Branch `v2tracker-prod`, 2026-09-09):** 8th Wall Image
+**Tracking (seit 2026-09-09):** 8th Wall Image
 Targets aus der **Open-Source-8th-Wall-Engine** (MIT), selbst gehostet unter
 `vendor/8thwall/` (WASM-SIMD) und `vendor/8thwall-nosimd/` (Fallback für
 ältere Browser, automatisch gewählt) — nur Bildtracking, kein SLAM, kein
@@ -15,9 +15,9 @@ vorher prüft `js/preflight.js` In-App-Browser, HTTPS, Kamera-API, WASM und
 WebP und zeigt sonst „Bitte im Browser öffnen" mit „Link kopieren". Umstieg,
 Target-Erzeugung, Event-Zuordnung und die Production-Härtung mit Gate-Tabelle
 (Mindestversionen: **iOS 14 / Chrome 80**): `docs/8thwall-migration.md`.
-(`main` läuft noch auf MindAR.) Testlink des Branches:
-https://l77d.github.io/v2tracker/ (Spiegel-Repo `L77D/v2tracker`, Pages von
-dessen `main`).
+Ausgeliefert wird `main` dieses Repos (`L77D/v2tracker`, Haupt-Repo seit
+2026-10-12): https://l77d.github.io/v2tracker/ — das alte Repo `L77D/detar`
+(MindAR, Build 33) ist veraltet.
 
 **Zwei Editionen pro Karte:** Firmenversion (Standard) mit Logo/Firmenname im
 Splash und Link zur Ausbildungsseite im Dialog, und die neutrale Public-
