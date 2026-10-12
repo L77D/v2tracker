@@ -110,7 +110,7 @@ Das Standard-Target `card` ersetzen:
 1. Kartenbild wie oben durch die CLI schicken (Name = Design-id, Ordner
    `karten/<id>/targets`, Dateien überschreiben).
 2. `SCENE.cardAspect` in `js/config.js` auf Höhe/Breite der **ganzen Karte**
-   setzen (Eck-Marker; seit Build 97 88/63 = 1,40 für 63×88 mm).
+   setzen (Eck-Marker; seit Build 98 88/63 = 1,40 für 63×88 mm).
 3. Alte MindAR-Dateien (`targets/card.mind`, `targets/old/*.mind`) werden von
    diesem Branch nicht mehr gelesen; sie liegen nur noch als Historie da und
    können nach dem Merge gelöscht werden.

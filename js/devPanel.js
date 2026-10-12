@@ -83,7 +83,7 @@ export class DevPanel {
         { o: IDLE, k: "faceCamLerp", l: "Face-Cam Tempo", min: 0.01, max: 0.5, step: 0.01 },
         { o: IDLE, k: "markerWidth", l: "Lauffeld Breite", min: 0.01, max: 0.3, step: 0.005 },
         { o: IDLE, k: "markerHeight", l: "Lauffeld Tiefe", min: 0.01, max: 0.3, step: 0.005 },
-        { o: IDLE, k: "roamFraction", l: "Lauffeld-Anteil", min: 0.1, max: 1, step: 0.05 },
+        { o: IDLE, k: "roamFraction", l: "Lauffeld-Anteil", min: 0.1, max: 1.5, step: 0.05 },
       ]},
       { g: "Aktivierung (Karten-FX)", items: [
         { o: ACTFX, k: "markerSize", l: "Marker-Größe (Kartenbreite)", min: 0.05, max: 0.4, step: 0.01, on: () => this.fx?.applySizes() },

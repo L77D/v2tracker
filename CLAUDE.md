@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-12 · Build 97 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
+Stand: 2026-10-12 · Build 98 (Branch `v2tracker-prod`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40) · Testlink: https://l77d.github.io/v2tracker/ · Live (main, Build 33, MindAR): https://l77d.github.io/detar
 
 ## Projekt
 
@@ -49,7 +49,9 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   Sprechblase (rig.js) und Hüpf-Icon — Eck-Marker bleiben Kartengeometrie
   (Build 81, Michael 2026-10-09: Szene auf 80 % davon → `figureScale 0.68`;
   Build 82: 0.4; Build 84, Michael 2026-10-09: `figureScale 0.5`; Build 85:
-  Hüpf-Icon doppelt so groß, `ACTFX.iconHeight 0.68`) ·
+  Hüpf-Icon doppelt so groß, `ACTFX.iconHeight 0.68`; Build 97: FigureRoot-Höhe
+  skaliert mit figureScale — vorher schwebte die Figur —, Lauffeld `IDLE`
+  = Karte 63 × 88 mm × `roamFraction 1.1`, höchstens 10 % größer) ·
   Panel-Raster in Titelzeilen-Blau, beginnt 20 % unter der Panel-Oberkante
   (Splash-Raster bleibt gelb) · Icon ohne Schlagschatten · „Ich muss weiter"
   nur im Hauptmenü · Ruhezustand + Karte verloren: Panel-Zeile wechselt auf
@@ -218,8 +220,8 @@ Design in daten.json, weitere per `?design`, s. „Engine und Karten"). Karte 00
 Standard seit Build 95 `p04` (Testdruck 04_2809_1 aus Figma, Export 1488×2078,
 Aspekt 1,40 = 63×88 mm). Das frühere `card` (beschnittene Demo-Karte 070926,
 1346×2156 px, Aspekt 1,60) ist aussortiert und gelöscht. `SCENE.cardAspect`
-steht seit Build 97 auf 88/63 = 1,40 (Eck-Marker, Tap-Fläche, Desktop-Plane;
-bis Build 96 1,60 → Marker ~7 % der Kartenbreite zu weit oben/unten). Ein Rest:
+steht seit Build 98 auf 88/63 = 1,40 (Eck-Marker, Tap-Fläche, Desktop-Plane;
+bis Build 97 1,60 → Marker ~7 % der Kartenbreite zu weit oben/unten). Ein Rest:
 `karten/000/vorschau.jpg` (Desktop-Kartenbild) ist noch das alte Druckbild im
 alten Format — P04 aus Figma als 1200-px-JPG nachziehen.
 Physische Breite fürs Tracking = `breiteMm` des Designs in daten.json (63 mm,
@@ -582,7 +584,7 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   Gerätetest, kein Refactoring): Scale-Lock ausbauen (erst Re-Lock-Zähler am
   Gerät prüfen) · Arbiter: `qEarth` ändert sich 60 Hz ohne Dead-Band → kann
   stale Frames als „neu" melden (Vision-Hz in ?stats prüfen) · `SCENE.cardAspect`
-  1,60 → 1,40 (erledigt, Build 97) · Tests (`node --test`) für bubbleText, dialogEngine,
+  1,60 → 1,40 (erledigt, Build 98) · Tests (`node --test`) für bubbleText, dialogEngine,
   edition, poseArbiter (erledigt, s. „Konventionen") · `"ja"/"nein"` → Booleans
   (erledigt, Build 89; `applyTuning` übersetzt alte String-Presets).
 - Fix-Historie: Code-Kommentare mit Datum (2026-07-08 / -09 / -13 / -14).
