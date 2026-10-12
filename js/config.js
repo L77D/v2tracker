@@ -115,11 +115,12 @@ export const SCENE = {
   cardWidth: 0.059,  // SZENEN-Einheit der Kartenbreite (Karte 59 × 91 mm hochkant, Michael
                      // 2026-09-07; vorher 0.17 → 0.095). Die PHYSISCHE Breite fürs Tracking
                      // kommt seit Build 57 aus targets/8thwall/karten.json (breiteMm).
-  cardAspect: 2156 / 1346, // Höhe/Breite der Karte in Anchor-Einheiten → Eck-Marker, Tap-Fläche,
-                           // Lauffeld, Desktop-Plane. Wert = beschnittene Demo-Karte 070926
-                           // (1346×2156 px = 1,60; MindAR-Target, 2026-09-07). Die gedruckte
-                           // Karte ist 63×88 mm = 1,40 (karten.json) — Angleichen ist ein
-                           // Stufe-3-Punkt (sichtbare Marker-Geometrie, Gerätetest).
+  cardAspect: 88 / 63,     // Höhe/Breite der Karte in Anchor-Einheiten → Eck-Marker, Tap-Fläche,
+                           // Desktop-Plane. 2026-10-12 (Michael, Build 97): 1,40 = gedruckte
+                           // Karte 63×88 mm (Druckspezifikation, P04). Bis Build 96 stand hier
+                           // 2156/1346 = 1,60 aus der beschnittenen Demo-Karte 070926 (MindAR-
+                           // Target, 2026-09-07), die seit Build 95 aussortiert ist — die Marker
+                           // saßen damit ~7 % der Kartenbreite zu weit oben und unten.
   figureScale: 0.5,  // 2026-10-09 (Michael): gesamte AR-Szene auf 0.5 (Build 84; vorher
                      // Build 82: 0.4, Build 81: 0.68 = 80 % von 0.85; 2026-09-07: ~85 %) — Figur samt
                      // Sprechblase (rig.js) und Hüpf-Icon (activationFX.js); die
