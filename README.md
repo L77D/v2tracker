@@ -99,7 +99,7 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   aus `karten/katalog.json` (ohne Parameter: Auffang-Seite, keine Karte);
   **`?k=<id>P`** (auch `p`) — Public-Edition derselben Karte.
   **`?design=<id>`** — Kartenbild (Design) der Karte aus `daten.json → designs`
-  (ohne Parameter: das erste, heute `card`; Test-Design `tarn`). Übersicht mit
+  (ohne Parameter: das erste, heute `p04`; weitere: Testdrucke `p01`–`p35`). Übersicht mit
   QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=<id>` gibt es seit
   Build 63 nicht mehr; seit Build 80 heißt `?karte=<design>` nur noch
   „Testdruck", z. B. `?karte=p01` — Karte und Fassung folgen aus dem Design.)
@@ -190,7 +190,7 @@ Hinweis statt einer Fehlerseite).
 ## Tracking-Target (8th Wall) neu erzeugen
 
 Ein Design = ein Kartenbild einer Karte. Weitere Designs derselben Karte (z. B.
-das Test-Design `tarn`) liegen daneben in `karten/<id>/targets/` und stehen in
+die Testdrucke `p01`–`p35`) liegen daneben in `karten/<id>/targets/` und stehen in
 `designs` der `daten.json`; Aufruf per `?design=<id>`. Schritt für Schritt inkl. Tracking-Vergleich
 der Designs und lokalem Test über cloudflared: `docs/kartendesigns.md`.
 

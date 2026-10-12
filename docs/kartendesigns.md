@@ -19,7 +19,7 @@ des Designs, `karten.html` zeigt sie so, und der Kartenlader löst
 - **Liste:** `daten.json → designs` im Kartenordner, z. B.
   `karten/000/daten.json`. Je Eintrag: `id` (steht in der
   URL), `name` (Anzeigename), `target` (Pfad relativ zum Kartenordner, z. B.
-  `targets/tarn.json`), `breiteMm` (physische Kartenbreite), `notiz` (frei).
+  `targets/p04.json`), `breiteMm` (physische Kartenbreite), `notiz` (frei).
 - **Dateien:** `karten/<karte>/targets/<id>.json` + `<id>_luminance.png`. Das
   Luminanzbild wird neben der JSON gesucht (`resources.luminanceImage`).
 - **Aufruf:** `index.html?k=<karte>&design=<id>`. Ohne `&design` gilt das
