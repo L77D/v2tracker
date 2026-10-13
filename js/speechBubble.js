@@ -23,7 +23,7 @@ import { TYPO, CHOREO, frameLerp60 } from "./config.js";
 import { sound } from "./sound.js";
 import { normalizeAngle } from "./util.js";
 import {
-  parseChars, serialize, charsToString, splitWords, splitSentences, splitClauses, joinWithSpace,
+  parseChars, serialize, charsToString, wrapWords, paginateChars,
 } from "./bubbleText.js";
 
 const _v1 = new THREE.Vector3();
@@ -127,16 +127,7 @@ export class SpeechBubble {
   }
   /* Umbruch an Wortgrenzen, OHNE Kappung — die Seitenzahl kommt aus paginate. */
   wrapChars(chars) {
-    const maxW = this.maxLineWidth();
-    const lines = [];
-    let current = [];
-    for (const word of splitWords(chars)) {
-      const candidate = current.length ? joinWithSpace(current, word) : word;
-      if (current.length === 0 || this.measure(candidate) <= maxW) current = candidate;
-      else { lines.push(current); current = word; }
-    }
-    if (current.length) lines.push(current);
-    return lines.length ? lines : [[]];
+    return wrapWords(chars, (c) => this.measure(c), this.maxLineWidth());
   }
   lineCount(chars) { return this.wrapChars(chars).length; }
 
@@ -147,39 +138,8 @@ export class SpeechBubble {
   paginate(markup) {
     const all = parseChars(markup);
     if (!this.ctx || all.length === 0) return [String(markup ?? "")];
-    const max = TYPO.maxLines;
-    const fits = (chars) => this.lineCount(chars) <= max;
-    const pages = [];
-    let cur = [];
-    const splitOversized = (sentence) => {
-      const flushWords = (chunk) => {
-        let line = [];
-        for (const w of splitWords(chunk)) {
-          const t = line.length ? joinWithSpace(line, w) : w;
-          if (fits(t)) line = t;
-          else { if (line.length) pages.push(line); line = w; }
-        }
-        if (line.length) pages.push(line);
-      };
-      let acc = [];
-      for (const p of splitClauses(sentence)) {
-        const t = acc.length ? joinWithSpace(acc, p) : p;
-        if (fits(t)) acc = t;
-        else {
-          if (acc.length) { pages.push(acc); acc = []; }
-          if (fits(p)) acc = p; else flushWords(p);
-        }
-      }
-      if (acc.length) pages.push(acc);
-    };
-    for (const sentence of splitSentences(all)) {
-      const t = cur.length ? joinWithSpace(cur, sentence) : sentence;
-      if (fits(t)) { cur = t; continue; }
-      if (cur.length) { pages.push(cur); cur = []; }
-      if (fits(sentence)) cur = sentence;
-      else splitOversized(sentence);
-    }
-    if (cur.length) pages.push(cur);
+    const fits = (chars) => this.lineCount(chars) <= TYPO.maxLines;
+    const pages = paginateChars(all, fits);
     return pages.length ? pages.map(serialize) : [String(markup)];
   }
 

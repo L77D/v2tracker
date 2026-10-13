@@ -109,3 +109,59 @@ export function splitClauses(chars) {
 }
 
 export const joinWithSpace = (a, b) => (a.length ? a.concat([{ ch: " ", fx: null }], b) : b.slice());
+
+/* Umbruch an Wortgrenzen, ohne Kappung. measure(chars) liefert die Breite —
+   in der App am echten Font (SpeechBubble), in der Prüfung geschätzt
+   (tools/seitenSchaetzung.js). Ein Wort, das allein zu breit ist, bleibt eine
+   eigene Zeile. */
+export function wrapWords(chars, measure, maxW) {
+  const lines = [];
+  let current = [];
+  for (const word of splitWords(chars)) {
+    const candidate = current.length ? joinWithSpace(current, word) : word;
+    if (current.length === 0 || measure(candidate) <= maxW) current = candidate;
+    else { lines.push(current); current = word; }
+  }
+  if (current.length) lines.push(current);
+  return lines.length ? lines : [[]];
+}
+
+/* Seiten: Grenze am Satzende; ein Satz, der allein nicht passt, wird an
+   Komma/Gedankenstrich geteilt, zuletzt an der Wortgrenze. fits(chars) sagt,
+   ob ein Stück auf eine Seite passt. Liefert Zeichenlisten je Seite (leer,
+   wenn der Text leer ist). Gemeinsamer Kern von SpeechBubble.paginate() und
+   der Seiten-Schätzung der Dialogprüfung (2026-10-13). */
+export function paginateChars(all, fits) {
+  const pages = [];
+  let cur = [];
+  const splitOversized = (sentence) => {
+    const flushWords = (chunk) => {
+      let line = [];
+      for (const w of splitWords(chunk)) {
+        const t = line.length ? joinWithSpace(line, w) : w;
+        if (fits(t)) line = t;
+        else { if (line.length) pages.push(line); line = w; }
+      }
+      if (line.length) pages.push(line);
+    };
+    let acc = [];
+    for (const p of splitClauses(sentence)) {
+      const t = acc.length ? joinWithSpace(acc, p) : p;
+      if (fits(t)) acc = t;
+      else {
+        if (acc.length) { pages.push(acc); acc = []; }
+        if (fits(p)) acc = p; else flushWords(p);
+      }
+    }
+    if (acc.length) pages.push(acc);
+  };
+  for (const sentence of splitSentences(all)) {
+    const t = cur.length ? joinWithSpace(cur, sentence) : sentence;
+    if (fits(t)) { cur = t; continue; }
+    if (cur.length) { pages.push(cur); cur = []; }
+    if (fits(sentence)) cur = sentence;
+    else splitOversized(sentence);
+  }
+  if (cur.length) pages.push(cur);
+  return pages;
+}

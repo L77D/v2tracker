@@ -81,8 +81,9 @@ export const ohneAnnahme = (t) => String(t ?? "").replace(ANNAHME_RE, "");
 const SEITE_FEHLER = /ausbildungsseite|webseite|website|homepage|internetseite/i;
 const SEITE_HINWEIS = /\bseite\b|\blink\b/i;
 // Angaben, die sich schnell ändern (Regelwerk A10) — Fehler bzw. Hinweis
-const WANDEL_FEHLER = /€|\beuro\b|gehalt|vergütung|\blohn\b/i;
-const WANDEL_HINWEIS = /verdien|urlaub|übernomm|übernahme|prämie|zuschuss|frist|bewerbungsschluss/i;
+// 2026-10-13: dazu Datum (Fehler), Betrag hinter „verdien…" (Fehler), Jahreszahl und Monat (Hinweis)
+const WANDEL_FEHLER = /€|\beuro\b|gehalt|vergütung|\blohn\b|verdien\w*\s+[^.!?]*\d|\b\d{1,2}\.\s?\d{1,2}\.(\d{2,4})?(?!\d)/i;
+const WANDEL_HINWEIS = /verdien|urlaub|übernomm|übernahme|prämie|zuschuss|frist|bewerbungsschluss|\b(19|20)\d{2}\b|\b(januar|februar|märz|april|mai|juni|juli|august|september|oktober|november|dezember)\b/i;
 
 /* Schreibweisen nach dem Tonality Guide von DEIN ERSTER TAG (Regelwerk A7,
    übernommen 2026-10-09). Geprüft wird auf dem Text ohne Auszeichnung. */
@@ -389,8 +390,8 @@ export function pruefeKarte(karte, { seiten = null, firma = "", dateien = null }
     if (name && orig.toLowerCase().includes(name.toLowerCase())) F(s.ort + ": Firmenname „" + name + "“ ausgeschrieben — stattdessen {firma} schreiben.");
     for (const t of [orig, pub]) {
       if (typeof t !== "string") continue;
-      if (WANDEL_FEHLER.test(t)) F(s.ort + ": nennt Geld oder Gehalt — Angaben, die sich schnell ändern, gehören nicht in die Karte.");
-      else if (WANDEL_HINWEIS.test(t)) H(s.ort + ": prüfen, ob hier etwas steht, das sich schnell ändert (Urlaub, Übernahme, Leistungen, Fristen).");
+      if (WANDEL_FEHLER.test(t)) F(s.ort + ": nennt Geld, Gehalt oder ein Datum — Angaben, die sich schnell ändern, gehören nicht in die Karte.");
+      else if (WANDEL_HINWEIS.test(t)) H(s.ort + ": prüfen, ob hier etwas steht, das sich schnell ändert (Jahr, Monat, Urlaub, Übernahme, Leistungen, Fristen).");
     }
     if (s.nurFirma) continue; // Link-Frage: gibt es nur in der Firmenfassung
     if (n && pub == null) F(s.ort + ": enthält {firma}, aber keine neutrale Fassung (" + s.feld + "Public).");

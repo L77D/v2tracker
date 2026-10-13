@@ -11,3 +11,5 @@ targets/8thwall/*_original.png
 Thumbs.db
 node_modules/
 __pycache__/
+# Ausgabe von tools/baue-dialog-skill.mjs (Dialog-Skill-bauen.command)
+dist/
