@@ -1,14 +1,14 @@
 # DETAR — Regelwerk zur Dialog-Generierung
 
-Stand 09.10.2026 (Build 79). Löst `Dialogsystem/DETAR_Dialog_Generierung.md`
-im Projektordner ab (Stand 03.09.2026). Dieses Dokument ist die
-Arbeitsanweisung, mit der Claude den Dialog **einer** Karte erzeugt. Es ist als
-**Kontrakt** geschrieben: Jede Regel ist prüfbar.
+Stand 13.10.2026. Dieses Dokument ist die Arbeitsanweisung, mit der Claude den
+Dialog **einer** Karte erzeugt. Es ist als **Kontrakt** geschrieben: Jede Regel
+ist prüfbar.
 
-Produktionsweg: **Erhebung → Faktenblatt (+ Gesprächsabschrift) → Claude generiert den
-Dialogteil → Prüfseite → menschliche Korrektur → Freigabe durch den Betrieb →
-Einbau als `karten/<nr>/dialog.json`.** Es gibt keine schreibenden Autoren; der
-Mensch korrigiert, entscheidet und gibt frei.
+Produktionsweg: **Quellen → Faktenblatt (Teil B) → Claude generiert den
+Dialogteil und prüft ihn mit dem Prüfprogramm (C1) → ein Mensch liest (C2) →
+Abnahme beim Betrieb (C3) → Abgabe von `dialog.json` und Faktenblatt zum
+Einbau in die App.** Es gibt keine schreibenden Autoren; der Mensch korrigiert,
+entscheidet und nimmt ab.
 
 **Zwei Fassungen, ein Auftrag.** Karten werden von Betrieben in Auftrag
 gegeben; deshalb entsteht zuerst die **Firmenfassung**. Aus ihr wird die
@@ -21,19 +21,21 @@ Firmenzusammenhänge nennen (A9), nie aber Angaben, die sich schnell ändern
 
 Begleitend:
 
-- **Vorbild:** `karten/000/dialog.json` (interner Prototyp) —
-  ein vollständiger Dialog im Zielzustand. Bei Widerspruch zwischen Regelwerk und Vorbild gewinnt
-  das Regelwerk; dann wird das Vorbild angepasst.
-- **Prüfseite:** `tools/kartenpruefung.html` — prüft alle Punkte aus C1
-  automatisch und misst die Seiten wie die App (Aufruf in Teil C).
-- **Begründungen:** `Dialogsystem/DETAR_Dialogsystem.md` und
-  `DETAR_Dialogsystem_Konzept.md` im Projektordner (warum Hub statt Baum,
-  warum eine Variable, Haltung der Rückfragen).
-- **Tonality Guide** von DEIN ERSTER TAG (Version 9, 13.06.2023):
-  `Kunde/DET_Tonality_Guide_V9.pdf` im Projektordner. Übernommen sind Gendern,
-  Schreibweisen und Satzzeichen (A7). Bewusst nicht übernommen: Benefits mit
-  Beträgen (widerspricht A10) und die Wir-Perspektive des Unternehmens — hier
-  spricht die Figur als Azubi.
+- **Vorbild:** ein vollständiger Dialog im Zielzustand (im Skill
+  `references/vorbild-dialog.json`, in der App `karten/000/dialog.json`). Bei
+  Widerspruch zwischen Regelwerk und Vorbild gewinnt das Regelwerk. Das
+  Vorbild ist ein Entwurf: Seine `[Annahme]`-Marken zeigen, wie Lücken
+  markiert werden, nicht, dass sie stehen bleiben dürfen.
+- **Quellen:** `dialog-quellen.md` — welche Inhalte eine Karte braucht und
+  woher sie kommen.
+- **Prüfprogramm:** `dialogpruefung.mjs` (im Skill unter `scripts/tools/`,
+  in der App unter `tools/`) — prüft alle Punkte aus C1 und
+  schätzt die Seiten (Aufruf in C1). Genau gemessen werden die Seiten auf der
+  Prüfseite der App: https://l77d.github.io/v2tracker/tools/kartenpruefung.html
+- **Tonality Guide** von DEIN ERSTER TAG (Version 9, 13.06.2023). Übernommen
+  sind Gendern, Schreibweisen und Satzzeichen (A7). Bewusst nicht übernommen:
+  Benefits mit Beträgen (widerspricht A10) und die Wir-Perspektive des
+  Unternehmens — hier spricht die Figur als Azubi.
 
 ---
 
@@ -49,7 +51,8 @@ Kopfdaten (`id`, `profession`, `company`, `companyLogo`), Figur und
 Kartenbilder gehören **nicht** dazu — sie kommen aus der Produktion.
 
 Eingaben sind **ausschließlich**: dieses Dokument, das ausgefüllte Faktenblatt
-(Teil B) und, falls vorhanden, die Abschrift des Azubi-Interviews.
+(Teil B) und die Quellen, aus denen es entstanden ist — vor allem, falls
+vorhanden, die Abschrift des Gesprächs mit einer Person in Ausbildung.
 
 **Nichts erfinden, Annahmen kennzeichnen.** Jede prüfbare Aussage — Zahl,
 Dauer, Größe, Uhrzeit, Ort, Tätigkeit, Ablauf — stammt aus Faktenblatt oder
@@ -59,12 +62,21 @@ Satzzeichen: `Einmal die Woche Berufsschule [Annahme]: …`
 
 - `[Annahme]` bleibt im Text, bis die Aussage bestätigt (Marke löschen) oder
   ersetzt ist. Die App zeigt die Marke an — gewollt, solange die Karte ein
-  Entwurf ist. Vor der Freigabe beim Betrieb steht keine Marke mehr im Dialog.
+  Entwurf ist. Bei der Abgabe nach der Abnahme steht keine Marke mehr im
+  Dialog (C3).
+- Auch was im Faktenblatt als „abgeleitet, nicht belegt“ steht, trägt im
+  Dialog `[Annahme]`.
+- **Beschriftungen** (Kacheln, Optionen) tragen keine Marke. Nennt eine
+  Beschriftung eine unbelegte Angabe (zum Beispiel den Lernort), steht die
+  Marke im zugehörigen Text, und der Prüfbericht nennt die Beschriftung mit.
 - Nicht markiert werden Meinungen und Ratschläge der Figur („Ein Praktikum
-  sagt mehr als jede Broschüre") und die erfundene Persona.
-- Die Prüfseite listet alle Marken auf und zählt sie bei der Länge nicht mit.
-- Jede Lücke steht zusätzlich im **Prüfbericht** nach dem JSON (siehe
-  Aufrufmuster).
+  sagt mehr als jede Broschüre") und die erfundene Persona — das heißt nur
+  Name, Lehrjahr und Ton. Was die Figur über Beruf, Betrieb oder
+  Voraussetzungen sagt („Ich hatte Mittlere Reife, das reicht bei uns"), ist
+  prüfbar und braucht eine Quelle oder die Marke.
+- Das Prüfprogramm listet alle Marken auf und zählt sie bei der Länge nicht
+  mit.
+- Jede Lücke steht zusätzlich im **Prüfbericht** (Teil C).
 
 ## A2. Art und Persona
 
@@ -86,7 +98,14 @@ Vor dem Dialog wird die Figur festgelegt und als Feld `persona` ausgegeben:
 - **jahr:** Lehrjahr bzw. Studienjahr, 2 oder 3. Bei einem dualen Studium ist
   die Figur Studentin oder Student mit Abitur oder Fachhochschulreife und
   entsprechend etwas älter — das gilt auch für die Zeichnung.
-- **haltung:** ein Satz Sprechhaltung, aus dem Interview abgeleitet.
+- **haltung:** ein Satz Sprechhaltung, aus dem Interview abgeleitet; ohne
+  Interview aus Ton und Tätigkeit des Berufs gewählt und im Prüfbericht als
+  vorläufig vermerkt.
+
+**Die Persona ist vorläufig.** Wer die Figur auf der Karte wird, wird
+getrennt entschieden. Bis dahin ist die Persona eine Arbeitsgrundlage für den
+Ton; ändert sich die Figur, werden Name, Selbstbezeichnung („Elektronikerin“)
+und Lehrjahr im Dialog nachgezogen. Die gewählte Persona steht im Prüfbericht.
 
 Die App liest `art` und `persona` nicht. Das Feld hält beim Gegenlesen und beim
 Neu-Generieren fest, nach wem die Karte klingen soll. Sichtbar wird der Name
@@ -116,7 +135,7 @@ Rolle, ID und Thema nicht.
 | `anstrengend` | alltag | Was hart, unbequem oder langweilig ist |
 | `purpose` | beruf | Wem die Arbeit nützt, was ohne sie passieren würde |
 | `koennen` | beruf | Voraussetzungen: Abschluss, Fächer, Eigenschaften |
-| `lernort` | beruf | Wo man außer im Betrieb lernt — Berufsschule, Pflegeschule, Hochschule oder Akademie —, was dort und wie oft; Beschriftung nennt den Ort („Was lernst du in der Berufsschule?") |
+| `lernort` | beruf | Wo man außer im Betrieb lernt — Berufsschule, Pflegeschule, Hochschule oder Akademie —, was dort und wie oft; Beschriftung nennt den Ort („Was lernst du in der Berufsschule?"). Ausbildungswerkstatt oder Ausbildungszentrum des Betriebs zählen zum Betrieb, nicht als Lernort |
 | `danach` | beruf | Dauer der Ausbildung oder des Studiums, Abschluss, wie es danach weitergeht |
 | `jetzt_tun` | wege | Was man jetzt schon tun kann |
 | `bewerbung` | wege | Wie man sich bewirbt — ohne Termine; Firmenfassung verweist auf die Seite, neutrale Fassung erklärt allgemein |
@@ -214,7 +233,9 @@ oder lieber mit Maschinen?"
   planbar/jeden Tag anders, mit den Händen/im Kopf, drinnen/draußen,
   Menschen/Maschinen.
 - Gefunden wird die Achse im Interview: dort, wo zwei Leute im selben Beruf
-  verschieden antworten, was sie daran mögen.
+  verschieden antworten, was sie daran mögen. **Ohne Gesprächsabschrift**
+  wird sie aus den Tätigkeiten abgeleitet; Reaktionen und Zweigfragen tragen
+  dann `[Annahme]`, und der Prüfbericht nennt die Achse als offen.
 - **Trägt der Beruf keine Achse, entfällt die Rückfrage** samt Zweigfragen.
 
 Aufbau — genau **eine** Variable, drei Optionen:
@@ -249,6 +270,13 @@ letzter Stelle). Erlaubte Arten der drei Schätzungen:
 | **Wo landet es?** | „Wohin geht das, was ich baue?" | drei Orte oder Abnehmer, einer stimmt |
 | **Womit arbeite ich?** | „Was habe ich am häufigsten in der Hand?" | drei Gegenstände, einer stimmt |
 
+- **Quellen:** Die richtige Antwort braucht eine Quelle. Bei „Was gehört
+  dazu?" trägt auch die Tätigkeit, die nicht dazugehört, `[Annahme]`, bis der
+  Betrieb bestätigt, dass sie nicht zum Beruf gehört — Ausschreibungen nennen
+  nur, was man macht.
+- **Reihenfolge:** Zahlen aufsteigend; bei den anderen Arten steht die
+  richtige Antwort nicht immer an derselben Stelle. „Keine Ahnung" ist immer
+  die vierte Option.
 - **Jede Reaktion nennt die richtige Antwort**, auch die auf „Keine Ahnung".
   Eine falsche Schätzung wird korrigiert, nicht kommentiert — kein „da hast du
   dich vertan".
@@ -275,10 +303,12 @@ Läuft beim Ausstieg vor der Verabschiedung und ersetzt die Schlusszeile.
 ## A6. Begrüßung und Wiedereinstieg
 
 - **Begrüßung** (`greeting`): Die Figur stellt sich mit Namen und Beruf vor
-  und lädt zum Fragen ein. Eine Seite.
+  und lädt zum Fragen ein. Eine Seite. In der neutralen Fassung steht statt
+  „bei {firma}" einfach „hier" oder keine Ortsangabe.
 - **Wiedereinstieg** (`reentry.rules`): drei Varianten nach erneutem Tippen
   auf die Karte. Beiläufig — kein zweites Hallo, keine Erinnerung an Link,
-  Bewerbung oder offene Fragen. Erste passende Regel gewinnt; die **letzte
+  Bewerbung oder bestimmte offene Fragen (ein allgemeines „Na, noch was?" ist
+  in Ordnung). Erste passende Regel gewinnt; die **letzte
   Regel hat keine Bedingung** (Standard). Vorbild: `ifVisit: 4`, `ifVisit: 3`,
   Standard.
 
@@ -288,7 +318,8 @@ Läuft beim Ausstieg vor der Verabschiedung und ersetzt die Schlusszeile.
 
 Die Sprechblase fasst fünf Zeilen; längerer Text wird in **Seiten** geteilt,
 der Nutzer blättert mit Weiter. Gezählt wird in Seiten, nicht in Zeichen —
-die Prüfseite misst genau wie die App.
+das Prüfprogramm schätzt sie nach demselben Verfahren wie die App, im Zweifel
+eher zu hoch.
 
 - **Ziel: eine Seite. Höchstens zwei.** Der Sinn muss auf der ersten Seite
   klar sein; zwei Seiten sind die Ausnahme, aber kein Fehler. Drei Seiten
@@ -442,7 +473,15 @@ Fassung als **ganzer zweiter Text** daneben.
 
 - den Firmennamen — nur über den Platzhalter **`{firma}`**, nie
   ausgeschrieben, **höchstens zweimal** pro Karte (Vorbild: Begrüßung und
-  Bewerbung);
+  Bewerbung). `{firma}` steht für die Form, unter der der Betrieb auftritt
+  („STRABAG Rail“, nicht „STRABAG Rail GmbH“); jede weitere Form (Kurzform,
+  Konzernname, Rechtsform) bekommt das Prüfprogramm ebenfalls mit `--firma`.
+  Im Zweifel die kürzeste Form, die den Betrieb eindeutig benennt; die Frage
+  geht in die Abnahme. **`{firma}` wird unverändert eingesetzt** — ohne
+  Artikel und ohne Beugung. „bei {firma}" geht nur bei Namen ohne Artikel
+  („bei Siemens"); braucht der Name einen Artikel („das Sana-Klinikum"), den
+  Satz so bauen, dass der Name allein steht („Ausgebildet werde ich hier:
+  {firma}.", „{firma} bildet mich aus.");
 - allgemeine Firmenzusammenhänge in Alltagssprache (Ort, Branche, wofür das
   Produkt gebraucht wird, A7);
 - die Link-Frage (`branded: true`) und Verweise auf die Ausbildungsseite.
@@ -510,8 +549,8 @@ kommen nach A7 gar nicht vor.
 
 ## A11. Ausgabekontrakt
 
-Ausgabe ist ein JSON-Objekt mit genau diesen Feldern, danach der Prüfbericht
-(siehe Aufrufmuster). Kein Fließtext vor dem JSON.
+Ausgabe ist die Datei `dialog.json` mit genau diesen Feldern; dazu der
+Prüfbericht (Teil C) als eigene Datei.
 
 ```jsonc
 {
@@ -565,17 +604,40 @@ Feldregeln:
 - **Kein Feld `quelle`** und keine weiteren Felder außer den hier genannten —
   auch keine Notizfelder wie `_hinweis`. In den exportierten Dateien
   (`dialog.json`, `daten.json`, `katalog.json`) steht nur, was App oder
-  Prüfseite lesen. Quellen, Lücken und Entscheidungen stehen im Prüfbericht
-  (`Dialog/` im Kartenordner).
+  Prüfprogramm lesen. Quellen, Lücken und Entscheidungen stehen im
+  Prüfbericht.
 
 ---
 
 # Teil B — Faktenblatt (Eingabe)
 
-Wird aus den Inhalten der Erhebung gefüllt (Liste:
-`Kunde/DETAR_Erhebung_Inhalte.md` im Projektordner; **wie** die Inhalte
-eingeholt werden, wird mit Studio2B abgestimmt) oder aus einer öffentlichen
-Ausschreibung übernommen. **Ohne dieses Blatt wird nicht generiert.**
+**Ohne Faktenblatt wird nicht generiert.** Claude erstellt es aus den Quellen,
+die für die Karte bereitgestellt werden (welche Inhalte gebraucht werden:
+`dialog-quellen.md`).
+
+Regeln für das Faktenblatt:
+
+- **Quellen nummerieren** und oben auflisten — `[Q1] Ausschreibung „…“,
+  abgerufen am …`, `[Q2] Gesprächsabschrift vom …`, `[Q3] Foto …`. Fasst eine
+  Quelle mehrere zusammen (etwa ein Briefing aus Ausschreibung und
+  Ausbildungsseite), bekommt sie eine Marke; ihre Herkunft steht in der
+  Quellenliste dahinter, und die Marke darf sie nennen (`[Q1 Ausschreibung]`).
+- **Jede Angabe trägt ihre Quellenmarke** (`3,5 Jahre [Q1]`). Was aus keiner
+  Quelle stammt, steht nicht im Faktenblatt.
+- **Lücken als „fehlt“** stehen lassen, nicht füllen — auch wenn eine
+  Mindestzahl verlangt ist (zum Beispiel zwei Zahlen). Die Lücke geht als
+  Frage in die Abnahme (Prüfbericht Teil 4). Was nur abgeleitet ist
+  (zum Beispiel eine Tätigkeit, die die Ausschreibung nicht nennt), wird so
+  gekennzeichnet: „abgeleitet, nicht belegt“.
+- **Was sich schnell ändert, wird nicht übernommen** (Abschnitt „Nicht
+  anfragen“), auch wenn es in einer Quelle steht — vermerken, dass es bewusst
+  weggelassen wurde.
+- **Personen** aus den Quellen werden nicht namentlich übernommen.
+- Wo das Faktenblatt eine Lücke hat, die der Dialog braucht, setzt der Dialog
+  einen Platzhalter mit `[Annahme]` (A1) — und der Prüfbericht nennt die Lücke,
+  damit sie vor der Abnahme geklärt wird.
+
+Vorlage:
 
 ```
 BERUF
@@ -648,23 +710,46 @@ NICHT ANFRAGEN
 
 # Teil C — Prüfliste
 
-Läuft zweimal: einmal von Claude direkt nach der Generierung (als Prüfbericht),
-einmal von der Person, die korrigiert.
+Läuft zweimal: zuerst Claude direkt nach der Generierung — Prüfprogramm (C1),
+dann die inhaltlichen Punkte (C2) als Selbstprüfung, dann der Prüfbericht.
+Danach liest ein Mensch die Lesefassung und geht C2 noch einmal durch; das
+ersetzt die Selbstprüfung nicht und wird durch sie nicht ersetzt.
 
-## C1. Maschinell — Prüfseite
+**Prüfbericht** (`pruefbericht.md`) — schreibt Claude zu jedem Entwurf, in vier
+Teilen:
 
-**Aufruf ohne Terminal:**
+1. **Lücken:** jede Angabe, die gefehlt hat, und wie damit umgegangen wurde
+   (welcher Text trägt dafür `[Annahme]`).
+2. **Persona, Achse und Schätzfrage** mit kurzer Begründung — bzw. warum die
+   steuernde Rückfrage oder die Schätzfrage entfällt.
+3. **Nicht erfüllt:** jeder Hinweis aus C1 (außer der `[Annahme]`-Liste, die
+   steht schon in Teil 1 und 4) und jeder Punkt aus C2, den Claude nicht
+   erfüllen konnte, mit Grund.
+4. **Für die Abnahme zu klären:** die Fragen an den Betrieb, nummeriert —
+   vor allem jede `[Annahme]`.
 
-- Am Rechner: `Start-Dev-Server.command` doppelklicken, dann
-  `http://localhost:8743/tools/kartenpruefung.html` öffnen.
-- Oder auf dem Testlink: `https://l77d.github.io/v2tracker/tools/kartenpruefung.html`
-  (sobald dieser Stand auf `main` liegt).
+## C1. Maschinell — Prüfprogramm
 
-Die Seite prüft eine Karte aus dem Repo (Auswahl oben, `?k=<id>`) oder einen
-eingefügten Dialogteil (Ausgabe von Claude, Firmenname daneben eintragen). Sie
-meldet **Fehler** (müssen weg) und **Hinweise** (ansehen), zeigt die
-**Lesefassung** beider Fassungen (der komplette Dialog am Stück) und für jeden
-Text die Seitenzahl in beiden Fassungen.
+Claude lässt das Prüfprogramm nach jedem Entwurf laufen und korrigiert, bis
+**keine Fehler** mehr gemeldet werden:
+
+```
+node dialogpruefung.mjs dialog.json --firma "<Firmenname>" --lesefassung lesefassung.md
+```
+
+- **Fehler** müssen weg. **Hinweise** werden angesehen und entweder behoben
+  oder im Prüfbericht begründet.
+- `--lesefassung` schreibt den kompletten Dialog am Stück in beiden
+  Fassungen und die Länge je Text — für den Menschen, der liest (C2).
+- `--final` gilt für die Abgabe nach der Abnahme: Dann ist jede `[Annahme]`
+  ein Fehler.
+- `--firma` darf mehrfach stehen: zuerst die Form für `{firma}`, dann jede
+  weitere Form des Namens (`--firma "STRABAG Rail" --firma "STRABAG"`). Jede
+  davon ist ausgeschrieben ein Fehler.
+- Die Seitenzahl ist **geschätzt** (jedes Zeichen gleich breit, eine Zeile
+  ~27 Zeichen, fünf Zeilen je Seite). Sie liegt im Zweifel eine Seite zu hoch,
+  nie zu niedrig. Genau misst die Prüfseite der App
+  (`tools/kartenpruefung.html`, eingefügter Dialog plus Firmenname).
 
 Geprüft wird:
 
@@ -695,11 +780,13 @@ Geprüft wird:
 - [ ] Was die neutrale Fassung zeigt (gemeinsame Texte und `…Public`), enthält
       kein `{firma}`, keinen Firmenbegriff und keinen Verweis auf eine Seite
       des Betriebs („Seite"/„Link" → Hinweis).
-- [ ] Kein Geld, kein Gehalt (Fehler); Urlaub, Übernahme, Leistungen, Fristen
-      → Hinweis zum Nachlesen.
+- [ ] Kein Geld, kein Gehalt, kein Datum (Fehler); Jahreszahlen, Monate,
+      Urlaub, Übernahme, Leistungen, Fristen → Hinweis zum Nachlesen. Das
+      Programm erkennt nur Muster — C2 fragt deshalb noch einmal nach.
 - [ ] Mindestens drei Fragen je Thema, in beiden Fassungen (ohne Zweige).
 - [ ] Kein Text länger als zwei Seiten, in beiden Fassungen (zwei Seiten →
-      Hinweis, Ziel ist eine; `[Annahme]` zählt nicht mit).
+      Hinweis, Ziel ist eine; `[Annahme]` zählt nicht mit; im Prüfprogramm
+      geschätzt).
 - [ ] Alle `[Annahme]`-Marken werden als Hinweis aufgelistet.
 - [ ] Schreibweisen (A7): gegendert nur mit `*`; „du" im Satz klein; kein
       „&"; keine Abkürzungen; kein ´ als Apostroph. Generisches Maskulinum,
@@ -707,15 +794,15 @@ Geprüft wird:
 - [ ] Höchstens drei Ausrufezeichen je Fassung.
 - [ ] Keine Antwort und keine Reaktion endet mit einer Frage.
 - [ ] Mehr als drei Texte beginnen mit demselben Wort → Hinweis.
-- [ ] `profession` (bei einer Karte aus dem Repo): Sternchen statt `/in`, kein
+- [ ] `profession` (nur auf der Prüfseite, bei einer Karte aus der App): Sternchen statt `/in`, kein
       `(w/m/d)`; bei `art: "dual"` endet sie auf „– duales Studium", ohne
       Sternchen und Abschlusskürzel.
 - [ ] Bei `art: "dual"` nennt der Dialog die Hochschule (sonst Hinweis).
 
 ## C2. Inhaltlich — liest ein Mensch
 
-**Pflicht vor der Freigabe:** die **Lesefassung neutral** auf der Prüfseite
-einmal ganz lesen — so sieht die Schule die Karte. Verrät irgendetwas den
+**Pflicht vor der Abnahme:** die **Lesefassung neutral** (vom Prüfprogramm
+geschrieben) einmal ganz lesen — so sieht die Schule die Karte. Verrät irgendetwas den
 Betrieb? Verweist etwas auf eine Seite, die es dort nicht gibt?
 
 - [ ] Kommt ein Datum, eine Frist oder ein Jahrgang vor?
@@ -737,6 +824,8 @@ Betrieb? Verweist etwas auf eine Seite, die es dort nicht gibt?
       kommt der Wechsel zwischen Hochschule und Betrieb vor (A3a)?
 - [ ] Steht eine neutrale Form, wo es eine gibt? Wird die Nutzerin irgendwo im
       Maskulinum angesprochen?
+- [ ] Liest sich in der Firmenfassung jeder Satz mit eingesetztem
+      Firmennamen grammatisch richtig (Artikel, Fall)?
 - [ ] Liest sich die neutrale Fassung natürlich, ohne Lücke, wo der Betrieb
       stand — und sagt sie inhaltlich dasselbe wie die Firmenfassung?
 - [ ] Steht Betriebseigenes als eigene Erfahrung der Figur da, nicht als Regel
@@ -745,77 +834,31 @@ Betrieb? Verweist etwas auf eine Seite, die es dort nicht gibt?
       (Produkt-, Programmname, Abkürzung)?
 - [ ] Ist jede prüfbare Aussage durch Faktenblatt oder Interview gedeckt?
 
-## C3. Freigabe beim Betrieb
+## C3. Abnahme beim Betrieb
 
-Vorher: keine `[Annahme]` mehr im Dialog — jede ist bestätigt oder ersetzt.
+Jede `[Annahme]` wird mit dem Betrieb geklärt: bestätigt (Marke löschen) oder
+ersetzt. Nach der Abnahme läuft das Prüfprogramm mit `--final` — keine Fehler.
 
 Zweispaltig vorlegen:
 
 - **Fachaussage** — der Betrieb prüft, ob es stimmt.
-- **Formulierung** — bleibt bei uns. Korrekturwünsche an der Sprache werden als
-  Fachhinweis aufgenommen und von uns umgesetzt, nicht wörtlich übernommen.
+- **Formulierung** — bleibt bei der Redaktion. Korrekturwünsche an der Sprache
+  werden als Fachhinweis aufgenommen und nach diesem Regelwerk umgesetzt,
+  nicht wörtlich übernommen.
 
 Ohne diese Trennung stehen nach der zweiten Runde wieder „Betriebsmittel" und
 „Schutzmaßnahmen" im Dialog.
 
 ---
 
-# Einbau
+# Abgabe
 
-Eine Karte besteht aus zwei Dateien (seit Build 72, 2026-10-08): `daten.json`
-(Kartendaten) und `dialog.json` (Dialog). Produktionskarten heißen nach ihrer
-Nummer: `karten/001/`, Aufruf `?k=001`.
+Nach der Abnahme und einem fehlerfreien Lauf mit `--final` gehen zum Einbau in
+die App:
 
-1. Ordner `karten/<nr>/` anlegen (Vorlage: `Vorlagen/_Karte/Export/NNN/` im
-   Projektordner) und `daten.json` setzen — nur diese Felder:
+- **`dialog.json`** — der Dialogteil nach A11, sonst nichts.
+- **`faktenblatt.md`** — daraus kommen die Kartendaten, die nicht im Dialog
+  stehen: Bezeichnung auf der Karte (Schreibweise A7), Firmenname, Link.
+- **Logo** des Betriebs, falls es mitgeliefert wurde.
 
-   | Feld | Inhalt |
-   |---|---|
-   | `format` | 2 |
-   | `id` | Kartennummer, dreistellig (`"001"`) |
-   | `profession` | Beruf oder Studiengang, Schreibweise A7, z. B. „Elektroniker*in für Betriebstechnik" oder „Elektro- und Informationstechnik – duales Studium" |
-   | `company` | Firmenname (für `{firma}` und den Splash) |
-   | `companyLogo` | `logo.webp` (fehlt in der Public-Fassung automatisch) |
-   | `companyNeutral` | „der Betrieb" (Notnagel, falls `{firma}` in der Public-Fassung steht) |
-   | `idleReturnMs` | Haltezeit nach einem Text, Standard 8000 |
-   | `vorschau` | `vorschau.jpg` (Kartenbild für `?desktop`) |
-   | `figur` | `posen` (Pose → Bild, `idle` Pflicht), `kopf`, `gesicht` (`neutral`, `blink`, `talk`) |
-   | `designs` | je Fassung ein Erkennungsbild: `id`, `fassung` (`firma`/`public`), `name`, `target`, `breiteMm` (63), `qr` (nur Testdrucke: Link wie im gedruckten QR-Code), `notiz` |
-
-   - Pfade gelten relativ zum Kartenordner `karten/<nr>/`.
-   - `?k=<nr>` nimmt das erste Design mit `"fassung": "firma"`, `?k=<nr>P` das
-     erste mit `"fassung": "public"` (Karte ohne Logo). Seriennummern gehören
-     nicht hierher — sie sind nur intern vermerkt (Projektordner).
-   - Figur: Die Ebenen kommen direkt aus dem Grafikprogramm in `figur/` — WebP
-     mit Transparenz, alle Ebenen auf derselben Fläche 768 × 1152 px
-     (Halsgelenk ~36 % von oben, Fußpunkt ~98 %). Exportnamen: `body_idle`
-     (Pflicht), `body_<tag>` je weitere Pose (Tag-Namen aus A11), `head`,
-     `face_neutral`, `face_blink`, `face_talk`. Ungenutzte Posen aus `posen`
-     streichen.
-2. Den geprüften Dialogteil als `dialog.json` daneben legen (`art`, `persona`,
-   `firmenbegriffe`, `themen`, `initial`, `greeting`, `asks`, `questions`,
-   `reentry`).
-3. Karte in `karten/katalog.json` eintragen. Kartenbilder fürs Tracking:
-   `docs/kartendesigns.md`.
-4. Prüfseite mit `?k=<id>` laufen lassen — keine Fehler.
-5. Am Handy durchspielen, Firmenfassung (`?k=<nr>`) und Public-Fassung (`?k=<nr>P`).
-
----
-
-# Aufrufmuster
-
-> Du erzeugst einen DETAR-Kartendialog. Halte dich ausschließlich an das
-> Regelwerk `docs/dialog-regelwerk.md`, an das folgende Faktenblatt und an die
-> Interview-Abschrift. Vorbild ist `karten/000/dialog.json`.
-> Erfinde keine Fakten; wo du ohne Quelle einen Platzhalter setzt, markiere
-> ihn mit [Annahme] (A1). Schreib zuerst die Firmenfassung und ergänze dann je
-> Text die neutrale Fassung, wo A9 sie verlangt. Gib zuerst nur das JSON des Dialogteils aus
-> (Ausgabekontrakt A11). Danach folgt ein **Prüfbericht** mit drei Teilen:
-> (1) jede Angabe, die gefehlt hat, und wie du damit umgegangen bist;
-> (2) die gewählte Achse und die Art der Schätzfrage mit kurzer Begründung —
-> bzw. die Begründung, warum eine davon entfällt; (3) jeder Punkt aus C1 und
-> C2, den du nicht erfüllen konntest.
->
-> [Faktenblatt hier einfügen]
->
-> [Interview-Abschrift hier einfügen]
+Prüfbericht und Lesefassung bleiben bei der Redaktion.

@@ -156,7 +156,7 @@ test("Firma: ausgeschrieben, {firma} ohne neutrale Fassung, zu oft, Firmenbegrif
   fehlerMit(setze("was", "Bei {firma}.", "Hier."), "{firma} steht 3-mal");
   fehlerMit(pruefe(({ dialog }) => { dialog.firmenbegriffe = ["Werk Erlangen"]; frage(dialog, "was").text = "Im Werk Erlangen."; }), "„Werk Erlangen“ ist ein Firmenbegriff");
   fehlerMit(setze("was", "Schau auf die Ausbildungsseite."), "verweist auf eine Seite des Betriebs");
-  fehlerMit(setze("was", "Das Gehalt ist gut."), "nennt Geld oder Gehalt");
+  fehlerMit(setze("was", "Das Gehalt ist gut."), "nennt Geld, Gehalt oder ein Datum");
   const h = setze("was", "Hier ist es gut.", "Hier ist es gut.");
   assert.ok(h.hinweise.some((x) => x.includes("obwohl die Firmenfassung keinen Firmenbezug")));
 });
