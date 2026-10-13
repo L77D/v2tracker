@@ -240,7 +240,13 @@ body.launched.scanning #scanFrame { display: block; }
   display: none;
   pointer-events: none;
 }
-#lostHint.show { display: block; }
+#lostHint.show { display: block; animation: d-fade-in 300ms ease-out; }
+/* Fade-in nach einem Verlust (Build 103, Michael 2026-10-13): Hinweis (oben)
+   und Suchrahmen blenden in 300 ms ein — der Suchrahmen beim Start der
+   Experience nicht (dort fehlt body.wieder-suchen). Die Animation startet,
+   sobald das Element von display:none auf sichtbar wechselt. */
+body.wieder-suchen #scanFrame { animation: d-fade-in 300ms ease-out; }
+@keyframes d-fade-in { from { opacity: 0; } to { opacity: 1; } }
 #lostHint .support-icon { margin-left: 20px; }
 
 /* ============================================================================

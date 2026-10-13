@@ -247,6 +247,9 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
      trägt ihn die Panel-Zeile (controller.lostHintWanted). */
   function setSearch(on) {
     document.body.classList.toggle("scanning", on);
+    // body.wieder-suchen: Rahmen + Hinweis blenden in 300 ms ein (css/app.css,
+    // Build 103) — nur nach einem Verlust, der Start bleibt ohne Fade
+    document.body.classList.toggle("wieder-suchen", on);
     if (cameraFailed) return; // „Kamera unterbrochen" bleibt stehen
     const show = on && exp.controller.lostHintWanted;
     hint.classList.toggle("show", show);
