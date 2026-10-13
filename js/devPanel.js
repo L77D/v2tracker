@@ -54,6 +54,7 @@ export class DevPanel {
         { o: TYPO, k: "offsetX", l: "Offset X", min: -0.6, max: 0.6, step: 0.01 },
         { o: TYPO, k: "offsetY", l: "Offset Y", min: -0.8, max: 0.6, step: 0.01 },
         { o: CHOREO, k: "billboardLerp", l: "Billboard-Trägheit", min: 0.02, max: 1, step: 0.01 },
+        { o: CHOREO, k: "bubblePitchMax", l: "Blase Neigung max°", min: 0, max: 89, step: 1 },
         { o: TYPO, k: "textColor", l: "Textfarbe", color: true, on: rebuild },
         { o: TYPO, k: "strokeColor", l: "Outline-Farbe", color: true, on: rebuild },
       ]},

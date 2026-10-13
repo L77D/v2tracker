@@ -31,14 +31,14 @@ const _v2 = new THREE.Vector3();
 const _q1 = new THREE.Quaternion();
 const _q2 = new THREE.Quaternion();
 const _q3 = new THREE.Quaternion();
-const _euler = new THREE.Euler();
+const _euler = new THREE.Euler(0, 0, 0, "YXZ"); // erst Yaw, dann Neigung
 
 export class SpeechBubble {
   constructor(nodes, frame) {
     this.nodes = nodes;
     this.frame = frame;
     this.canvas = null; this.ctx = null; this.texture = null; this.plane = null;
-    this.bubbleYaw = 0; this.bubbleYawInit = false;
+    this.bubbleYaw = 0; this.bubbleYawInit = false; this.bubblePitch = 0;
     this.markup = "";            // aktueller Seitentext (mit Auszeichnung)
     this.lines = [];             // gewrappte Zeilen: Array von [{ch, fx}]
     this.totalChars = 0;
@@ -368,19 +368,29 @@ export class SpeechBubble {
     if (!camL) return; // NaN-Schutz: kaputter Frame → Ausrichtung halten
     obj.getWorldPosition(_v2);
     const objL = this.frame.toLocal(_v2);
-    const worldYaw = Math.atan2(camL.x - objL.x, camL.z - objL.z);
+    const dx = camL.x - objL.x, dy = camL.y - objL.y, dz = camL.z - objL.z;
+    const worldYaw = Math.atan2(dx, dz);
+    // Neigung zur Kamera (Build 104, 2026-10-13, Michael: Blase soll auch
+    // billboarden, nicht nur um die Hochachse drehen — schräg von oben war der
+    // Text gestaucht). Oben bleibt die Kartennormale; begrenzt auf
+    // CHOREO.bubblePitchMax, weil „oben" direkt von oben entartet (Blase schlüge).
+    const pMax = Math.max(0, Math.min(89, CHOREO.bubblePitchMax ?? 0)) * Math.PI / 180;
+    const pitch = Math.max(-pMax, Math.min(pMax, Math.atan2(dy, Math.hypot(dx, dz))));
     if (!this.bubbleYawInit) {
       this.bubbleYaw = worldYaw;
+      this.bubblePitch = pitch;
       this.bubbleYawInit = true;
     } else {
-      const delta = normalizeAngle(worldYaw - this.bubbleYaw);
-      this.bubbleYaw += delta * frameLerp60(CHOREO.billboardLerp, dt);
+      const k = frameLerp60(CHOREO.billboardLerp, dt);
+      this.bubbleYaw += normalizeAngle(worldYaw - this.bubbleYaw) * k;
+      this.bubblePitch += (pitch - this.bubblePitch) * k;
     }
-    // Gewünschte Ausrichtung: aufrecht IM KARTEN-Frame + geglätteter Yaw.
-    // In Welt-Quaternion umrechnen (worldRootQuat × qYaw), dann in die lokale
+    // Gewünschte Ausrichtung IM KARTEN-Frame: geglätteter Yaw, dann Neigung
+    // (Euler YXZ; −pitch kippt die Vorderseite +Z nach oben zur Kamera).
+    // In Welt-Quaternion umrechnen (worldRootQuat × qLokal), dann in die lokale
     // Quaternion der Bubble (parentWorld⁻¹ × gewünscht) — Roll/Pitch der
     // Figur sind damit exakt rausgerechnet, Position bleibt geteilt.
-    _q1.setFromEuler(_euler.set(0, this.bubbleYaw, 0));
+    _q1.setFromEuler(_euler.set(-this.bubblePitch, this.bubbleYaw, 0));
     this.frame.worldRoot.getWorldQuaternion(_q3).multiply(_q1);
     obj.parent.getWorldQuaternion(_q2).invert();
     obj.quaternion.copy(_q2.multiply(_q3));

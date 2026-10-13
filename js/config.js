@@ -94,6 +94,10 @@ export const CHOREO = {
                          // vorher stand config in der ??-Kette zuerst und gewann immer)
   greetingPose: "idle",
   billboardLerp: 0.2,
+  bubblePitchMax: 70,    // Sprechblase neigt sich zur Kamera, höchstens so viele Grad
+                         // (2026-10-13, Build 104, Michael: Blase soll billboarden;
+                         // Grenze, weil direkt von oben „oben" entartet). 0 = nur Yaw
+                         // wie bis Build 103.
   jumpDurationSec: 0.45, // Figur-Tap: Parabel-Hüpfer zur Kartenmitte
   jumpHeight: 0.04,
   // Tap-Erkennung (js/tapInput.js, bis Build 86 main.js; bis Build 60 Literale): Entprellung pointerup +
