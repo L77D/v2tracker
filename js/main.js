@@ -28,7 +28,7 @@ import { syncCssVars } from "./questionMenu.js";
 import { GyroFusion } from "./gyroFusion.js";
 import { sound } from "./sound.js";
 import { preflight, showPreflightScreen } from "./preflight.js";
-import { startAR, preloadEngine, ENGINE_VARIANT, XR_ENGINE_URL } from "./arSession.js";
+import { startAR, preloadEngine, ENGINE_VARIANT, XR_ENGINE_URL, trackerWahl } from "./arSession.js";
 import { el } from "./util.js";
 
 const params = new URLSearchParams(location.search);
@@ -69,7 +69,22 @@ let desktop = null;
 /* --------------------------------------------------------------------------
    Splash befüllen + Start-Button freigeben, sobald Tuning + Font geladen sind.
    -------------------------------------------------------------------------- */
+/* Tracker-Marke (Build 106, Michael 2026-10-13): steht ?tracker= im Link,
+   zeigt die Ecke oben rechts klein, welche Variante läuft — auf jedem
+   Bildschirm (Splash, Vorabprüfung, AR), unabhängig von ?stats. Unbekannter
+   Name: „xyz? → alt" (die Sitzung läuft mit dem Standard, s. trackerWahl.js). */
+function zeigeTrackerMarke() {
+  const gewuenscht = (params.get("tracker") || "").trim();
+  if (!gewuenscht) return;
+  const box = el("trackerMarke");
+  const wahl = trackerWahl();
+  box.textContent = wahl.name === gewuenscht ? wahl.name : gewuenscht + "? → " + wahl.name;
+  if (DEV_MODE) box.classList.add("unter-dev"); // nicht unter den Dev-Knopf
+  box.classList.add("show");
+}
+
 async function boot() {
+  zeigeTrackerMarke();
   // Vorabprüfung (2026-09-09): In-App-Browser / kein HTTPS / keine Kamera-API /
   // kein WASM → Hinweis-Bildschirm statt Fehler nach dem Klick; Button bleibt
   // aus. Test: ?preflight=inapp|nocam|insecure|nowasm|nowebp (s. js/preflight.js).
