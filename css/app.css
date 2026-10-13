@@ -221,16 +221,21 @@ body.launched.scanning #scanFrame { display: block; }
 #scanFrame .c-bl { left: 0;  bottom: 0; }
 
 /* ============================================================================
-   KARTE VERLOREN — Support-Zeile mittig im Bild (mock 05). Seit Build 99
-   (Michael 2026-10-12) erst nach CHOREO.trackingLostMs, zusammen mit dem
-   Suchrahmen, und UNTER ihm: Rahmen-Unterkante = 40 % + 147,5 px (bis Build
-   98: top 47 %, lag im Rahmen). Das Menü bleibt darunter stehen (eingefroren).
+   KARTE VERLOREN — Support-Zeile (mock 05). Seit Build 99 (Michael 2026-10-12)
+   erst nach CHOREO.trackingLostMs, zusammen mit dem Suchrahmen. Lage seit
+   Build 102 (Michael 2026-10-13): OBEN mit Abstand zum Rand (+ Notch über
+   safe-area), über den weißen Ecken — Rahmen-Oberkante = 40 % − 147,5 px,
+   der Hinweis ist ~90 px hoch (Icon 8 + 78 px) → passt ab 667 px Höhe
+   (iPhone SE: Oberkante Rahmen 119 px, Hinweis endet bei 110 px).
+   Bis Build 98 top 47 % (im Rahmen), Build 99–101 unter dem Rahmen.
+   Das Menü bleibt unten stehen (eingefroren).
    ============================================================================ */
 #lostHint {
   position: fixed;
   left: 0;
   right: 0;
-  top: calc(40% + 160px);
+  top: 16px;                                  /* Fallback ohne env() */
+  top: calc(16px + env(safe-area-inset-top));
   z-index: 6;
   display: none;
   pointer-events: none;

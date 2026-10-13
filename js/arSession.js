@@ -213,7 +213,7 @@ function detarPipelineModule(XR8, ctx, { resolve, reject }) {
   const _img = new THREE.Matrix4(), _camInv = new THREE.Matrix4();
   const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
 
-  // Karte verloren: Support-Zeile mit Icon mittig unter dem Suchrahmen (mock 05;
+  // Karte verloren: Support-Zeile mit Icon oben über dem Suchrahmen (mock 05;
   // seit Build 99 erst nach CHOREO.trackingLostMs, zusammen mit dem Suchrahmen,
   // Hook onSearch des CardControllers). Das Menü bleibt stehen und friert ein.
   const hint = el("lostHint");
