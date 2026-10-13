@@ -158,7 +158,8 @@ export const SCENE = {
 // Geschwindigkeit in Kartenbreiten/s.
 export const STAB = {
   // Tracker-Variante (Build 92, js/trackerWahl.js): "alt" = PoseStabilizer,
-  // "neu" = tracker.js (messgetrieben). ?tracker=<name> in der URL hat
+  // "neu" = tracker.js (messgetrieben), "8roh" = Nulllinie, "8lerp" = 8roh
+  // + Lerp/Slerp + Schiedsrichter (Build 105). ?tracker=<name> in der URL hat
   // Vorrang. Die Entscheidung am Ende: hier den Gewinner eintragen, Verlierer
   // samt Tests entfernen, Engine bereinigt ausliefern.
   tracker: "alt",
@@ -223,6 +224,12 @@ export const STAB = {
   // oben) um mehr als arbiterMargin über dem der Rohpose liegt. Nahe der
   // Frontalsicht sind beide Kandidaten gleich → kein Umschalten, kein Flattern.
   arbiterMargin: 0.15,
+  // TRACKER „8lerp" (Build 105, 2026-10-13, js/tracker8lerp.js): Zeitkonstante
+  // des Lerp/Slerp auf die letzte Messung, in ms. Die Engine misst alle 33–50 ms
+  // (20–30 Hz) — τ in derselben Größe glättet die Treppe, Nachlauf bei
+  // gleichmäßiger Bewegung ≈ τ. 0 = Messung 1:1. Nur für ?tracker=8lerp.
+  lerpPosMs: 50,
+  lerpRotMs: 50,
 
   // Bewegungs-Extrapolation (2026-07-09): die Bilderkennung misst nur mit
   // ~15–30 Hz (MindAR wie 8th Wall; imageupdated feuert nur bei neuer Pose) —

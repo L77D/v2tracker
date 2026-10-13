@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DETAR — Tracker-Vergleich (QR)</title>
-  <!-- Drei QR-Codes für den Gerätevergleich der Tracker-Varianten (Build 93,
+  <!-- QR-Codes für den Gerätevergleich der Tracker-Varianten (Build 93,
        2026-10-12): 8roh (Nulllinie) · alt (PoseStabilizer) · neu (tracker.js),
+       seit Build 105 auch 8lerp (8roh + Lerp/Slerp + Schiedsrichter),
        je mit ?stats. Die Links zeigen auf DIESE Auslieferung (Ordner dieser
        Seite) — auf dem Testlink also auf den Testlink, über einen Tunnel auf
        den Tunnel. Karte per ?k=<id> wählbar (Standard 000). QR-Codes aus
@@ -24,12 +25,12 @@
     .box canvas { width: 100%; max-width: 260px; height: auto; image-rendering: pixelated; }
     .box a { display: block; margin-top: 8px; font-size: 12px; color: #0b95d0; word-break: break-all; }
     .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 6px; }
-    .tag.roh { background: #3d3d3d; color: #fff; } .tag.alt { background: #0b95d0; color: #fff; } .tag.neu { background: #71ff51; color: #1d3917; }
+    .tag.roh { background: #3d3d3d; color: #fff; } .tag.alt { background: #0b95d0; color: #fff; } .tag.neu { background: #71ff51; color: #1d3917; } .tag.lerp { background: #fced62; color: #171717; }
   </style>
 </head>
 <body>
   <h1>Tracker-Vergleich</h1>
-  <p class="hinweis">Gleicher Stand, drei Varianten, jeweils mit <code>?stats</code>. Reihenfolge am Gerät: erst Nulllinie, dann alt, dann neu — Fälle F0 bis F4, „Messung 10 s", Zeile kopieren.</p>
+  <p class="hinweis">Gleicher Stand, vier Varianten, jeweils mit <code>?stats</code>. Reihenfolge am Gerät: erst Nulllinie, dann alt, dann neu, dann 8lerp — Fälle F0 bis F4, „Messung 10 s", Zeile kopieren.</p>
   <div class="karte">
     <label for="k">Karte</label>
     <input id="k" type="text" value="000" />
@@ -44,6 +45,7 @@
         { name: "8roh", tag: "roh", titel: "8roh — Nulllinie", sub: "Engine 1:1, kein Filter, kein Gyro, bei Verlust sofort weg" },
         { name: "alt",  tag: "alt", titel: "alt — PoseStabilizer", sub: "Standard heute; Zapworks-Port, Monate Gerätetests" },
         { name: "neu",  tag: "neu", titel: "neu — tracker.js", sub: "messgetrieben; Ausreißer halten, Gyro-Brücke, kein Snap beim Anfahren" },
+        { name: "8lerp", tag: "lerp", titel: "8lerp — roh + Lerp", sub: "8roh + Lerp/Slerp auf die letzte Messung + Schiedsrichter, sonst nichts" },
       ];
       var basis = location.href.replace(/[?#].*$/, "").replace(/[^/]*$/, "") + "index.html";
       var grid = document.getElementById("grid");

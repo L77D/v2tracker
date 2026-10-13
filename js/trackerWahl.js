@@ -19,17 +19,20 @@
 
    Neue Variante: Modul anlegen, hier eintragen, in tests/tracker.test.mjs in
    die Vergleichsliste aufnehmen. Alle Varianten werden statisch geladen (je
-   ~15 KB) — ab der dritten lieber per import() erst in startAR.
+   ~15 KB, 8roh/8lerp ~4 KB) — bei mehr Varianten lieber per import() erst in
+   startAR.
    ============================================================================= */
 import { STAB } from "./config.js";
 import { PoseStabilizer } from "./poseStabilizer.js";
 import { Tracker } from "./tracker.js";
 import { Tracker8roh } from "./tracker8roh.js";
+import { Tracker8lerp } from "./tracker8lerp.js";
 
 export const TRACKER_VARIANTEN = {
   alt: { Klasse: PoseStabilizer, beschreibung: "PoseStabilizer (Zapworks-Port, liest anchor.matrix je Frame)" },
   neu: { Klasse: Tracker, beschreibung: "tracker.js (messgetrieben, 2026-10-09)" },
   "8roh": { Klasse: Tracker8roh, beschreibung: "8th Wall roh: jede Messung 1:1, kein Filter, kein Gyro, bei Verlust sofort weg (Nulllinie)" },
+  "8lerp": { Klasse: Tracker8lerp, beschreibung: "8roh + Lerp/Slerp auf die letzte Messung (τ lerpPosMs/lerpRotMs) + Schwerkraft-Schiedsrichter, sonst nichts" },
 };
 export const TRACKER_STANDARD = "alt";
 
