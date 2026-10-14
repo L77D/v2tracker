@@ -15,14 +15,12 @@
    ============================================================================= */
 import { createTiks } from "./vendor/tiks.js";
 import { SOUND } from "./config.js";
-import { VoiceSynth } from "./voice.js";
 
 class SoundDesign {
   constructor() {
     this.engine = null;
-    this.voice = null;
-    this._lastTypeTick = 0;
-    this._probeTimer = null;
+    this.ctx = null;     // eigener AudioContext für den Blasen-Ton (tiks gibt seinen nicht heraus)
+    this.master = null;
   }
 
   /* In der START-Geste rufen. Idempotent. */
@@ -36,16 +34,25 @@ class SoundDesign {
         // auf einem Test-Gerät "Bewegung reduzieren" aktiv ist. Sounds sind
         // ohnehin additiv (alles hat visuelles Feedback).
         respectReducedMotion: false,
-        // Eigene Drosselung in typeTick() (SOUND.typeTickMs) — tiks' internen
-        // 80-ms-Hover-Throttle abschalten, sonst gewinnt immer der längere.
-        hoverThrottleMs: 0,
       });
     } catch (e) {
       console.warn("Sound nicht verfügbar:", e);
     }
-    // Stimme (eigener AudioContext) — ebenfalls in der Geste entsperren
-    this.voice = new VoiceSynth();
-    this.voice.init();
+    // Blasen-Ton: eigener AudioContext — ebenfalls in der Geste entsperren
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.master = this.ctx.createGain();
+      // Tiefpass nimmt dem Rechteck die Schärfe — dezent statt quäkig
+      const lp = this.ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 2800;
+      this.master.connect(lp);
+      lp.connect(this.ctx.destination);
+      this.applyVolume();
+    } catch (e) {
+      console.warn("Blasen-Ton nicht verfügbar:", e);
+      this.ctx = null;
+    }
   }
 
   get on() {
@@ -53,7 +60,10 @@ class SoundDesign {
   }
 
   /* Dev-Panel-Hooks (Regler schreiben in SOUND, dann diese anwenden). */
-  applyVolume() { this.engine?.setVolume(SOUND.volume); this.voice?.applyVolume(); }
+  applyVolume() {
+    this.engine?.setVolume(SOUND.volume);
+    if (this.master) this.master.gain.value = SOUND.volume * SOUND.bubbleVolume;
+  }
   applyTheme() { this.engine?.setTheme(SOUND.theme); }
 
   /* ---- Ereignis-Vokabular ------------------------------------------------- */
@@ -65,37 +75,33 @@ class SoundDesign {
   questionTap() { if (this.on) this.engine.click(); }        // Frage-Button
   figureJump()  { if (this.on) this.engine.pop(); }          // Figur-Tap: Hüpfer zur Mitte
 
-  /* Bubble-Text-Vertonung: der Typewriter liefert die frisch enthüllten
-     Zeichen. Modus über SOUND.speech: "silben" (Animalese-Stimme, js/voice.js),
-     "ticks" (alte abstrakte Blips) oder "aus". progress/endsQuestion steuern
-     die Satz-Melodie (Fragen steigen am Ende). */
-  speak(chunk, progress, endsQuestion) {
-    if (!this.on || !chunk) return;
-    if (SOUND.speech === "aus") return;
-    if (SOUND.speech === "ticks") { this.typeTick(); return; }
-    this.voice?.speak(chunk, progress, endsQuestion);
-  }
-
-  /* Typewriter-Tick (Altverhalten, speech="ticks"): selbst gedrosselt
-     (SOUND.typeTickMs) — unabhängig von tiks' Hover-Throttle. */
-  typeTick() {
-    if (!this.on || !SOUND.typeTicks) return;
-    const now = performance.now();
-    if (now - this._lastTypeTick < SOUND.typeTickMs) return;
-    this._lastTypeTick = now;
-    this.engine.hover();
-  }
-
-  /* Hörprobe fürs Dev-Panel: tippt einen Testsatz durch speak() — im echten
-     Typewriter-Takt, damit Tempo-Gate und Melodie wie live klingen. */
-  probeSpeech(text = "Nett hier. Frag mich was!") {
-    if (this._probeTimer) clearInterval(this._probeTimer);
-    let i = 0;
-    this._probeTimer = setInterval(() => {
-      if (i >= text.length) { clearInterval(this._probeTimer); this._probeTimer = null; return; }
-      this.speak(text[i], i / text.length, text.trimEnd().endsWith("?"));
-      i++;
-    }, 28);
+  /* Anfangston einer Antwort (2026-10-14, Michael): wie das „Blip" beim
+     Öffnen einer Textbox in alten RPGs — ein kurzes „bi-ip" aus zwei
+     steigenden Rechteck-Tönen (Quinte), danach tippt der Text lautlos.
+     Ersetzt die Animalese-Stimme (js/voice.js) und die Tipp-Ticks. Gerufen
+     von cardController.say() nur auf Seite 1 einer Antwort. */
+  bubbleOpen() {
+    if (!this.on || !this.ctx) return;
+    const ctx = this.ctx;
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+    const t0 = ctx.currentTime + 0.005;
+    const f = SOUND.bubblePitch;
+    const tones = [[f, 0], [f * 1.5, SOUND.bubbleGapMs / 1000]];
+    const len = SOUND.bubbleToneMs / 1000;
+    for (const [freq, delay] of tones) {
+      const t = t0 + delay;
+      const osc = ctx.createOscillator();
+      osc.type = "square";
+      osc.frequency.value = freq;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.5, t + 0.003);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+      osc.connect(g);
+      g.connect(this.master);
+      osc.start(t);
+      osc.stop(t + len + 0.01);
+    }
   }
 }
 

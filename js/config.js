@@ -64,10 +64,20 @@ export const FACE = {
 // IdleWander → IDLE
 export const IDLE = {
   // Lauffeld (Füße der Figur, Karten-Frame, Einheit SCENE.cardWidth = 0.059):
-  // markerWidth/-Height = Kartenformat 63 × 88 mm, roamFraction 1.1 = höchstens
-  // 10 % größer als die Karte. 2026-10-12 (Michael, Build 97) — vorher
-  // 0.09 × 0.125 × 0.8 = 122 % × 121 % der Karte.
-  markerWidth: 0.059, markerHeight: 0.0824, roamFraction: 1.1,
+  // markerWidth/-Height = Kartenformat 63 × 88 mm. 2026-10-14 (Michael, Build
+  // 108): die GANZE Figur bleibt auf der Karte — der Fuß-Mittelpunkt hält
+  // eine Fußhalbbreite Abstand zum Rand, in beiden Achsen, weil die Figur
+  // sich dreht (IdleWander.roamHalf). footFraction = Fußbreite als Anteil der
+  // Figuren-Leinwand, gemessen an karten/000/figur/body_idle.webp (Füße 145–622
+  // von 768 px = 0,62; gleiche Leinwand für alle Figuren). Bei figureScale 0.5
+  // ≈ 55 % × 68 % der Karte. Vorher roamFraction 1.1 = Fuß-Mittelpunkt bis
+  // 110 % der Karte (Build 97; davor 122 % × 121 %).
+  markerWidth: 0.059, markerHeight: 0.0824, footFraction: 0.62,
+  // Lebendig-Phase nach einer Antwort (CHOREO.livelyAfterMs, 2026-10-14,
+  // Michael): Gewichtsverlagerung = seitliches Kippen (rad) mit Frequenz (Hz),
+  // Atem-Bop × livelyBopFactor; Umschauen nach lookChance. Startwerte, am Gerät
+  // nachstellen.
+  shiftRollMax: 0.05, shiftFrequency: 0.35, livelyBopFactor: 2,
   bopAmplitude: 0.015, bopFrequency: 0.5,
   walkSpeed: 0.04, walkFrequency: 2.2, walkRollMax: 0.18, stepSquash: 0.05,
   headLookMax: 0.5, headPitchMax: 0.35,
@@ -89,9 +99,14 @@ export const CHOREO = {
                          // die Figur) · false = Figur kommt direkt beim Scan
   uiRevealMs: 1000,      // reine CSS-Einfahr-DAUER (--q-reveal-time), keine Wartezeit
   revealOffset: 60,      // CSS --q-reveal-offset (px)
-  idleReturnMs: 5500,    // Haltezeit NACH dem Typewriter — Fallback; eine Karte mit
-                         // eigenem idleReturnMs (cards/*.js) hat Vorrang (seit Build 61,
-                         // vorher stand config in der ??-Kette zuerst und gewann immer)
+  idleReturnMs: 11000,   // Haltezeit NACH dem Typewriter — Fallback; eine Karte mit
+                         // eigenem idleReturnMs (daten.json) hat Vorrang (seit Build 61,
+                         // vorher stand config in der ??-Kette zuerst und gewann immer).
+                         // 2026-10-14 (Michael, Build 108): verdoppelt (vorher 5500),
+                         // Karte 000 16000 statt 8000 — Antworten stehen länger.
+  livelyAfterMs: 2000,   // so lange nach dem Tippen bleibt die Figur ruhig, dann
+                         // Lebendig-Phase (Pose idle, Umschauen, Gewicht verlagern,
+                         // noch ohne Gehen) bis zur Haltezeit (2026-10-14, Michael)
   greetingPose: "idle",
   billboardLerp: 0.2,
   bubblePitchMax: 70,    // Sprechblase neigt sich zur Kamera, höchstens so viele Grad
@@ -294,18 +309,14 @@ export const ACTFX = {
 export const SOUND = {
   enabled: true,
   theme: "arcade",   // "soft" | "crisp" | "arcade" | "glass"
-  volume: 0.3,       // 0–1 (tiks-Default 0.3 — dezent), Master für UI + Stimme
-  // Bubble-Text-Vertonung: "silben" = Animalese-Stimme (js/voice.js),
-  // "ticks" = alte abstrakte Blips, "aus" = stumm tippen.
-  speech: "silben",
-  typeTicks: true,   // nur für speech="ticks": Ticks an/aus (Altverhalten)
-  typeTickMs: 70,    // min. Abstand zwischen zwei Ticks (ms) — Dichte des Ratterns
-  // Stimme (VoiceSynth) — Charakter „aufgeweckt, aber selbstsicher":
-  speechPitch: 300,    // Grund-Stimmlage (Hz). Höher = heller/jünger
-  speechTempoMs: 75,   // min. Abstand zwischen Silben (ms). Kleiner = plappriger
-  speechLively: 2.5,   // Tonhöhen-Lebhaftigkeit (± Halbtöne). 0 = monoton
-  speechLen: 90,       // Silben-Länge (ms). Länger = gedehnter, singender
-  speechVolume: 0.6,   // Stimm-Pegel relativ zum Master (volume × speechVolume)
+  volume: 0.3,       // 0–1 (tiks-Default 0.3 — dezent), Master für UI + Blasen-Ton
+  // Anfangston einer Antwort (sound.bubbleOpen, 2026-10-14, Michael): zwei
+  // steigende Töne (Quinte) wie das Textbox-„Blip" alter RPGs, nur auf Seite 1.
+  // Ersetzt die Animalese-Stimme (speech/speech*) und die Tipp-Ticks.
+  bubblePitch: 660,    // erster Ton (Hz), der zweite liegt eine Quinte höher
+  bubbleToneMs: 45,    // Länge je Ton (ms)
+  bubbleGapMs: 40,     // Abstand der Toneinsätze (ms) — zusammen ~85 ms
+  bubbleVolume: 0.4,   // Pegel relativ zum Master (volume × bubbleVolume)
 };
 
 // Gyro-Fusion: Handy-Gyroskop stützt die visuelle Pose (Prediction) und
@@ -338,7 +349,7 @@ export const ALL = { TYPO, FACE, IDLE, ACT, CHOREO, SCENE, STAB, GYRO, ACTFX, CA
    Presets und der Regler-Stand in localStorage, der eingebettete Block des
    Lokal-Prototyps (window.__TUNING). Deshalb läuft JEDES Einspielen eines
    Presets über applyTuning(), das "ja"/"nein" in true/false übersetzt; andere
-   Strings (SOUND.speech "aus", Farben, Posen) bleiben unberührt. */
+   Strings (SOUND.theme "arcade", Farben, Posen) bleiben unberührt. */
 export function uebersetzeSchalter(block) {
   const out = {};
   for (const [k, v] of Object.entries(block)) out[k] = v === "ja" ? true : v === "nein" ? false : v;

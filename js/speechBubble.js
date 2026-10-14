@@ -20,7 +20,6 @@
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { TYPO, CHOREO, frameLerp60 } from "./config.js";
-import { sound } from "./sound.js";
 import { normalizeAngle } from "./util.js";
 import {
   parseChars, serialize, charsToString, wrapWords, paginateChars,
@@ -42,7 +41,6 @@ export class SpeechBubble {
     this.markup = "";            // aktueller Seitentext (mit Auszeichnung)
     this.lines = [];             // gewrappte Zeilen: Array von [{ch, fx}]
     this.totalChars = 0;
-    this.plainText = "";
     this.pageLabel = "";
     this.revealedChars = 0; this.lastTickMs = 0; this.typing = false; this.onDone = null;
     this.revealAt = [];          // Zeitstempel je Zeichen (für <knall>)
@@ -148,7 +146,6 @@ export class SpeechBubble {
     this.markup = markup;
     this.lines = this.wrapChars(parseChars(markup));
     this.totalChars = this.lines.reduce((s, l) => s + l.length, 0);
-    this.plainText = this.lines.map(charsToString).join("\n");
   }
   /* Eine SEITE anzeigen (der Aufrufer paginiert vorher, siehe CardController.say).
      pageLabel: „1/2" o. ä., leer bei einer Seite. */
@@ -309,12 +306,8 @@ export class SpeechBubble {
     const prevChars = this.revealedChars;
     this.revealedChars = Math.min(this.totalChars, this.revealedChars + steps);
     for (let i = prevChars; i < this.revealedChars; i++) this.revealAt[i] = now;
-    // Stimme: frisch enthüllte Zeichen sprechen (Animalese) bzw. ticken —
-    // Fortschritt + Frage-Endung steuern die Satz-Melodie.
-    if (this.revealedChars > prevChars) {
-      const chunk = charsToString(this.lines.flat().slice(prevChars, this.revealedChars));
-      sound.speak(chunk, this.revealedChars / this.totalChars, this.plainText.trimEnd().endsWith("?"));
-    }
+    // Tippen ist lautlos (2026-10-14, Michael): den Anfangston der Antwort
+    // spielt cardController.say() — die Animalese-Stimme ist raus.
     this.renderCanvas();
     if (this.revealedChars >= this.totalChars) {
       this.typing = false;
