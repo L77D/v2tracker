@@ -308,8 +308,9 @@ anfassen). Vanilla ES-Module, GitHub Pages (liefert NUR `main` aus).
   (sonst wieder die Masking-Falle: config-Änderungen wirken nicht, wenn der
   Block in tuning.json steht).
 - **Schalter sind Booleans (Build 89, Refactoring Stufe 3d):** `STAB.enabled`,
-  `normalize`, `deadZones`, `lostHold`, `nanGuard`, `snap`, `scaleLock`,
-  `gravityArbiter`, `extrapolate`, `GYRO.enabled`, `SOUND.enabled`,
+  `nanGuard`, `gravityArbiter` (bis Build 110 auch `normalize`, `deadZones`,
+  `lostHold`, `snap`, `scaleLock`, `extrapolate` — mit dem PoseStabilizer
+  archiviert), `GYRO.enabled`, `SOUND.enabled`,
   `CHOREO.requireTap`, `ACTFX.hopper`, `TYPO.pageLabel` sind
   `true`/`false` — bis Build 88 die Strings `"ja"`/`"nein"`, verglichen mit
   `!== "nein"` in sieben Modulen. Jedes Einspielen eines Presets läuft über
@@ -504,17 +505,19 @@ Variante: Modul anlegen, in `TRACKER_VARIANTEN` eintragen, Goldstandard über
 - `CAM`: unter 8th Wall wählt die Engine die Auflösung selbst (Constraint-
   Leiter mit Retry); `maxPixelRatio: 2` gilt weiter (Canvas-Pixelgröße in
   arSession.js). (detar/MindAR: 960×540 per getUserMedia-Wrap, `?res=`.)
-- `STAB`: `minCutoff 0.1` · `beta 10` (gated) · `rotMinCutoff 0.5` ·
-  `rotBeta 4` · `minSpeed 0.04` · `minAngSpeed 0.09` · `scaleOutlier 0.1`
-  (Scale-Lock löst unter 8th Wall strukturell nie aus, s. Gotchas).
-  Die MindAR-Keys `filterMinCF/filterBeta/missTolerance/warmupTolerance`
-  gibt es hier nicht mehr.
+- `STAB` (seit Build 111 nur 8lerp): `tracker "8lerp"` · `enabled` ·
+  `nanGuard` · `gravityArbiter` · `arbiterMargin 0.15` · `lerpPosMs 50` ·
+  `lerpRotMs 50`. Die ~30 PoseStabilizer-Werte (`minCutoff`, `beta`, Dead-
+  Zones, Median, Snap, Scale-Lock, Extrapolation …) liegen im Archiv; alte
+  Presets mit diesen Schlüsseln laden weiter, die Werte wirken nirgends.
 - `CHOREO.tapDebounceMs 120` · `tapMaxPx 6` · `tapMaxMs 400` (Tap-Erkennung,
   tapInput.js) · `idleReturnMs 11000` als Fallback — die Karte (`idleReturnMs` in
   daten.json, heute 16000; beides seit Build 108 verdoppelt) hat Vorrang ·
   `livelyAfterMs 2000`.
-- Feature-Toggles 1–10 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock, Nr. 10 =
-  Schwerkraft-Schiedsrichter (Pose-Flip).
+- Feature-Toggles im Dev-Panel (`?dev`), seit Build 111 nur 1 Glättung ·
+  5 NaN-Schutz · 7 Gyro · 10 Schwerkraft-Schiedsrichter (Pose-Flip); die
+  Nummern bleiben wie bis Build 110 (2/3/4/6/8/9 gehörten zum PoseStabilizer).
+  `?stats`-Tabellenzeile: Toggle-Kennung vierstellig statt zehnstellig.
 
 ## URL-Parameter
 

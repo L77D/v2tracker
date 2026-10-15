@@ -30,10 +30,11 @@ const CAPTURE_MS = 10000; // „Messung 10 s"
 const HEAD_KB = 1.5;      // fester Messpunkt über der Kartenmitte (≈ Kopfhöhe), Kartenbreiten
 const FAELLE = ["F0 Stativ", "F1 abgestützt", "F2 freihändig", "F3 Schwenk", "F4 verdecken"];
 
-// Toggle-Reihenfolge 1–10 wie im Dev-Panel → Kennung „1111111111" in der Tabellenzeile
+// Toggle-Reihenfolge wie im Dev-Panel → Kennung in der Tabellenzeile. Seit
+// Build 111 nur die vier Schalter von 8lerp (1 · 5 · 7 · 10), Kennung „1111";
+// bis Build 110 zehn Stellen (PoseStabilizer, s. archiv/tracker-varianten/).
 const toggleCode = () => [
-  STAB.enabled, STAB.normalize, STAB.deadZones, STAB.lostHold, STAB.nanGuard,
-  STAB.snap, GYRO.enabled, STAB.extrapolate, STAB.scaleLock, STAB.gravityArbiter,
+  STAB.enabled, STAB.nanGuard, GYRO.enabled, STAB.gravityArbiter,
 ].map((v) => (v ? "1" : "0")).join("");
 
 const fx = (v, d) => (v == null || !Number.isFinite(v) ? "—" : v.toFixed(d));
@@ -152,9 +153,8 @@ export class StatsOverlay {
     const meta = {
       build: BUILD, datum: new Date().toISOString(), fall: FAELLE[this.fall].split(" ")[0],
       toggles: toggleCode(),
-      minSpeed: STAB.minSpeed, minAngSpeed: STAB.minAngSpeed, minCutoff: STAB.minCutoff,
-      beta: STAB.beta, rotMinCutoff: STAB.rotMinCutoff, rotBeta: STAB.rotBeta,
-      latencyMs: STAB.latencyMs, breiteMm: this.mm, design: this.env?.design?.id ?? null,
+      lerpPosMs: STAB.lerpPosMs, lerpRotMs: STAB.lerpRotMs, arbiterMargin: STAB.arbiterMargin,
+      breiteMm: this.mm, design: this.env?.design?.id ?? null,
       snaps: this.stab.snapshot().snapCount - c.snaps0,
       nan: this.stab.snapshot().nanCount - c.nan0,
       verlorenMs: Math.round(c.lostMs),
@@ -247,13 +247,13 @@ export class StatsOverlay {
           ga: st.gyroApplied, ms: st.modeSwitches, gw: this.gyro?.active ? this.gyroAng : null,
         };
         if (st.newMeas) {
-          // Rohmessung nach Schiedsrichter; in Kartenbreiten, wenn normiert wird
-          const norm = STAB.normalize;
+          // Rohmessung nach Schiedsrichter, in Kartenbreiten (snapshot().rawPos
+          // liefert jede Variante so; bis Build 110 hing das an STAB.normalize)
           const r = st.rawPos;
-          sample.rp = norm ? [r.x, r.y, r.z] : [r.x / sc, r.y / sc, r.z / sc];
+          sample.rp = [r.x, r.y, r.z];
           sample.rq = [st.rawQuat.x, st.rawQuat.y, st.rawQuat.z, st.rawQuat.w];
           _gq.copy(st.rawQuat);
-          sample.rx = this.headPx(_v.copy(r).multiplyScalar(norm ? sc : 1).clone(), _gq, sc);
+          sample.rx = this.headPx(_v.copy(r).multiplyScalar(sc).clone(), _gq, sc);
         }
       }
     }
@@ -314,7 +314,9 @@ export class StatsOverlay {
   metricLines() {
     const M = computeMetrics(this.win, this.mm);
     const st = this.stab;
-    const drift = `${fx(st.driftSpeed / STAB.minSpeed, 1)}×/${fx(st.driftAngSpeed / STAB.minAngSpeed, 1)}×`;
+    // Drift relativ zur Bewegt-Schwelle: nur der archivierte PoseStabilizer hatte
+    // driftSpeed/minSpeed — 8lerp zeigt hier „—" (wie bis Build 110)
+    const drift = `${fx(st.driftSpeed, 1)}×/${fx(st.driftAngSpeed, 1)}×`;
     const modus = `Modus: ${st.moving ? "BEWEGT" : "ruhig"} · ${fx(M?.bewegtPct, 0)} % bewegt · ` +
       `${fx(M?.wechsel10s, 1)} Wechsel/10 s · ${st.diag?.moveCause ?? "—"} · Drift ${drift}\n`;
     if (!M) return `Takt/Rauschen: — (Karte im Bild halten, ${WIN_MS / 1000} s)\n` + modus;

@@ -105,36 +105,18 @@ export class DevPanel {
         { o: SOUND, k: "bubbleGapMs", l: "Anfangston Abstand (ms)", min: 15, max: 150, step: 5, on: () => sound.bubbleOpen() },
       ]},
       { g: "Tracking-Features an/aus (nur AR)", items: [
-        { o: STAB, k: "enabled", l: "1 Glättung (PoseStabilizer)", bool: true },
-        { o: STAB, k: "normalize", l: "2 Einheiten-Normierung", bool: true },
-        { o: STAB, k: "deadZones", l: "3 Dead-Zones (Ruhe-Snap)", bool: true },
-        { o: STAB, k: "lostHold", l: "4 Lost-Hold", bool: true },
+        // Seit Build 111 nur die Schalter, die der Tracker 8lerp / die Szene lesen —
+        // die Nummern bleiben wie bis Build 110 (2/3/4/6/8/9 gehörten zum archivierten
+        // PoseStabilizer, s. archiv/tracker-varianten/)
+        { o: STAB, k: "enabled", l: "1 Glättung (8lerp)", bool: true },
         { o: STAB, k: "nanGuard", l: "5 NaN-Schutz", bool: true },
-        { o: STAB, k: "snap", l: "6 Re-Found-Snap", bool: true },
-        { o: GYRO, k: "enabled", l: "7 Gyro-Fusion", bool: true },
-        { o: STAB, k: "extrapolate", l: "8 Bewegungs-Extrapolation", bool: true },
-        { o: STAB, k: "scaleLock", l: "9 Scale-Lock (Anti-Verzerrung)", bool: true },
+        { o: GYRO, k: "enabled", l: "7 Gyro (Lage für den Schiedsrichter)", bool: true },
         { o: STAB, k: "gravityArbiter", l: "10 Schwerkraft-Schiedsrichter (Pose-Flip)", bool: true },
       ]},
       { g: "Tracking (nur AR)", items: [
-        { o: STAB, k: "minCutoff", l: "Glättung Ruhe (minCutoff)", min: 0.05, max: 5, step: 0.05 },
-        { o: STAB, k: "beta", l: "Bewegungs-Öffnung (beta)", min: 0, max: 30, step: 0.25 }, // 2026-07-14: Skala an beta=10 angepasst (vorher max 0.05)
-        { o: STAB, k: "rotMinCutoff", l: "Rot-Glättung Ruhe (Hz)", min: 0.2, max: 8, step: 0.1 },
-        { o: STAB, k: "rotBeta", l: "Rot-Öffnung b. Drehung", min: 0, max: 15, step: 0.5 },
-        { o: STAB, k: "latencyMs", l: "Latenz-Ausgleich (ms)", min: 0, max: 120, step: 5 },
-        { o: STAB, k: "moveDwellMs", l: "Ruhe-Rückfall (ms)", min: 0, max: 1000, step: 50 },
-        { o: STAB, k: "posDeadZone", l: "Pos-Dead-Zone (KB)", min: 0, max: 0.01, step: 0.0002 },
-        { o: STAB, k: "snapDist", l: "Snap-Distanz (KB)", min: 0.05, max: 1, step: 0.01 },
-        { o: STAB, k: "acquireFrames", l: "Aufsetzen: Median aus N Messungen", min: 1, max: 30, step: 1 },
-        { o: STAB, k: "acquireMaxMs", l: "Aufsetzen: spätestens nach (ms)", min: 100, max: 2000, step: 50 },
-        { o: STAB, k: "scaleRelockMs", l: "Scale-Re-Lock nach (ms)", min: 100, max: 3000, step: 50 },
         { o: STAB, k: "lerpPosMs", l: "8lerp τ Position (ms)", min: 0, max: 300, step: 5 },
         { o: STAB, k: "lerpRotMs", l: "8lerp τ Rotation (ms)", min: 0, max: 300, step: 5 },
         { o: STAB, k: "arbiterMargin", l: "Schiedsrichter-Hysterese (z-Anteil)", min: 0, max: 0.6, step: 0.01 },
-        { o: STAB, k: "lostHoldMs", l: "Lost-Hold (ms)", min: 0, max: 1000, step: 50 },
-        { o: STAB, k: "extrapMaxMs", l: "Extrapolation max (ms)", min: 0, max: 400, step: 10 },
-        { o: STAB, k: "minSpeed", l: "Bewegt ab (KB/s)", min: 0, max: 0.3, step: 0.005 },
-        { o: STAB, k: "minAngSpeed", l: "Bewegt ab (rad/s)", min: 0, max: 1.5, step: 0.01 }, // 2026-07-14: Schrittweite verfeinert (Default 0.09)
         { o: GYRO, k: "bridgeMs", l: "Gyro-Brücke (ms)", min: 0, max: 3000, step: 100 },
         { o: GYRO, k: "deltaDeadZone", l: "Gyro-Dead-Band (rad)", min: 0, max: 0.01, step: 0.0002 },
       ]},
