@@ -39,8 +39,10 @@ const toggleCode = () => [
 const fx = (v, d) => (v == null || !Number.isFinite(v) ? "—" : v.toFixed(d));
 
 export class StatsOverlay {
-  constructor(anchorGroup, stabRoot, stab, gyro, env = null) {
-    this.anchor = anchorGroup;
+  /* stabRoot = poseTarget (Proxy des Trackers, s. arSession.js); die Rohpose
+     kommt über stab.snapshot().rawPos/rawQuat — bis Build 110 wurde zusätzlich
+     die anchor-Gruppe übergeben und nie gelesen. */
+  constructor(stabRoot, stab, gyro, env = null) {
     this.stabRoot = stabRoot;
     this.stab = stab;
     this.gyro = gyro;

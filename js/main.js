@@ -203,15 +203,19 @@ function showStartError(err) {
    beats.theatre.json per fetch, obwohl es die Datei nie gab. Sollen autorisierte
    Beats einmal live laufen, hier wieder einen Player-Pfad ohne Flag öffnen.)
    Aufrufer: arSession.js (onStart) und desktopMode.js, über ctx.attachDevTools.
+   timeline.js wird nur mit ?timeline geladen (bis Build 110 auch bei ?dev,
+   wo initTimeline sofort null lieferte — das Modul war umsonst geholt).
    -------------------------------------------------------------------------- */
 async function attachDevTools(exp) {
   if (!DEV_MODE && !TIMELINE_MODE) return;
   let timeline = null;
-  try {
-    const { initTimeline } = await import("./timeline.js");
-    timeline = await initTimeline({ nodes: exp.nodes, withStudio: TIMELINE_MODE });
-  } catch (e) {
-    console.warn("Timeline nicht verfügbar:", e);
+  if (TIMELINE_MODE) {
+    try {
+      const { initTimeline } = await import("./timeline.js");
+      timeline = await initTimeline({ nodes: exp.nodes, withStudio: true });
+    } catch (e) {
+      console.warn("Timeline nicht verfügbar:", e);
+    }
   }
   if (DEV_MODE) {
     const { DevPanel } = await import("./devPanel.js");

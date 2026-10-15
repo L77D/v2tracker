@@ -1,7 +1,7 @@
 /* =============================================================================
    DETAR — ActivationFX: „Karte gefunden"-Phase, BEVOR die Figur erscheint.
    UI-UPDATE 2026-09-03 (Figma mock_02): vier gelbe Eck-Marker (L-Form mit
-   schwarzer Kontur, assets/ui/corner-gelb.svg) sitzen auf den Kartenecken,
+   schwarzer Kontur, Form aus dem Figma-Pfad L_PATH unten) sitzen auf den Kartenecken,
    Kerbe zur Kartenmitte, und wabern leicht auf und ab. Glow + Partikel der
    Vorversion sind entfernt (Entscheidung Michael). burst(): Marker ploppen
    kurz auf, dann kommt die Figur. Build 99 (Michael 2026-10-12): die Marker

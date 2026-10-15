@@ -4,7 +4,8 @@
    verloren-Hinweis benutzt. Markup/CSS: .support in css/app.css.
 
    Icon-Frames (assets/ui/icon-handy, 80×126 px Pixelgrafik):
-     neutral · blink · left · right · mouth-open · mouth-shut
+     neutral · blink · left · right · mouth-open
+     (mouth-shut gab es bis Build 110 als Datei, wurde aber in keiner Folge gezeigt)
    Zustände (Zuordnung abgeleitet, kein Mockup für die Bewegung):
      "suchen"   — Mund offen (mock_01), schaut abwechselnd links/rechts
      "gefunden" — lächelt (mock_02), blinzelt ab und zu
@@ -13,7 +14,7 @@
 import { rand } from "./util.js";
 
 const ICON_DIR = "./assets/ui/icon-handy/";
-const FRAMES = ["neutral", "blink", "left", "right", "mouth-open", "mouth-shut"];
+const FRAMES = ["neutral", "blink", "left", "right", "mouth-open"];
 
 // Bilder einmal vorladen, damit der Frame-Wechsel nicht flackert — beim
 // ersten Icon, nicht beim Import (2026-09-15; vorher auch im Desktop-Modus).
