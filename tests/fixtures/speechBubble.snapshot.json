@@ -1,0 +1,299 @@
+{
+ "firma": {
+  "greeting": [
+   "Hey! Ich bin Jonas, ich mache bei Siemens eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+  ],
+  "frage was": [
+   "Ich baue Schaltanlagen — Stromkästen, so groß wie ein Kleiderschrank [Annahme].",
+   "Ich schraube sie zusammen, ziehe Kabel und prüfe alles."
+  ],
+  "frage purpose": [
+   "Die Kästen gehen in Fabriken, Krankenhäuser und Wasserwerke [Annahme]. Fällt dort der Strom aus, merken es <marker>alle sofort</marker>."
+  ],
+  "frage tag_ablauf": [
+   "Um halb sieben geht's los: kurz besprechen, dann an den Kasten [Annahme].",
+   "Vormittags schrauben, nachmittags messen [Annahme]."
+  ],
+  "frage koennen": [
+   "Bei uns brauchst du Mittlere Reife. Physik und Mathe sollten dir liegen. Und: Bei Strom ist Schludern <marker>keine Option</marker>."
+  ],
+  "frage reden": [
+   "Im Team dauernd, wir bauen zu zweit oder zu dritt an einem Kasten [Annahme].",
+   "Die Leute, für die wir bauen, sehe ich aber fast nie [Annahme]."
+  ],
+  "frage technik": [
+   "Technischer als gedacht. Ist der Kasten fertig, messe ich, ob der Strom überall richtig ankommt.",
+   "Stimmt was nicht, suche ich den Fehler."
+  ],
+  "frage lernort": [
+   "Einmal die Woche Berufsschule [Annahme]: Strom, Schaltungen, viel Rechnen. Dazu Deutsch und Sozialkunde [Annahme]."
+  ],
+  "frage anstrengend": [
+   "Den ganzen Tag <zittern>stehen</zittern>, im Sommer in einer warmen Halle [Annahme].",
+   "Am meisten schlaucht das Prüfen: Da darf nichts durchrutschen [Annahme]."
+  ],
+  "frage danach": [
+   "Die Ausbildung dauert dreieinhalb Jahre. Danach arbeitest du als Fachkraft — oder lernst weiter, etwa an der Technikerschule."
+  ],
+  "frage bewerbung": [
+   "Online, über die Ausbildungsseite von Siemens. Da steht, was du brauchst und wann es losgeht."
+  ],
+  "frage jetzt_tun": [
+   "Ein Praktikum — zwei Wochen Werkstatt sagen mehr als jede Broschüre. Und in Physik bei Strom gut aufpassen."
+  ],
+  "frage praktikum_wie": [
+   "Über die Schule, die hat feste Praktikumswochen [Annahme]. Oder per Mail an den Betrieb: Name, Klasse, Zeitraum, warum der Beruf."
+  ],
+  "frage praktikum_was": [
+   "Du siehst den echten Alltag: wie laut es ist, wie gearbeitet wird.",
+   "Selbst machen darfst du wenig [Annahme], aber du merkst, ob's dich packt."
+  ],
+  "frage link": [
+   "Ich mach dir die Seite auf. Da steht das Offizielle drin — Voraussetzungen, Ansprechpersonen, alles Aktuelle."
+  ],
+  "frage ende": [
+   "Alles klar. Mach's gut — und viel Erfolg bei dem, was du dann machst!"
+  ],
+  "ask neigung": [
+   "Sag mal — arbeitest du lieber mit Menschen oder lieber mit Maschinen?"
+  ],
+  "ask neigung option 0": [
+   "Verstehe. Im Team wird ständig geredet.",
+   "Den Großteil des Tages hast du aber Werkzeug in der Hand, nicht Leute vor dir [Annahme]."
+  ],
+  "ask neigung option 1": [
+   "Kenn ich.",
+   "Der Tag geht fast komplett für den Kasten drauf — geredet wird vor allem mit den zwei Leuten, mit denen man dransteht [Annahme]."
+  ],
+  "ask neigung option 2": [
+   "Musst du auch nicht. Das merkt man meistens erst, wenn man es mal gemacht hat."
+  ],
+  "ask quiz": [
+   "Rate mal: Wie viele einzelne Kabel stecken in so einem Kasten, den wir bauen?"
+  ],
+  "ask quiz option 0": [
+   "Deutlich mehr: ein paar hundert [Annahme]. Jedes wird auf Länge geschnitten, festgeschraubt und geprüft."
+  ],
+  "ask quiz option 1": [
+   "<knall>Genau.</knall> Jedes wird geschnitten, festgeschraubt und geprüft. Deshalb dauert ein Kasten mehrere Tage [Annahme]."
+  ],
+  "ask quiz option 2": [
+   "So viele dann doch nicht. Ein paar hundert bei einem größeren Kasten [Annahme] — aber jedes davon geht einzeln durch meine Hände."
+  ],
+  "ask quiz option 3": [
+   "Ein paar hundert [Annahme]. Und jedes einzelne wird auf Länge geschnitten, festgeschraubt und geprüft."
+  ],
+  "ask fazit": [
+   "Bevor du gehst — könntest du dir sowas vorstellen?"
+  ],
+  "ask fazit option 0": [
+   "Gut. Am ehesten merkst du es in einem Praktikum — da siehst du den Alltag und nicht nur die guten Tage."
+  ],
+  "ask fazit option 1": [
+   "Auch ein Ergebnis. Dann weißt du das jetzt, ohne es drei Jahre lang auszuprobieren."
+  ],
+  "ask fazit option 2": [
+   "Völlig okay. Guck dir noch ein paar andere an, das sortiert sich mit der Zeit."
+  ],
+  "reentry 0": [
+   "Du schon wieder — langsam kenn ich dich."
+  ],
+  "reentry 1": [
+   "Na, doch noch was offen?"
+  ],
+  "reentry 2": [
+   "Ah, da bist du ja wieder. Frag ruhig."
+  ]
+ },
+ "firmaSchaetzung": {
+  "greeting": 1,
+  "frage was": 2,
+  "frage purpose": 1,
+  "frage tag_ablauf": 2,
+  "frage koennen": 1,
+  "frage reden": 2,
+  "frage technik": 2,
+  "frage lernort": 1,
+  "frage anstrengend": 2,
+  "frage danach": 1,
+  "frage bewerbung": 1,
+  "frage jetzt_tun": 1,
+  "frage praktikum_wie": 1,
+  "frage praktikum_was": 2,
+  "frage link": 1,
+  "frage ende": 1,
+  "ask neigung": 1,
+  "ask neigung option 0": 2,
+  "ask neigung option 1": 2,
+  "ask neigung option 2": 1,
+  "ask quiz": 1,
+  "ask quiz option 0": 1,
+  "ask quiz option 1": 1,
+  "ask quiz option 2": 1,
+  "ask quiz option 3": 1,
+  "ask fazit": 1,
+  "ask fazit option 0": 1,
+  "ask fazit option 1": 1,
+  "ask fazit option 2": 1,
+  "reentry 0": 1,
+  "reentry 1": 1,
+  "reentry 2": 1
+ },
+ "public": {
+  "greeting": [
+   "Hey! Ich bin Jonas, ich mache hier eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+  ],
+  "frage was": [
+   "Ich baue Schaltanlagen — Stromkästen, so groß wie ein Kleiderschrank [Annahme].",
+   "Ich schraube sie zusammen, ziehe Kabel und prüfe alles."
+  ],
+  "frage purpose": [
+   "Die Kästen gehen in Fabriken, Krankenhäuser und Wasserwerke [Annahme]. Fällt dort der Strom aus, merken es <marker>alle sofort</marker>."
+  ],
+  "frage tag_ablauf": [
+   "Um halb sieben geht's los: kurz besprechen, dann an den Kasten [Annahme].",
+   "Vormittags schrauben, nachmittags messen [Annahme]."
+  ],
+  "frage koennen": [
+   "Bei uns brauchst du Mittlere Reife. Physik und Mathe sollten dir liegen. Und: Bei Strom ist Schludern <marker>keine Option</marker>."
+  ],
+  "frage reden": [
+   "Im Team dauernd, wir bauen zu zweit oder zu dritt an einem Kasten [Annahme].",
+   "Die Leute, für die wir bauen, sehe ich aber fast nie [Annahme]."
+  ],
+  "frage technik": [
+   "Technischer als gedacht. Ist der Kasten fertig, messe ich, ob der Strom überall richtig ankommt.",
+   "Stimmt was nicht, suche ich den Fehler."
+  ],
+  "frage lernort": [
+   "Einmal die Woche Berufsschule [Annahme]: Strom, Schaltungen, viel Rechnen. Dazu Deutsch und Sozialkunde [Annahme]."
+  ],
+  "frage anstrengend": [
+   "Den ganzen Tag <zittern>stehen</zittern>, im Sommer in einer warmen Halle [Annahme].",
+   "Am meisten schlaucht das Prüfen: Da darf nichts durchrutschen [Annahme]."
+  ],
+  "frage danach": [
+   "Die Ausbildung dauert dreieinhalb Jahre. Danach arbeitest du als Fachkraft — oder lernst weiter, etwa an der Technikerschule."
+  ],
+  "frage bewerbung": [
+   "Du bewirbst dich direkt bei den Betrieben, meistens online. Was sie sehen wollen, steht in der Ausschreibung."
+  ],
+  "frage jetzt_tun": [
+   "Ein Praktikum — zwei Wochen Werkstatt sagen mehr als jede Broschüre. Und in Physik bei Strom gut aufpassen."
+  ],
+  "frage praktikum_wie": [
+   "Über die Schule, die hat feste Praktikumswochen [Annahme]. Oder per Mail an den Betrieb: Name, Klasse, Zeitraum, warum der Beruf."
+  ],
+  "frage praktikum_was": [
+   "Du siehst den echten Alltag: wie laut es ist, wie gearbeitet wird.",
+   "Selbst machen darfst du wenig [Annahme], aber du merkst, ob's dich packt."
+  ],
+  "frage ende": [
+   "Alles klar. Mach's gut — und viel Erfolg bei dem, was du dann machst!"
+  ],
+  "ask neigung": [
+   "Sag mal — arbeitest du lieber mit Menschen oder lieber mit Maschinen?"
+  ],
+  "ask neigung option 0": [
+   "Verstehe. Im Team wird ständig geredet.",
+   "Den Großteil des Tages hast du aber Werkzeug in der Hand, nicht Leute vor dir [Annahme]."
+  ],
+  "ask neigung option 1": [
+   "Kenn ich.",
+   "Der Tag geht fast komplett für den Kasten drauf — geredet wird vor allem mit den zwei Leuten, mit denen man dransteht [Annahme]."
+  ],
+  "ask neigung option 2": [
+   "Musst du auch nicht. Das merkt man meistens erst, wenn man es mal gemacht hat."
+  ],
+  "ask quiz": [
+   "Rate mal: Wie viele einzelne Kabel stecken in so einem Kasten, den wir bauen?"
+  ],
+  "ask quiz option 0": [
+   "Deutlich mehr: ein paar hundert [Annahme]. Jedes wird auf Länge geschnitten, festgeschraubt und geprüft."
+  ],
+  "ask quiz option 1": [
+   "<knall>Genau.</knall> Jedes wird geschnitten, festgeschraubt und geprüft. Deshalb dauert ein Kasten mehrere Tage [Annahme]."
+  ],
+  "ask quiz option 2": [
+   "So viele dann doch nicht. Ein paar hundert bei einem größeren Kasten [Annahme] — aber jedes davon geht einzeln durch meine Hände."
+  ],
+  "ask quiz option 3": [
+   "Ein paar hundert [Annahme]. Und jedes einzelne wird auf Länge geschnitten, festgeschraubt und geprüft."
+  ],
+  "ask fazit": [
+   "Bevor du gehst — könntest du dir sowas vorstellen?"
+  ],
+  "ask fazit option 0": [
+   "Gut. Am ehesten merkst du es in einem Praktikum — da siehst du den Alltag und nicht nur die guten Tage."
+  ],
+  "ask fazit option 1": [
+   "Auch ein Ergebnis. Dann weißt du das jetzt, ohne es drei Jahre lang auszuprobieren."
+  ],
+  "ask fazit option 2": [
+   "Völlig okay. Guck dir noch ein paar andere an, das sortiert sich mit der Zeit."
+  ],
+  "reentry 0": [
+   "Du schon wieder — langsam kenn ich dich."
+  ],
+  "reentry 1": [
+   "Na, doch noch was offen?"
+  ],
+  "reentry 2": [
+   "Ah, da bist du ja wieder. Frag ruhig."
+  ]
+ },
+ "publicSchaetzung": {
+  "greeting": 1,
+  "frage was": 2,
+  "frage purpose": 1,
+  "frage tag_ablauf": 2,
+  "frage koennen": 1,
+  "frage reden": 2,
+  "frage technik": 2,
+  "frage lernort": 1,
+  "frage anstrengend": 2,
+  "frage danach": 1,
+  "frage bewerbung": 1,
+  "frage jetzt_tun": 1,
+  "frage praktikum_wie": 1,
+  "frage praktikum_was": 2,
+  "frage ende": 1,
+  "ask neigung": 1,
+  "ask neigung option 0": 2,
+  "ask neigung option 1": 2,
+  "ask neigung option 2": 1,
+  "ask quiz": 1,
+  "ask quiz option 0": 1,
+  "ask quiz option 1": 1,
+  "ask quiz option 2": 1,
+  "ask quiz option 3": 1,
+  "ask fazit": 1,
+  "ask fazit option 0": 1,
+  "ask fazit option 1": 1,
+  "ask fazit option 2": 1,
+  "reentry 0": 1,
+  "reentry 1": 1,
+  "reentry 2": 1
+ },
+ "sonderfaelle": {
+  "leer": [
+   ""
+  ],
+  "nullwert": [
+   ""
+  ],
+  "einWort": [
+   "Hallo"
+  ],
+  "lang": [
+   "Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort",
+   "Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort",
+   "Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort",
+   "Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort",
+   "Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort Wort"
+  ],
+  "markup": [
+   "<marker>Wichtig</marker> und <gross>groß</gross>, <leise>leise</leise> <knall>Peng</knall>!"
+  ]
+ }
+}

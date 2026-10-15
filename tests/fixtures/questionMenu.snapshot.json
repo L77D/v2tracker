@@ -1,0 +1,1615 @@
+{
+ "onboarding": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--support",
+    "k": [
+     {
+      "t": "div",
+      "c": "support",
+      "k": [
+       {
+        "t": "div",
+        "c": "support-icon",
+        "k": [
+         {
+          "t": "img"
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "support-lines",
+        "k": [
+         {
+          "t": "span",
+          "c": "support-line support-line--wave",
+          "k": [
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "H",
+            "s": {
+             "--i": "0"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "a",
+            "s": {
+             "--i": "1"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "l",
+            "s": {
+             "--i": "2"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "t",
+            "s": {
+             "--i": "3"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "e",
+            "s": {
+             "--i": "4"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": " ",
+            "s": {
+             "--i": "5"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "a",
+            "s": {
+             "--i": "6"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "u",
+            "s": {
+             "--i": "7"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "f",
+            "s": {
+             "--i": "8"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": " ",
+            "s": {
+             "--i": "9"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "d",
+            "s": {
+             "--i": "10"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "i",
+            "s": {
+             "--i": "11"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "e",
+            "s": {
+             "--i": "12"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": " ",
+            "s": {
+             "--i": "13"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "K",
+            "s": {
+             "--i": "14"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "a",
+            "s": {
+             "--i": "15"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "r",
+            "s": {
+             "--i": "16"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "t",
+            "s": {
+             "--i": "17"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "e",
+            "s": {
+             "--i": "18"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "attract": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--support",
+    "k": [
+     {
+      "t": "div",
+      "c": "support",
+      "k": [
+       {
+        "t": "div",
+        "c": "support-icon",
+        "k": [
+         {
+          "t": "img"
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "support-lines",
+        "k": [
+         {
+          "t": "span",
+          "c": "support-line support-line--gelb",
+          "x": "Karte gefunden"
+         },
+         {
+          "t": "span",
+          "c": "support-line support-line--einzug",
+          "x": "→ Tipp sie an!"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "leer": {
+  "t": "div"
+ },
+ "themenReveal": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--reveal detar-panel--reveal-in",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-head",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-title",
+        "x": "Was interessiert dich?"
+       }
+      ]
+     },
+     {
+      "t": "div",
+      "c": "detar-grid",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Alltag im Job"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Was der Beruf bringt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Wie man reinkommt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Ich muss weiter"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "themaAlltag": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-head detar-head--thema",
+      "k": [
+       {
+        "t": "button",
+        "c": "detar-back detar-back--new",
+        "h": "<img class=\"px-back\" src=\"./assets/ui/pfeil-links.svg\" alt=\"\" />",
+        "a": {
+         "aria-label": "Zurück zu den Themen"
+        },
+        "klick": true
+       },
+       {
+        "t": "div",
+        "c": "detar-title",
+        "x": "Alltag im Job"
+       }
+      ]
+     },
+     {
+      "t": "div",
+      "c": "detar-pages",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-page",
+        "k": [
+         {
+          "t": "div",
+          "c": "detar-cell",
+          "k": [
+           {
+            "t": "button",
+            "c": "detar-tile",
+            "s": {
+             "--tilt": "-2.34deg"
+            },
+            "klick": true,
+            "k": [
+             {
+              "t": "span",
+              "c": "detar-reiter",
+              "k": [
+               {
+                "t": "span",
+                "c": "px-reiter px-reiter--neu",
+                "x": "NEU"
+               }
+              ]
+             },
+             {
+              "t": "span",
+              "c": "detar-kachel px-kachel",
+              "x": "Wie sieht dein Tag aus?"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "t": "div",
+          "c": "detar-cell",
+          "k": [
+           {
+            "t": "button",
+            "c": "detar-tile detar-tile--asked",
+            "s": {
+             "--tilt": "2.34deg"
+            },
+            "klick": true,
+            "k": [
+             {
+              "t": "span",
+              "c": "detar-reiter",
+              "k": [
+               {
+                "t": "span",
+                "c": "detar-reiter--check",
+                "x": "✅"
+               }
+              ]
+             },
+             {
+              "t": "span",
+              "c": "detar-kachel px-kachel px-kachel--asked",
+              "x": "Was machst du hier eigentlich?"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "themaWegeMitLink": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-head detar-head--thema",
+      "k": [
+       {
+        "t": "button",
+        "c": "detar-back detar-back--new",
+        "h": "<img class=\"px-back\" src=\"./assets/ui/pfeil-links.svg\" alt=\"\" />",
+        "a": {
+         "aria-label": "Zurück zu den Themen"
+        },
+        "klick": true
+       },
+       {
+        "t": "div",
+        "c": "detar-title",
+        "x": "Wie man reinkommt"
+       }
+      ]
+     },
+     {
+      "t": "div",
+      "c": "detar-pages",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-page",
+        "k": [
+         {
+          "t": "div",
+          "c": "detar-cell",
+          "k": [
+           {
+            "t": "button",
+            "c": "detar-tile",
+            "s": {
+             "--tilt": "-2.34deg"
+            },
+            "klick": true,
+            "k": [
+             {
+              "t": "span",
+              "c": "detar-reiter",
+              "k": [
+               {
+                "t": "span",
+                "c": "px-reiter px-reiter--neu",
+                "x": "NEU"
+               }
+              ]
+             },
+             {
+              "t": "span",
+              "c": "detar-kachel px-kachel",
+              "x": "Wie bewirbt man sich?"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "t": "div",
+          "c": "detar-cell",
+          "k": [
+           {
+            "t": "button",
+            "c": "detar-tile",
+            "s": {
+             "--tilt": "2.34deg"
+            },
+            "klick": true,
+            "k": [
+             {
+              "t": "span",
+              "c": "detar-reiter"
+             },
+             {
+              "t": "span",
+              "c": "detar-kachel px-kachel",
+              "x": "Was sollte ich jetzt schon tun?"
+             }
+            ]
+           }
+          ]
+         },
+         {
+          "t": "div",
+          "c": "detar-cell",
+          "k": [
+           {
+            "t": "button",
+            "c": "detar-tile",
+            "s": {
+             "--tilt": "-2.34deg"
+            },
+            "klick": true,
+            "k": [
+             {
+              "t": "span",
+              "c": "detar-reiter",
+              "k": [
+               {
+                "t": "span",
+                "c": "px-reiter px-reiter--neu",
+                "x": "NEU"
+               },
+               {
+                "t": "span",
+                "c": "px-reiter px-reiter--link",
+                "x": "LINK"
+               }
+              ]
+             },
+             {
+              "t": "span",
+              "c": "detar-kachel px-kachel",
+              "x": "Zeig mir die Seite"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "themenMitNeu": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-head",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-title",
+        "x": "Was interessiert dich?"
+       }
+      ]
+     },
+     {
+      "t": "div",
+      "c": "detar-grid",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Alltag im Job"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Was der Beruf bringt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Wie man reinkommt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Ich muss weiter"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "options": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-head",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-title",
+        "x": "Deine Antwort"
+       }
+      ]
+     },
+     {
+      "t": "div",
+      "c": "detar-grid",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "-2.34deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Eher mit Menschen"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "2.34deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Eher mit Maschinen"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "-2.34deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Weiß ich noch nicht"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "next": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-grid",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "-2.34deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Seite öffnen"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "nextWeiter": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-grid",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "-2.34deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Weiter"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "idle": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--support",
+    "k": [
+     {
+      "t": "div",
+      "c": "support",
+      "s": {
+       "pointerEvents": "auto",
+       "cursor": "pointer"
+      },
+      "klick": true,
+      "k": [
+       {
+        "t": "div",
+        "c": "support-icon",
+        "k": [
+         {
+          "t": "img"
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "support-lines",
+        "k": [
+         {
+          "t": "span",
+          "c": "support-line support-line--pulse",
+          "x": "Tipp auf die Karte"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "idleLost": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--support",
+    "k": [
+     {
+      "t": "div",
+      "c": "support",
+      "k": [
+       {
+        "t": "div",
+        "c": "support-icon",
+        "k": [
+         {
+          "t": "img"
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "support-lines",
+        "k": [
+         {
+          "t": "span",
+          "c": "support-line",
+          "x": "Halte auf die Karte"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "idleLostFrozen": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--support detar-panel--frozen",
+    "k": [
+     {
+      "t": "div",
+      "c": "support",
+      "k": [
+       {
+        "t": "div",
+        "c": "support-icon",
+        "k": [
+         {
+          "t": "img"
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "support-lines",
+        "k": [
+         {
+          "t": "span",
+          "c": "support-line",
+          "x": "Halte auf die Karte"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "themenFrozen": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--frozen",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-head",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-title",
+        "x": "Was interessiert dich?"
+       }
+      ]
+     },
+     {
+      "t": "div",
+      "c": "detar-grid",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Alltag im Job"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Was der Beruf bringt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Wie man reinkommt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Ich muss weiter"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "themenAufgetaut": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots",
+    "k": [
+     {
+      "t": "div",
+      "c": "detar-head",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-title",
+        "x": "Was interessiert dich?"
+       }
+      ]
+     },
+     {
+      "t": "div",
+      "c": "detar-grid",
+      "k": [
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Alltag im Job"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Was der Beruf bringt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile detar-tile--theme",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter",
+            "k": [
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--thema",
+              "x": "THEMA"
+             },
+             {
+              "t": "span",
+              "c": "px-reiter px-reiter--neu",
+              "x": "NEU"
+             }
+            ]
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Wie man reinkommt"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "detar-cell",
+        "k": [
+         {
+          "t": "button",
+          "c": "detar-tile",
+          "s": {
+           "--tilt": "0.00deg"
+          },
+          "klick": true,
+          "k": [
+           {
+            "t": "span",
+            "c": "detar-reiter"
+           },
+           {
+            "t": "span",
+            "c": "detar-kachel px-kachel",
+            "x": "Ich muss weiter"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "reset": {
+  "t": "div",
+  "k": [
+   {
+    "t": "div",
+    "c": "detar-panel d-dots detar-panel--support",
+    "k": [
+     {
+      "t": "div",
+      "c": "support",
+      "k": [
+       {
+        "t": "div",
+        "c": "support-icon",
+        "k": [
+         {
+          "t": "img"
+         }
+        ]
+       },
+       {
+        "t": "div",
+        "c": "support-lines",
+        "k": [
+         {
+          "t": "span",
+          "c": "support-line support-line--wave",
+          "k": [
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "H",
+            "s": {
+             "--i": "0"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "a",
+            "s": {
+             "--i": "1"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "l",
+            "s": {
+             "--i": "2"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "t",
+            "s": {
+             "--i": "3"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "e",
+            "s": {
+             "--i": "4"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": " ",
+            "s": {
+             "--i": "5"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "a",
+            "s": {
+             "--i": "6"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "u",
+            "s": {
+             "--i": "7"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "f",
+            "s": {
+             "--i": "8"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": " ",
+            "s": {
+             "--i": "9"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "d",
+            "s": {
+             "--i": "10"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "i",
+            "s": {
+             "--i": "11"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "e",
+            "s": {
+             "--i": "12"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": " ",
+            "s": {
+             "--i": "13"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "K",
+            "s": {
+             "--i": "14"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "a",
+            "s": {
+             "--i": "15"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "r",
+            "s": {
+             "--i": "16"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "t",
+            "s": {
+             "--i": "17"
+            }
+           },
+           {
+            "t": "span",
+            "c": "wave-ch",
+            "x": "e",
+            "s": {
+             "--i": "18"
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
