@@ -9,6 +9,7 @@
    ============================================================================= */
 import { CHOREO } from "./config.js";
 import { sound } from "./sound.js";
+import { progress } from "./util.js";
 
 export class FigureJump {
   constructor({ nodes, wander, face }) {
@@ -38,7 +39,7 @@ export class FigureJump {
     if (!this.active) return;
     const { nodes, face, wander } = this;
     this.t += dt;
-    const k = Math.min(1, this.t / Math.max(0.05, CHOREO.jumpDurationSec));
+    const k = progress(this.t, CHOREO.jumpDurationSec); // Mindestdauer 50 ms (util.js)
     const e = k * k * (3 - 2 * k); // smoothstep horizontal
     nodes.FigureRoot.position.x = this.fromX * (1 - e);
     nodes.FigureRoot.position.z = this.fromZ * (1 - e);

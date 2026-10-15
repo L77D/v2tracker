@@ -47,7 +47,6 @@ export class IdleWander {
     this.element = nodes.FigureRoot;
     this.heading = this.element.rotation.y;
     this.headBaseRotY = nodes.HeadPivot.rotation.y;
-    this.headBaseRotZ = nodes.HeadPivot.rotation.z;
     this.headBaseRotX = nodes.HeadNod.rotation.x;
     this.headSmoothX = this.headBaseRotX;
     this.rollSmooth = 0;

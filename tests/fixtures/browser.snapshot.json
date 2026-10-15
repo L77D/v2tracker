@@ -1,0 +1,390 @@
+{
+ "boot": {
+  "index.html": {
+   "body": "keine-karte",
+   "cardName": "…",
+   "companyText": "",
+   "logoHidden": false,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": true,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [],
+   "konsole": [
+    "warning: DETAR: kein ?k — Auffang-Seite. Bekannte Karten: 000"
+   ]
+  },
+  "index.html?k=000": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "Siemens",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
+  "index.html?k=000P": {
+   "body": "public",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
+  "index.html?k=xyz": {
+   "body": "",
+   "cardName": "…",
+   "companyText": "",
+   "logoHidden": false,
+   "err": "Unbekannte Karte „xyz“ — bekannt: 000 (Parameter ?k, Katalog: karten/katalog.json)",
+   "errSichtbar": "block",
+   "startKnopfAus": true,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [],
+   "konsole": [
+    "warning: DETAR Unbekannte Karte „xyz“ [000]"
+   ]
+  },
+  "index.html?karte=p07": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "Siemens",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
+  "index.html?k=000&design=nope": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "",
+   "logoHidden": false,
+   "err": "Unbekanntes Design „nope“ der Karte „000“ — bekannt: p04, p01, p02, p03, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35 (Parameter ?design, Liste: karten/000/daten.json)",
+   "errSichtbar": "block",
+   "startKnopfAus": true,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [],
+   "konsole": [
+    "warning: DETAR Unbekanntes Design „nope“ der Karte „000“ [p04, p01, p02, p03, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p"
+   ]
+  },
+  "index.html?k=000&preflight=inapp": {
+   "body": "preflight-blocked",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "",
+   "logoHidden": false,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": true,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "Diese App braucht die Kamera. Öffne den Link in Safari (iPho",
+   "pfUrl": "/index.html?k=000",
+   "preload": [],
+   "konsole": [
+    "warning: DETAR Vorabprüfung: inapp — Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome Safari"
+   ]
+  },
+  "index.html?k=000&preflight=nowebp": {
+   "body": "preflight-blocked",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "",
+   "logoHidden": false,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": true,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "Dein Browser ist zu alt, um die Figur anzuzeigen. Aktualisie",
+   "pfUrl": "/index.html?k=000",
+   "preload": [],
+   "konsole": [
+    "warning: DETAR Vorabprüfung: nowebp — Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome Safar"
+   ]
+  },
+  "index.html?k=000&tracker=alt": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "Siemens",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "alt? → 8lerp",
+   "markeKlassen": "show",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
+  "index.html?k=000&tracker=foo": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "Siemens",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "foo? → 8lerp",
+   "markeKlassen": "show",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
+  "index.html?k=000&tracker=8lerp&dev": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "Siemens",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "8lerp",
+   "markeKlassen": "unter-dev show",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": [
+    "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ "karten.html": {
+  "titel": "DETAR — Kartendesigns",
+  "qr": 36,
+  "links": [
+   "./?karte=p04&stats",
+   "./?karte=p04&stats",
+   "./?karte=p01&stats",
+   "./?karte=p01&stats",
+   "./?karte=p02&stats",
+   "./?karte=p02&stats",
+   "./?karte=p03&stats",
+   "./?karte=p03&stats",
+   "./?karte=p05&stats",
+   "./?karte=p05&stats",
+   "./?karte=p06&stats",
+   "./?karte=p06&stats",
+   "./?karte=p07&stats",
+   "./?karte=p07&stats",
+   "./?karte=p08&stats",
+   "./?karte=p08&stats",
+   "./?karte=p09&stats",
+   "./?karte=p09&stats",
+   "./?karte=p10&stats",
+   "./?karte=p10&stats",
+   "./?karte=p11&stats",
+   "./?karte=p11&stats",
+   "./?karte=p12&stats",
+   "./?karte=p12&stats",
+   "./?karte=p13&stats",
+   "./?karte=p13&stats",
+   "./?karte=p14&stats",
+   "./?karte=p14&stats",
+   "./?karte=p15&stats",
+   "./?karte=p15&stats",
+   "./?karte=p16&stats",
+   "./?karte=p16&stats",
+   "./?karte=p17&stats",
+   "./?karte=p17&stats",
+   "./?karte=p18&stats",
+   "./?karte=p18&stats",
+   "./?karte=p19&stats",
+   "./?karte=p19&stats",
+   "./?karte=p20&stats",
+   "./?karte=p20&stats",
+   "./?karte=p21&stats",
+   "./?karte=p21&stats",
+   "./?karte=p22&stats",
+   "./?karte=p22&stats",
+   "./?karte=p23&stats",
+   "./?karte=p23&stats",
+   "./?karte=p24&stats",
+   "./?karte=p24&stats",
+   "./?karte=p25&stats",
+   "./?karte=p25&stats",
+   "./?karte=p26&stats",
+   "./?karte=p26&stats",
+   "./?karte=p27&stats",
+   "./?karte=p27&stats",
+   "./?karte=p28&stats",
+   "./?karte=p28&stats",
+   "./?karte=p29&stats",
+   "./?karte=p29&stats",
+   "./?karte=p30&stats",
+   "./?karte=p30&stats"
+  ],
+  "text": "DETAR — Kartendesigns Quelle: karten/katalog.json + karten/<id>/daten.json (designs) · QR-Code scannen oder „Starten\" tippen → App mit ?k=<karte> (Firmenfassung) bzw. ?k=<karte>P (Public-Fassung); &design=<design> nur bei einem anderen als dem Standard-Design der Fassung (kürzerer QR-Code). Testdrucke (Feld qr) zeigen den Link wie gedruckt, z. B. ?karte=p01. Zusatz-Flags im Link: stats (Diagnose) ",
+  "konsole": []
+ },
+ "tools/kartenpruefung.html?k=000": {
+  "kopf": [
+   "Kartenprüfung",
+   "",
+   "Maschinelle Prüfpunkte aus dem Regelwerk (docs/dialog-regelwerk.md, Teil C1). Die inhaltlichen Punkte (C2) liest ein Mensch.",
+   "",
+   "Karte aus dem Repo ",
+   "Elektroniker/in für Betriebstechnik (Siemens) — interner Prototyp (000)",
+   "Prüfen",
+   "Oder: Dialogteil einfügen (Ausgabe von Claude)"
+  ],
+  "zeichen": 13862,
+  "konsole": []
+ },
+ "desktop": {
+  "geladeneModule": [
+   "js/activationAnim.js",
+   "js/activationFX.js",
+   "js/arSession.js",
+   "js/bubbleText.js",
+   "js/cardController.js",
+   "js/config.js",
+   "js/desktopMode.js",
+   "js/dialogEngine.js",
+   "js/edition.js",
+   "js/experience.js",
+   "js/faceAnimator.js",
+   "js/figureJump.js",
+   "js/gyroFusion.js",
+   "js/idleWander.js",
+   "js/jitterMetrics.js",
+   "js/kartenLader.js",
+   "js/main.js",
+   "js/phoneFrame.js",
+   "js/poseArbiter.js",
+   "js/preflight.js",
+   "js/questionMenu.js",
+   "js/rig.js",
+   "js/sceneFade.js",
+   "js/sound.js",
+   "js/speechBubble.js",
+   "js/statsOverlay.js",
+   "js/supportUI.js",
+   "js/tapInput.js",
+   "js/tracker8lerp.js",
+   "js/trackerWahl.js",
+   "js/util.js",
+   "js/vendor/tiks.js",
+   "js/version.js",
+   "vendor/three/three.module.js"
+  ],
+  "nachStart": {
+   "phase": "attract",
+   "menu": "attract",
+   "body": "phone-framed launched",
+   "panel": "detar-panel d-dots detar-panel--support",
+   "kacheln": [],
+   "support": "Karte gefunden→ Tipp sie an!",
+   "blase": false,
+   "figur": [
+    "idle"
+   ]
+  },
+  "nachTap": {
+   "phase": "live",
+   "menu": "speaking",
+   "body": "phone-framed launched",
+   "panel": null,
+   "kacheln": [],
+   "support": null,
+   "blase": true,
+   "figur": [
+    "affirm"
+   ]
+  },
+  "thema": {
+   "phase": "live",
+   "menu": "speaking",
+   "body": "phone-framed launched",
+   "panel": null,
+   "kacheln": [],
+   "support": null,
+   "blase": true,
+   "figur": [
+    "affirm"
+   ]
+  },
+  "antwortLaeuft": {
+   "phase": "live",
+   "menu": "speaking",
+   "body": "phone-framed launched",
+   "panel": null,
+   "kacheln": [],
+   "support": null,
+   "blase": true,
+   "figur": [
+    "affirm"
+   ]
+  },
+  "antwortFertig": {
+   "phase": "live",
+   "menu": "themen",
+   "body": "phone-framed launched",
+   "panel": "detar-panel d-dots detar-panel--reveal detar-panel--reveal-in",
+   "kacheln": [
+    "THEMAAlltag im Job",
+    "THEMAWas der Beruf bringt",
+    "THEMAWie man reinkommt",
+    "Ich muss weiter"
+   ],
+   "support": null,
+   "blase": true,
+   "figur": [
+    "affirm"
+   ]
+  },
+  "konsole": []
+ }
+}

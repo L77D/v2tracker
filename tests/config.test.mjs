@@ -8,7 +8,7 @@ test("kein Schalter in config.js ist noch ein String „ja“/„nein“", () =>
   for (const [name, obj] of Object.entries(ALL)) {
     for (const [k, v] of Object.entries(obj)) assert.ok(v !== "ja" && v !== "nein", name + "." + k);
   }
-  for (const k of ["enabled", "normalize", "deadZones", "lostHold", "nanGuard", "snap", "scaleLock", "gravityArbiter", "extrapolate"]) {
+  for (const k of ["enabled", "nanGuard", "gravityArbiter"]) {
     assert.equal(typeof STAB[k], "boolean", "STAB." + k);
   }
   assert.equal(typeof GYRO.enabled, "boolean");
@@ -26,14 +26,16 @@ test("uebersetzeSchalter: nur „ja“/„nein“ werden übersetzt, alles ander
 test("applyTuning: altes Preset (Strings) und neues Preset (Booleans) laden gleich", () => {
   const alt = { STAB: { ...STAB }, GYRO: { ...GYRO }, SOUND: { ...SOUND } };
   try {
-    assert.equal(applyTuning({ STAB: { enabled: "nein", snap: "nein", minCutoff: 0.2 }, GYRO: { enabled: "nein" }, SOUND: { theme: "soft" } }), true);
+    assert.equal(applyTuning({ STAB: { enabled: "nein", gravityArbiter: "nein", lerpPosMs: 80, snap: "nein" }, GYRO: { enabled: "nein" }, SOUND: { theme: "soft" } }), true);
     assert.equal(STAB.enabled, false);
-    assert.equal(STAB.snap, false);
-    assert.equal(STAB.minCutoff, 0.2);
-    assert.equal(STAB.normalize, true); // unberührt
+    assert.equal(STAB.gravityArbiter, false);
+    assert.equal(STAB.lerpPosMs, 80);
+    assert.equal(STAB.snap, false); // alter Schlüssel (PoseStabilizer, archiviert): wird angehängt, wirkt nirgends
+    assert.equal(STAB.nanGuard, true); // unberührt
     assert.equal(GYRO.enabled, false);
     assert.equal(SOUND.theme, "soft");
-    applyTuning({ STAB: { enabled: true, snap: true }, GYRO: { enabled: true } });
+    applyTuning({ STAB: { enabled: true, gravityArbiter: true }, GYRO: { enabled: true } });
+    delete STAB.snap;
     assert.equal(STAB.enabled, true);
     assert.equal(GYRO.enabled, true);
     // Unbekannte Blöcke und Unsinn: kein Fehler, nichts verändert

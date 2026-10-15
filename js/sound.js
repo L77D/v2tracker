@@ -78,7 +78,7 @@ class SoundDesign {
   /* Anfangston einer Antwort (2026-10-14, Michael): wie das „Blip" beim
      Öffnen einer Textbox in alten RPGs — ein kurzes „bi-ip" aus zwei
      steigenden Rechteck-Tönen (Quinte), danach tippt der Text lautlos.
-     Ersetzt die Animalese-Stimme (js/voice.js) und die Tipp-Ticks. Gerufen
+     Ersetzt die Animalese-Stimme (js/voice.js, bis Build 107) und die Tipp-Ticks. Gerufen
      von cardController.say() nur auf Seite 1 einer Antwort. */
   bubbleOpen() {
     if (!this.on || !this.ctx) return;

@@ -139,7 +139,7 @@ export const CHOREO = {
 export const SCENE = {
   cardWidth: 0.059,  // SZENEN-Einheit der Kartenbreite (Karte 59 × 91 mm hochkant, Michael
                      // 2026-09-07; vorher 0.17 → 0.095). Die PHYSISCHE Breite fürs Tracking
-                     // kommt seit Build 57 aus targets/8thwall/karten.json (breiteMm).
+                     // kommt seit Build 57 aus daten.json der Karte (designs[].breiteMm).
   cardAspect: 88 / 63,     // Höhe/Breite der Karte in Anchor-Einheiten → Eck-Marker, Tap-Fläche,
                            // Desktop-Plane. 2026-10-12 (Michael, Build 98): 1,40 = gedruckte
                            // Karte 63×88 mm (Druckspezifikation, P04). Bis Build 97 stand hier
@@ -154,85 +154,34 @@ export const SCENE = {
   bgColor: "#9a9a9a", // nur Desktop-Testmodus (Debug-Overlays: NUR per ?debug, kein Key hier)
 };
 
-// Tracking-Glättung: UNSER PoseStabilizer (js/poseStabilizer.js, Port des in
-// Zapworks verifizierten Filters): One-Euro-Position + SLERP-Rotation +
-// Dead-Zone + Lost-Hold zwischen Rohpose und Figur. (Die 8th-Wall-Engine hat
-// keinen konfigurierbaren Vorfilter; die MindAR-Keys filterMinCF/filterBeta/
-// missTolerance/warmupTolerance sind seit 2026-09-09 weg.)
-// Toggle-Nummern 1–10 = Reihenfolge im Dev-Panel (js/devPanel.js, Block
-// „Tracking-Features"); ?stats nennt sie in der Flip-Zeile.
-// Faustregel: erst minCutoff runter, bis das Ruhe-Zittern weg ist, dann beta
-// hoch, bis schnelle Bewegung ohne Nachziehen folgt — EINE Schraube pro Test.
-// EINHEITEN: Der PoseStabilizer filtert in KARTENBREITEN (er normiert die
-// Rohpose intern über die Anchor-Scale = Kartenbreite). posDeadZone 0.001
-// = 1/1000 Kartenbreite (≈ 0,15 mm bei 15-cm-Karte); beta bezieht sich auf
-// Geschwindigkeit in Kartenbreiten/s.
+// Tracking-Glättung (Build 111, 2026-10-15): nur noch der Tracker 8lerp
+// (js/tracker8lerp.js) — bis Build 110 lagen hier ~30 weitere Werte des
+// PoseStabilizers (One-Euro, Dead-Zones, Median-Aufsetzen, Snap, Scale-Lock,
+// Extrapolation …); die Varianten alt/neu/8roh liegen samt ihren Werten in
+// archiv/tracker-varianten/ (Stand Build 110: `git show 9f771c6:js/config.js`).
+// Alte tuning.json/Presets mit diesen Schlüsseln laden weiter (applyTuning
+// hängt unbekannte Schlüssel an, sie wirken nur nirgends).
+// Toggle-Nummern = Reihenfolge im Dev-Panel (js/devPanel.js, Block
+// „Tracking-Features"), seit Build 111 nur noch 1 · 5 · 7 (GYRO.enabled) · 10;
+// ?stats nennt sie in der Flip-Zeile. (Die 8th-Wall-Engine hat keinen
+// konfigurierbaren Vorfilter.)
 export const STAB = {
-  // Tracker-Variante (Build 92, js/trackerWahl.js): "alt" = PoseStabilizer,
-  // "neu" = tracker.js (messgetrieben), "8roh" = Nulllinie, "8lerp" = 8roh
-  // + Lerp/Slerp + Schiedsrichter (Build 105). ?tracker=<name> in der URL hat
-  // Vorrang. Die Entscheidung am Ende: hier den Gewinner eintragen, Verlierer
-  // samt Tests entfernen, Engine bereinigt ausliefern.
-  // 2026-10-15 (Michael, nach dem Handytest): Standard "alt" → "8lerp" — ohne
-  // ?tracker= im Link (also auch bei gedruckten QR-Codes) läuft 8lerp; alt/neu/
-  // 8roh bleiben per ?tracker=<name> wählbar.
+  // Tracker-Variante (js/trackerWahl.js): seit Build 111 nur "8lerp"; ?tracker=
+  // in der URL hat Vorrang, ein unbekannter Name (auch alt/neu/8roh) fällt mit
+  // Warnung auf "8lerp" zurück. 2026-10-15 (Michael, nach dem Handytest):
+  // Standard "alt" → "8lerp" (Build 110), Archivierung der anderen (Build 111).
   tracker: "8lerp",
   // --- Feature-Schalter (Dev-Panel „Tracking-Features an/aus") ---------------
-  // Jeder Baustein einzeln abschaltbar, um sein Verhalten zu isolieren.
-  enabled: true,     // 1 PoseStabilizer komplett (false = rohe Anchor-Pose 1:1)
-  normalize: true,   // 2 Einheiten-Normierung auf Kartenbreiten (false = Pixel-Skala,
-                     //   reproduziert den „Filter wirkungslos"-Zustand)
-  deadZones: true,   // 3 Snap-to-still (Position + Rotation)
-  lostHold: true,    // 4 letzte Pose bei Verlust kurz halten (false = sofort weg)
-  nanGuard: true,    // 5 kaputte Posen verwerfen (false = alter Verschwinde-Bug möglich!)
-  snap: true,        // 6 Re-Found-Snap statt Hinübergleiten
-  scaleLock: true,   // 9 Anchor-Scale einfrieren + Scale-Ausreißer-Frames verwerfen
-                     //   (MindAR-Stand 2026-07-14: Wackeln aus MindARs elementweisem
-                     //   Matrix-Filter/Fehl-Homographien → „Figur schräg/zu groß".)
-                     //   Unter 8th Wall ist detail.scale pro Track konstant → die Stufe
-                     //   löst strukturell nie aus; bleibt als Sicherung (Stufe 3: Ausbau
-                     //   nach Prüfung des Re-Lock-Zählers in ?stats am Gerät).
+  enabled: true,     // 1 Glättung (false = Messung 1:1, τ ohne Wirkung)
+  nanGuard: true,    // 5 kaputte Kamera-Transformationen im Frame überspringen
+                     //   (experience.js getCamLocal; false = alter Verschwinde-Bug möglich!)
   gravityArbiter: true, // 10 Schwerkraft-Schiedsrichter gegen den „Pose-Flip" (2026-09-15):
                         //   die ebene Pose-Schätzung hat zwei Lösungen; 8th Wall liefert
                         //   manchmal stabil die gespiegelte (Karte um 2θ gekippt, Figur liegt
                         //   flach zum Betrachter, Kopf unten). Aus der Rohpose wird die
                         //   Spiegel-Kandidatin berechnet und die Lage gewählt, deren Normale
                         //   im Erdframe nach oben zeigt (js/poseArbiter.js). Ohne Gyro passiv.
-  // 7 = GYRO.enabled · 8 = extrapolate (unten)
-
-  minCutoff: 0.1,       // Grund-Glättung in Ruhe. KLEINER = ruhiger, aber träger.
-                        // 2026-07-14: 1.0 → 0.1 (deutlich ruhiger in Ruhe; beta=10
-                        // öffnet den Filter bei Bewegung, daher trotzdem reaktiv).
-  beta: 10,             // wie stark Bewegung die Glättung löst. GRÖSSER = wacher.
-                        // 2026-07-14 (Finding 3): 0.002 → 10. Der alte Wert öffnete
-                        // den Filter faktisch NIE (1 KB/s ⇒ +0.002 Hz) — der Filter
-                        // war ein fixer ~1-Hz-Tiefpass, Nachlauf ~160 ms, und die
-                        // Far-Debounce feuerte auf den eigenen Lag (Freeze→Pop bei
-                        // schnellen Schwenks). Jetzt: 0.5 KB/s ⇒ ~6 Hz (wach),
-                        // Ruhe-Rauschen (~0.03 KB/s) ⇒ ~1.3 Hz (weiter ruhig).
-  dCutoff: 1.0,         // Glättung der Geschwindigkeitsschätzung (selten anfassen)
-  rotMinCutoff: 0.5,    // Rotations-Glättung in Ruhe (Hz). KLEINER = ruhiger/träger.
-                        // 2026-07-14: 1.5 → 0.5 (ruhiger; rotBeta öffnet bei Drehung).
-  rotBeta: 4.0,         // wie stark Drehgeschwindigkeit die Glättung öffnet
-                        // (adaptiv 2026-07-13 — ersetzt den fixen rotLerp)
-  posDeadZone: 0.001,   // Kartenbreiten; darunter kein Update → Figur steht 100% still
-  rotDeadZone: 0.0015,  // dito Rotation (Radiant)
-  lostHoldMs: 250,      // letzte gute Pose so lange halten, bevor ausgeblendet
-  snapDist: 0.25,       // Kartenbreiten; Messung weiter weg → snappen statt gleiten
-  snapAngle: 0.5,       // Radiant (~29°); dito Rotation
-  scaleOutlier: 0.1,    // relative Scale-Abweichung von der eingefrorenen Scale;
-                        // darüber gilt der GANZE Frame als Fehl-Messung → verwerfen
-  // AUFSETZEN PER MEDIAN (2026-09-07, Michael: „initialer Scan sitzt schief"):
-  // Nicht der erste Frame prägt Pose + Scale-Lock, sondern der Median der
-  // ersten Messungen (Position je Achse, Medoid-Rotation, Median-Scale). Ein
-  // einzelner schräger/unscharfer Frame wird so überstimmt. Solange gesammelt
-  // wird, zeigt die Szene den laufenden Median (kein Warten ohne Bild).
-  acquireFrames: 10,    // so viele NEUE Vision-Messungen einsammeln
-  acquireMaxMs: 700,    // spätestens danach aufsetzen (bei langsamer Vision-Hz), min. 3 Messungen
-  // SCALE-RE-LOCK (2026-09-07): weicht die Scale so lange AM STÜCK um mehr als
-  // scaleOutlier vom Lock ab, war der Lock falsch → komplett neu aufsetzen
-  // (vorher wurden solche Frames endlos verworfen, die Figur blieb schief).
-  scaleRelockMs: 600,
+  // 7 = GYRO.enabled (unten)
   // SCHWERKRAFT-SCHIEDSRICHTER (2026-09-15): Hysterese — die Spiegel-Kandidatin
   // gewinnt erst, wenn ihr z-Anteil (Normale im Erdframe, 1 = senkrecht nach
   // oben) um mehr als arbiterMargin über dem der Rohpose liegt. Nahe der
@@ -241,39 +190,9 @@ export const STAB = {
   // TRACKER „8lerp" (Build 105, 2026-10-13, js/tracker8lerp.js): Zeitkonstante
   // des Lerp/Slerp auf die letzte Messung, in ms. Die Engine misst alle 33–50 ms
   // (20–30 Hz) — τ in derselben Größe glättet die Treppe, Nachlauf bei
-  // gleichmäßiger Bewegung ≈ τ. 0 = Messung 1:1. Nur für ?tracker=8lerp.
+  // gleichmäßiger Bewegung ≈ τ. 0 = Messung 1:1.
   lerpPosMs: 50,
   lerpRotMs: 50,
-
-  // Bewegungs-Extrapolation (2026-07-09): die Bilderkennung misst nur mit
-  // ~15–30 Hz (MindAR wie 8th Wall; imageupdated feuert nur bei neuer Pose) —
-  // zwischen zwei Messungen wird die Pose mit der zuletzt gemessenen
-  // Geschwindigkeit WEITERGEFÜHRT (Dead Reckoning), statt treppig zu stehen.
-  // Zusätzlich schaltet erkannte Bewegung die Dead-Zone ab: ruhig in Ruhe,
-  // flüssig in Bewegung.
-  extrapolate: true,
-  extrapMaxMs: 150,     // max. so lange vorhersagen (dann halten)
-  latencyMs: 40,        // Alter der Vision-Messung (Verarbeitungszeit) — wird
-                        // im Bewegt-Modus zusätzlich vorhergesagt (weniger Nachlauf)
-  moveDwellMs: 250,     // so lange ohne Schwellen-Überschreitung, bevor zurück
-                        // in den Ruhe-Modus
-  // Ausreißer-/Überschwinger-Kappen (2026-07-13, gegen „Figur schräg/riesig"):
-  maxSpeed: 3,          // Kartenbreiten/s — schnellere Schätzung = Messfehler
-  maxAngSpeed: 4,       // rad/s — dito Rotation
-  extrapMaxDist: 0.08,  // Kartenbreiten — max. Vorhersage-Strecke pro Frame-Ziel
-  extrapMaxAngle: 0.25, // rad (~14°) — max. Vorhersage-Drehung
-  minSpeed: 0.04,       // Kartenbreiten/s FENSTER-DRIFT; darunter gilt „steht".
-                        // (Bewegt-Erkennung läuft über geglättete 250-ms-Drift statt
-                        // Momentan-Geschwindigkeit — tremor-fest.)
-                        // 2026-07-14 (Finding 3): 0.1 → 0.04. Sanftes Karten-Handling
-                        // (~0,6 cm/s+) zählt jetzt als BEWEGT → Extrapolation an,
-                        // Dead-Zones aus — vorher lief genau dieses Band als „ruhig"
-                        // durch den geschlossenen Filter (15–30-Hz-Treppensignal).
-  minAngSpeed: 0.09,    // rad/s; dito für Rotation.
-                        // 2026-07-14 (Finding 3): 0.3 (~17°/s!) → 0.09 (~5°/s) —
-                        // normales Kippen der Karte lag fast immer UNTER der alten
-                        // Schwelle und wurde als Ruhe behandelt.
-  refHz: 60,
 };
 
 // Aktivier-Phase (ActivationFX, UI-Update 2026-09-03): vier gelbe Eck-Marker

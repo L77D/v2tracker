@@ -19,11 +19,14 @@
         1250–1299 wahre Pose (Schiedsrichter kippt zurück)
 
    Vision-Messungen kommen nur jeden 3. Tick (sonst bleibt die Matrix
-   bitidentisch = „stale"), Render-Takt 60 Hz. Läuft für beide Tracker: der
-   alte liest source.matrix je Tick, der neue (js/tracker.js) bekommt jede
-   neue Messung über measure() — dieselben Zahlen, derselbe Takt. Genutzt vom Goldstandard
-   tests/fixtures/poseStabilizer.golden.json (erzeugt mit dem Stand VOR dem
-   Umbau, Build 87) und von tests/poseStabilizer.test.mjs. */
+   bitidentisch = „stale"), Render-Takt 60 Hz. Läuft mit jeder Klasse nach dem
+   Vertrag in js/trackerWahl.js: lesende Klassen holen source.matrix je Tick,
+   messgetriebene bekommen jede neue Messung über measure() — dieselben Zahlen,
+   derselbe Takt. Genutzt vom Goldstandard tests/fixtures/tracker8lerp.golden.json
+   (tests/tracker8lerp.test.mjs; der Goldstandard des alten PoseStabilizers liegt
+   seit Build 111 in archiv/tracker-varianten/). Die Phasen oben stammen aus der
+   Zeit mit vier Varianten — 8lerp kennt weder Median noch Scale-Lock, die
+   Abschnitte laufen trotzdem durch (so bleibt das Szenario vergleichbar). */
 import * as THREE from "../vendor/three/three.module.js";
 import { STAB, GYRO } from "../js/config.js";
 import { baueTracker } from "../js/trackerWahl.js";
@@ -194,8 +197,8 @@ function lauf(PoseStabilizer, jederTick, uhr) {
       gyroCtl.qEarth = t45.qEarth;
     }
 
-    // Neuer Tracker (js/tracker.js): jede neue Messung als Ereignis; der alte
-    // Filter liest source.matrix selbst und erkennt stale Frames.
+    // Messgetriebene Tracker: jede neue Messung als Ereignis; lesende Klassen
+    // holen source.matrix selbst und erkennen stale Frames.
     if (neu && stab.measure) stab.measure(source.matrix);
     neu = false;
     stab.tick();

@@ -18,23 +18,24 @@ export class ActivationAnim {
     this.outSec = 0.5;
     this.element = nodes.FigureRoot;
   }
+  /* Echte Start-Scale einmal erfassen (vor dem ersten Verstecken) — bis Build
+     110 stand der Block dreimal (prime/play/playOut). */
+  captureScale() {
+    if (this.scaleCaptured) return;
+    this.baseScale.copy(this.element.scale);
+    this.scaleCaptured = true;
+  }
   /* Sofort verstecken (scale 0) + echte Start-Scale erfassen — verhindert,
      dass die Figur vor dem Pop-In kurz in voller Größe aufblitzt. */
   prime() {
-    if (!this.scaleCaptured) {
-      this.baseScale.copy(this.element.scale);
-      this.scaleCaptured = true;
-    }
+    this.captureScale();
     this.element.scale.set(0, 0, 0);
   }
   play(onDone) {
     this.onDone = onDone ?? null;
     this.elapsed = 0;
     this.baseRotY = this.element.rotation.y;
-    if (!this.scaleCaptured) {
-      this.baseScale.copy(this.element.scale);
-      this.scaleCaptured = true;
-    }
+    this.captureScale();
     this.element.scale.set(0, 0, 0);
     this.playing = true;
   }
@@ -51,10 +52,7 @@ export class ActivationAnim {
     this.onDone = onDone ?? null;
     this.elapsed = 0;
     this.outSec = Math.max(0.05, durationSec);
-    if (!this.scaleCaptured) {
-      this.baseScale.copy(this.element.scale);
-      this.scaleCaptured = true;
-    }
+    this.captureScale();
     this.collapsing = true;
     this.playing = true;
   }

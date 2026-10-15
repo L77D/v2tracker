@@ -227,7 +227,7 @@ export class CardController {
       this.backTo();
     };
     // q.wait / o.wait / r.wait: Kartenfeld „Weiter-Knopf erzwingen" — im
-    // Vokabular vorgesehen, von cards/elektroniker.js heute nicht genutzt.
+    // Vokabular vorgesehen, von karten/000/dialog.json heute nicht genutzt.
     this.say(q.text, q.tag, () => this.advance(after, {
       force: !!nextAsk || !!q.link || !!q.wait,
       label: q.link ? "Seite öffnen" : "Weiter",

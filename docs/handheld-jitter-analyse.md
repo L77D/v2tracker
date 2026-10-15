@@ -1,7 +1,9 @@
 # Handheld-Jitter: Analyse (Phase 1)
 
 Stand 2026-09-25 · Code-Stand Build 61 (Spiegel `L77D/v2tracker`, = `v2tracker-prod`) ·
-nur Analyse, kein Produktivcode geändert.
+nur Analyse, kein Produktivcode geändert. **Hinweis 2026-10-15 (Build 111):** die
+hier zitierte Datei `js/poseStabilizer.js` liegt seit dem Refactoring in
+`archiv/tracker-varianten/js/`; Standard-Tracker ist `js/tracker8lerp.js`.
 
 Fall: Karte liegt auf dem Tisch, Handy in der Hand. Befund am Gerät: Figur zittert
 sichtbar, Bewertung 5–6/10, `?stats` „Jitter stab" teils 2–3 mm.

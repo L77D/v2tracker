@@ -7,16 +7,15 @@
    (zwischen worldRoot und FigureRoot) — die Behaviors (IdleWander & Co.)
    animieren weiterhin FigureRoot. Beides addiert sich, nichts kollidiert.
 
-   Workflow:
-   1. `?desktop&dev` öffnen → Theatre-Studio-UI erscheint (Timeline unten).
+   Workflow (Stand Build 111 — Dev-Werkzeug, nur mit ?timeline geladen):
+   1. `?desktop&dev&timeline` öffnen → Theatre-Studio-UI erscheint (Timeline unten).
    2. Im Studio Keyframes auf „Beats / Figur" setzen (posX/Y/Z, rotY/Z, scale),
       scrubben, Kurven editieren. ▶-Button im Dev-Panel spielt die Sequenz.
    3. Dev-Panel → „Timeline exportieren" → `beats.theatre.json` ins Repo-Root
-      legen (neben index.html) und pushen.
-   4. Live (ohne ?dev) lädt die App NUR den schlanken Core + diese JSON und
-      spielt die Beats ab — kein Editor-Code im Produktiv-Pfad.
-
-   Ohne beats.theatre.json und ohne ?dev wird Theatre GAR NICHT geladen.
+      legen (neben index.html) — gitignored, nur lokal.
+   Einen Live-Player-Pfad ohne Flag gibt es seit 2026-09-09 NICHT mehr (s.
+   main.js → attachDevTools); das Theatre-Bundle kommt vom CDN (jsdelivr) —
+   die einzige Ausnahme von der Kein-CDN-Regel, bewusst nur im Dev-Flag.
    ============================================================================= */
 
 const BUNDLE = "https://cdn.jsdelivr.net/npm/@theatre/browser-bundles@0.7.2/dist/core-and-studio.js";

@@ -1,0 +1,132 @@
+{
+ "TYPO": {
+  "fontFamily": "\"Jersey 10\", monospace",
+  "fontWeight": "normal",
+  "fontSize": 52,
+  "lineSpacing": 0.8,
+  "textColor": "#f6f6f6",
+  "strokeColor": "#000000",
+  "strokeWidth": 8,
+  "paddingPx": 28,
+  "maxLines": 5,
+  "maxWidth": 1.2,
+  "unitsPerPx": 0.002,
+  "offsetX": 0,
+  "offsetY": -0.17,
+  "msPerChar": 28,
+  "baselineRatio": 0.8,
+  "fxMarkerColor": "#fced62",
+  "fxGrossScale": 1.16,
+  "fxLeiseAlpha": 0.62,
+  "fxKnallMs": 260,
+  "fxKnallScale": 1.7,
+  "pageLabel": false
+ },
+ "FACE": {
+  "blinkIntervalMin": 2,
+  "blinkIntervalMax": 5,
+  "blinkDuration": 0.12,
+  "talkFrameMs": 150
+ },
+ "IDLE": {
+  "markerWidth": 0.059,
+  "markerHeight": 0.0824,
+  "footFraction": 0.62,
+  "bopAmplitude": 0.015,
+  "bopFrequency": 0.5,
+  "walkSpeed": 0.04,
+  "walkFrequency": 2.2,
+  "walkRollMax": 0.18,
+  "stepSquash": 0.05,
+  "headLookMax": 0.5,
+  "headPitchMax": 0.35,
+  "bopHoldMin": 1.5,
+  "bopHoldMax": 3.5,
+  "actionMin": 1.2,
+  "actionMax": 2.4,
+  "cameraFacingThreshold": 45,
+  "faceCamLerp": 0.12,
+  "lookChance": 0.6,
+  "walkChance": 0.4
+ },
+ "ACT": {
+  "durationSec": 1.55,
+  "spins": 2,
+  "overshoot": 1.75
+ },
+ "CHOREO": {
+  "requireTap": true,
+  "uiRevealMs": 1000,
+  "revealOffset": 60,
+  "idleReturnMs": 11000,
+  "livelyAfterMs": 2000,
+  "greetingPose": "idle",
+  "billboardLerp": 0.2,
+  "bubblePitchMax": 70,
+  "jumpDurationSec": 0.45,
+  "jumpHeight": 0.04,
+  "tapDebounceMs": 120,
+  "tapMaxPx": 6,
+  "tapMaxMs": 400,
+  "replayRescanMs": 600,
+  "continueDelayMs": 350,
+  "collapseDelayMs": 900,
+  "collapseSec": 0.5,
+  "trackingLostMs": 1500,
+  "lostFadeMs": 300,
+  "foundFadeMs": 300
+ },
+ "SCENE": {
+  "cardWidth": 0.059,
+  "cardAspect": 1.396825397,
+  "figureScale": 0.5,
+  "headNodAxis": 0.25,
+  "bgColor": "#9a9a9a"
+ },
+ "STAB": {
+  "tracker": "8lerp",
+  "enabled": true,
+  "nanGuard": true,
+  "gravityArbiter": true,
+  "arbiterMargin": 0.15,
+  "lerpPosMs": 50,
+  "lerpRotMs": 50
+ },
+ "GYRO": {
+  "enabled": true,
+  "bridgeMs": 1200,
+  "deltaDeadZone": 0.0012,
+  "deltaMax": 0.2
+ },
+ "ACTFX": {
+  "markerSize": 0.14,
+  "bobHeight": 0.05,
+  "bobSec": 1.6,
+  "burstSec": 0.35,
+  "color": "#fced62",
+  "outline": "#000000",
+  "outlineWidth": 4.44,
+  "hopper": true,
+  "iconHeight": 0.68,
+  "hopHeight": 0.12,
+  "hopSec": 0.32,
+  "squashSec": 0.14,
+  "hopPauseSec": 0.9,
+  "dropHeight": 0.6,
+  "dropSec": 0.4,
+  "shadowW": 1,
+  "shadowD": 0.35
+ },
+ "CAM": {
+  "maxPixelRatio": 2
+ },
+ "SOUND": {
+  "enabled": true,
+  "theme": "arcade",
+  "volume": 0.3,
+  "bubblePitch": 660,
+  "bubbleToneMs": 45,
+  "bubbleGapMs": 40,
+  "bubbleVolume": 0.4
+ }
+}

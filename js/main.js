@@ -52,7 +52,7 @@ const log = (...a) => { if (DEV_LOG) console.log(...a); };
 
 // Kontext für die Module (gefüllt in boot()): Karte (Content) kommt seit
 // Build 63 aus karten/<id>/daten.json + dialog.json (js/kartenLader.js,
-// ?k=<id>) — vorher statischer Import von cards/elektroniker.js. `design` =
+// ?k=<id>) — bis Build 62 statischer Import einer Kartendatei. `design` =
 // gewähltes Kartenbild fürs Tracking (?design). `gyro` wird in der START-Geste
 // angelegt (iOS-Permission). Dev-Module werden NUR mit ihrem URL-Flag geladen
 // (kein Byte davon im Normalfall): ?debug → debugOverlay.js · ?stats →
@@ -203,15 +203,19 @@ function showStartError(err) {
    beats.theatre.json per fetch, obwohl es die Datei nie gab. Sollen autorisierte
    Beats einmal live laufen, hier wieder einen Player-Pfad ohne Flag öffnen.)
    Aufrufer: arSession.js (onStart) und desktopMode.js, über ctx.attachDevTools.
+   timeline.js wird nur mit ?timeline geladen (bis Build 110 auch bei ?dev,
+   wo initTimeline sofort null lieferte — das Modul war umsonst geholt).
    -------------------------------------------------------------------------- */
 async function attachDevTools(exp) {
   if (!DEV_MODE && !TIMELINE_MODE) return;
   let timeline = null;
-  try {
-    const { initTimeline } = await import("./timeline.js");
-    timeline = await initTimeline({ nodes: exp.nodes, withStudio: TIMELINE_MODE });
-  } catch (e) {
-    console.warn("Timeline nicht verfügbar:", e);
+  if (TIMELINE_MODE) {
+    try {
+      const { initTimeline } = await import("./timeline.js");
+      timeline = await initTimeline({ nodes: exp.nodes, withStudio: true });
+    } catch (e) {
+      console.warn("Timeline nicht verfügbar:", e);
+    }
   }
   if (DEV_MODE) {
     const { DevPanel } = await import("./devPanel.js");

@@ -214,12 +214,12 @@ beim Zapworks-Training.
 
 ## Tracking-Glättung
 
-Die Haupt-Glättung ist unser **PoseStabilizer** (`js/poseStabilizer.js`,
-`STAB` in `js/config.js`): erst `minCutoff` senken, bis das Ruhe-Zittern weg
-ist, dann `beta` erhöhen, bis schnelle Bewegungen ohne Nachziehen folgen —
-eine Schraube pro Test, Zahlen in `?stats`. `lostHoldMs`/`GYRO.bridgeMs`
-halten die Pose bei kurzem Tracking-Verlust. (`filterMinCF`/`filterBeta`/
-`missTolerance`/`warmupTolerance` waren MindAR-intern und sind ohne Wirkung.)
+Seit Build 111 läuft nur noch der Tracker **8lerp** (`js/tracker8lerp.js`,
+`STAB` in `js/config.js`): 8th-Wall-Messung 1:1 + Lerp/Slerp auf die letzte
+Messung (τ = `lerpPosMs`/`lerpRotMs`, 50 ms) + Schwerkraft-Schiedsrichter
+(`js/poseArbiter.js`). Der frühere PoseStabilizer (One-Euro, Median, Dead-Zone,
+Lost-Hold, Gyro-Brücke) und die Varianten `neu`/`8roh` liegen unverändert in
+`archiv/tracker-varianten/` (README dort). Zahlen in `?stats`.
 
 ## Struktur
 
@@ -234,7 +234,8 @@ js/edition.js         Edition Firma/Public (?k=<nr>P): Karte filtern, Public-Tex
 js/version.js         Build-Nummer (?stats vergleicht mit dem Live-Stand)
 js/util.js            gemeinsame Helfer (el, rand, normalizeAngle, finiteVec, progress)
 js/config.js          ALLE Tuning-Dashboards + tuning.json-Merge
-js/poseStabilizer.js  Tracking-Glättung (Median-Aufsetzen, One-Euro, SLERP, Dead-Zone, Lost-Hold)
+js/tracker8lerp.js    Tracking-Glättung 8lerp (Lerp/Slerp auf die letzte Messung + Schiedsrichter)
+js/trackerWahl.js     Tracker-Wahl (?tracker=, STAB.tracker), Vertrag + Bauweg
 js/poseArbiter.js     Schwerkraft-Schiedsrichter gegen den Pose-Flip (Toggle 10)
 js/gyroFusion.js      Gyro-Deltas als Prediction + Verlust-Brücke
 js/rig.js             Figuren-Hierarchie (Transforms aus Scene.zcomp), Körper je Pose der Karte
@@ -251,7 +252,7 @@ js/activationFX.js    Eck-Marker auf der Karte + hüpfendes Handy-Icon (Aktivier
 js/questionMenu.js    Support-Zeilen + Dialog-Menü: Themenkacheln, Fragen mit Reitern,
                       Antwortoptionen, Weiter (DOM, Karussell)
 js/supportUI.js       Handy-Icon (PNG-Frames) + Balken-Zeilen
-js/sound.js, voice.js UI-Sounds (vendor/tiks.js, Web Audio) + Animalese-Stimme für den Typewriter
+js/sound.js           UI-Sounds (js/vendor/tiks.js, Web Audio) + Anfangston der Antworten
 js/debugOverlay.js    pinke Hilfslinien (?debug)
 js/statsOverlay.js    ?stats: Jitter in mm, Vision-Hz, Flip-Zeile, Build-Check
 js/devPanel.js        ?dev: Regler für alle Dashboards, Toggles 1–10, Presets, Replay
