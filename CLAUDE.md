@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-15 · Build 111 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session + Animalese-Stimme raus, Anfangston je Antwort + Antworten stehen doppelt so lange mit Lebendig-Phase (Gewichtsverlagerung seit Build 109 wieder raus) + Lauffeld: ganze Figur bleibt auf der Karte + Standard-Tracker `8lerp` (Build 110) + Refactoring 2026-10-15: Characterization Tests + Browser-Snapshot, Tracker alt/neu/8roh ins Archiv `archiv/tracker-varianten/`, tote Reste raus, STAB auf 8lerp-Werte reduziert (Build 111) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
+Stand: 2026-10-15 · Build 112 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session + Animalese-Stimme raus, Anfangston je Antwort + Antworten stehen doppelt so lange mit Lebendig-Phase (Gewichtsverlagerung seit Build 109 wieder raus) + Lauffeld: ganze Figur bleibt auf der Karte + Standard-Tracker `8lerp` (Build 110) + Refactoring 2026-10-15: Characterization Tests + Browser-Snapshot, Tracker alt/neu/8roh ins Archiv `archiv/tracker-varianten/`, tote Reste raus, STAB auf 8lerp-Werte reduziert (Build 111) + Varianten S/B/P per `?k=<code>&v=` nach Anforderung Studio2B, `?k=<nr>P` nur noch Alias (Build 112) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
 
 ## Projekt
 
@@ -73,29 +73,51 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   Antwortoptionen, Weiter-Kachel, Ruhezustand, Kamera-abgelehnt, Firmenname-
   Text-Fallback im Splash, Seitenzähler, NEU-Punkt am Zurückpfeil.
 
-## Editionen (seit Build 56, 2026-09-09)
+## Varianten S/B/P (Build 112, 2026-10-15; Editionen seit Build 56)
 
-Eine Karte, zwei Fassungen: **Firma** (Standard: Logo/Firmenname im Splash,
-Link-Frage „Zeig mir die Seite" im Thema „Wie man reinkommt") und **Public**
-per Kartennummer mit angehängtem P, `?k=000P` (auch `p`; Build 75, Michael
-2026-10-08 — ersetzt das Flag `?public`, das es nicht mehr gibt). Der
-Kartenlader erkennt das P, lädt denselben Ordner und wählt das erste Design mit
-`"fassung": "public"` (sonst das erste Design) — die Public-Karte ist ohne Logo
-gedruckt und hat ihr eigenes Erkennungsbild. Seriennummern (001.01) sind nur
-intern vermerkt und haben keinen Einfluss auf den Code. `js/edition.js →
-prepareCard()` liefert main.js eine Kopie der Karte: Fragen mit `branded: true`
-entfallen samt Ids in `initial`/`unlocks`; Textfelder mit Public-Fassung
+**Anforderung Studio2B (Michael 2026-10-15):** Kartencode zweistellig
+alphanumerisch, GROSS geschrieben; drei Varianten im Link: `DETAR.IO/A1/S`
+(Schulprogramm), `/A1/B` (Auslieferung an Kunden), `/A1/P` (Public-Produkt),
+`/A1` = S. In der App heißt das **`?k=<code>&v=S|B|P`**, ohne `v` = S; die
+Pfad-Form leitet der Server von Studio2B auf die Query-Form um (README
+„Links": Nginx/Apache-Regel) — die App liest nur die Query, weil alle Pfade
+relativ sind (Unterordner-fähig). Einzige Stelle mit der Link-Grammatik:
+`kartenLader.js → leseAufruf()`. Code und `v` werden groß verglichen; der
+Ordner heißt wie der Katalog-Eintrag (groß, Prüfseite verlangt `[A-Z0-9]`).
+Unbekanntes `v` → S. **Alias:** `?k=000P` (auch `p`, nur hinter Ziffern; Build
+75–111 die Public-Fassung) = `v=P`, ein ausdrückliches `v` hat Vorrang.
+Testdrucke `?karte=<design>`: P bei `"fassung": "public"`, sonst S.
+
+| Variante | Splash | Link-Frage (`link: true`) | `branded: true` | Public-Texte |
+|---|---|---|---|---|
+| **B** Business | Logo/Firmenname | ja | ja | nein |
+| **S** Schule (Standard) | Logo/Firmenname | nein | ja | nein |
+| **P** Public | ohne Firmenblock (`body.public`) | nein | nein | ja |
+
+Achtung: bis Build 111 war `?k=000` die Firmenfassung MIT Link; seit Build
+112 ist das S OHNE Link — B braucht `v=B`. `card.edition` = "S"/"B"/"P"
+(vorher "firma"/"public"); `?stats` zeigt „Variante S". Datenformat der Karte
+unverändert: `fassung: "firma"` deckt S und B, `"public"` deckt P. Der
+Kartenlader wählt das erste Design der Fassung (P: `"fassung": "public"`,
+sonst das erste Design) — die Public-Karte ist ohne Logo gedruckt und hat ihr
+eigenes Erkennungsbild. Seriennummern (001.01) sind nur intern vermerkt und
+haben keinen Einfluss auf den Code. `js/edition.js → prepareCard(karte,
+{variante})` (alt `{publicMode: true}` = P) liefert main.js eine Kopie der
+Karte: Fragen mit `link: true` gibt es nur in B, Fragen mit `branded: true`
+entfallen in P — jeweils samt Ids in `initial`/`unlocks`; Textfelder mit Public-Fassung
 (`<feld>Public`: greeting.textPublic, labelPublic/textPublic, promptPublic,
 labelPublic/replyPublic, rules[].textPublic — seit Build 67, Michael
 2026-10-08: „ganzer Text doppelt") laufen im Public-Modus in dieser Fassung;
 `{firma}` wird durch `card.company` ersetzt (Notnagel im Public-Modus:
 `card.companyNeutral`, „der Betrieb"). Regel: in Public nie den Betrieb nennen,
 jeder Text mit `{firma}` braucht die Public-Fassung (Regelwerk A9); `company`,
-`companyLogo` sind null; `card.edition` = "public". Splash: `body.public`
+`companyLogo` sind null. Splash: `body.public`
 blendet `#companyKicker` („bei") + `.company-box` aus — dort steht vorerst
-NICHTS (Michael 2026-09-09: Public-Splash wird noch gestaltet). `?stats` zeigt
-in der Karten-Zeile „PUBLIC"/„Firma". Keine zweite Kartendatei, kein zweites
-HTML. Die Fassung steht in `?k` und überlebt damit „Neu laden" und „Link kopieren".
+NICHTS (Michael 2026-09-09: Public-Splash wird noch gestaltet). Keine zweite
+Kartendatei, kein zweites HTML. Die Variante steht in der Query und überlebt
+damit „Neu laden" und „Link kopieren". `karten.html` zeigt je Karte drei
+Varianten (S/B je Firma-Design, P je Public-Design); die Prüfseite prüft Texte
+in B und P und die Themen-Belegung zusätzlich in S.
 
 ## Engine und Karten (seit Build 63, 2026-10-06)
 

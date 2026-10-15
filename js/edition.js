@@ -1,43 +1,59 @@
 /* =============================================================================
-   DETAR — Edition der Karte: Firmenversion (Standard) oder Public (?k=<nr>P).
+   DETAR — Variante der Karte: S (Schule), B (Business) oder P (Public).
 
-   Michael 2026-09-09: Es gibt zwei Versionen einer Karte — für Firmenkunden
-   (Logo/Firmenname im Splash, Link zur Ausbildungsseite im Dialog) und eine
-   neutrale Public-Version ohne Firmenbezug. Der Unterschied steckt im
-   QR-Code: die Kartennummer mit angehängtem P (?k=000P, seit Build 75; bis
-   Build 74 das Flag ?public) liefert die neutrale Fassung. Ein Kartenordner.
+   Anforderung Studio2B (Michael 2026-10-15, Build 112): ein Kartencode
+   (zweistellig, alphanumerisch, groß) und drei Varianten im Link —
+   DETAR.IO/A1/S, /A1/B, /A1/P, ohne Angabe S. In der App: ?k=A1&v=S (der
+   Server leitet die Pfad-Form um, s. README). Bis Build 111 gab es zwei
+   Fassungen: Firma (?k=000) und Public (?k=000P, Michael 2026-09-09 / Build
+   75); das angehängte P bleibt als Alias für v=P (js/kartenLader.js).
 
-   prepareCard() liefert eine KOPIE der Karte für die gewählte Edition:
-   • Fragen mit `branded: true` (heute: die Link-Frage) fliegen im Public-
-     Modus raus — samt ihrer Ids in `initial` und in allen `unlocks`, damit
-     kein NEU-Punkt auf einer Frage hängt, die es nicht gibt.
+     B  Business: Firmenkarte — Logo/Firmenname im Splash, Link-Frage im Dialog
+     S  Schule:   Firmenkarte — Logo/Firmenname, aber OHNE Link-Frage
+     P  Public:   neutral — ohne Firmenblock, ohne Link, Public-Texte
+
+   prepareCard() liefert eine KOPIE der Karte für die gewählte Variante:
+   • Fragen mit `link: true` (heute: die Link-Frage) gibt es nur in B; Fragen
+     mit `branded: true` entfallen in P — jeweils samt ihrer Ids in `initial`
+     und in allen `unlocks`, damit kein NEU-Punkt auf einer Frage hängt, die
+     es nicht gibt.
    • Public-Texte (2026-10-08, Michael: „ganzer Text doppelt"): Jedes Textfeld
      darf eine zweite, neutrale Fassung tragen — Feldname + `Public`:
        greeting.textPublic · questions[].labelPublic / textPublic ·
        asks[].promptPublic · asks[].options[].labelPublic / replyPublic ·
        reentry.rules[].textPublic
-     Im Public-Modus gilt die Public-Fassung, sonst das Original. Pflicht ist
-     sie für jeden Text, der `{firma}` enthält — in der Public-Fassung wird der
-     Betrieb nie genannt (Regelwerk docs/dialog-regelwerk.md, geprüft von
-     tools/kartenpruefung.html).
-   • `{firma}` wird in der Firmenfassung durch `card.company` ersetzt. Steht es
-     im Public-Modus trotzdem noch in einem Text (Public-Fassung vergessen),
-     greift als Notnagel `card.companyNeutral` („der Betrieb").
-   • Public: `company`, `companyLogo` sind null; `edition` = "public".
+     In P gilt die Public-Fassung, sonst das Original. Pflicht ist sie für
+     jeden Text, der `{firma}` enthält — in P wird der Betrieb nie genannt
+     (Regelwerk docs/dialog-regelwerk.md, geprüft von tools/kartenpruefung.html).
+   • `{firma}` wird in S und B durch `card.company` ersetzt. Steht es in P
+     trotzdem noch in einem Text (Public-Fassung vergessen), greift als
+     Notnagel `card.companyNeutral` („der Betrieb").
+   • P: `company`, `companyLogo` sind null. `edition` = Variante ("S"/"B"/"P").
    Splash-Block „bei + Logo/Firma" blendet main.js über body.public aus (der
    Public-Splash wird noch gestaltet, bis dahin steht dort nichts).
    ============================================================================= */
 
-export function prepareCard(card, { publicMode = false } = {}) {
-  const firma = publicMode ? (card.companyNeutral ?? "der Betrieb") : (card.company ?? "");
+export const VARIANTEN = ["S", "B", "P"];
+export const VARIANTE_STANDARD = "S";
+
+/* Variante aus einem rohen Wert (Query, groß/klein, Leerraum): unbekannt → Standard. */
+export function normVariante(v) {
+  const s = String(v ?? "").trim().toUpperCase();
+  return VARIANTEN.includes(s) ? s : VARIANTE_STANDARD;
+}
+
+export function prepareCard(card, { variante = VARIANTE_STANDARD, publicMode = false } = {}) {
+  const v = publicMode ? "P" : normVariante(variante); // publicMode: alte Schreibweise (Build 75–111)
+  const pub = v === "P";
+  const firma = pub ? (card.companyNeutral ?? "der Betrieb") : (card.company ?? "");
   const sub = (s) => (typeof s === "string" ? s.replace(/\{firma\}/g, firma) : s);
   // Textfeld `key` von `obj` in der passenden Fassung, {firma} ersetzt
-  const pick = (obj, key) => sub(publicMode && obj[key + "Public"] != null ? obj[key + "Public"] : obj[key]);
+  const pick = (obj, key) => sub(pub && obj[key + "Public"] != null ? obj[key + "Public"] : obj[key]);
 
   // Fragen filtern; Ids der entfernten Fragen überall streichen
   const dropped = new Set();
   const kept = (card.questions ?? []).filter((q) => {
-    if (publicMode && q.branded) { dropped.add(q.id); return false; }
+    if ((pub && q.branded) || (v !== "B" && q.link)) { dropped.add(q.id); return false; }
     return true;
   });
   const clean = (ids) => ids?.filter((id) => !dropped.has(id));
@@ -49,9 +65,9 @@ export function prepareCard(card, { publicMode = false } = {}) {
 
   return {
     ...card,
-    edition: publicMode ? "public" : "firma",
-    company: publicMode ? null : card.company,
-    companyLogo: publicMode ? null : card.companyLogo,
+    edition: v,
+    company: pub ? null : card.company,
+    companyLogo: pub ? null : card.companyLogo,
     initial: clean(card.initial),
     greeting: card.greeting ? { ...card.greeting, text: pick(card.greeting, "text") } : card.greeting,
     asks,

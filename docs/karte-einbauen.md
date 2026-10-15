@@ -27,8 +27,11 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
    | `designs` | je Fassung ein Erkennungsbild: `id`, `fassung` (`firma`/`public`), `name`, `target`, `breiteMm` (63), `qr` (nur Testdrucke: Link wie im gedruckten QR-Code), `notiz` |
 
    - Pfade gelten relativ zum Kartenordner `karten/<nr>/`.
-   - `?k=<nr>` nimmt das erste Design mit `"fassung": "firma"`, `?k=<nr>P` das
-     erste mit `"fassung": "public"` (Karte ohne Logo). Seriennummern gehören
+   - Kartencode (`id`, Ordnername) in Großbuchstaben und Ziffern. `?k=<code>`
+     und `?k=<code>&v=B` nehmen das erste Design mit `"fassung": "firma"`,
+     `?k=<code>&v=P` das erste mit `"fassung": "public"` (Karte ohne Logo).
+     Varianten: S Schule (Standard, ohne Link-Frage), B Business (mit
+     Link-Frage), P Public (neutral). Seriennummern gehören
      nicht hierher — sie sind nur intern vermerkt (Projektordner).
    - Figur: Die Ebenen kommen direkt aus dem Grafikprogramm in `figur/` — WebP
      mit Transparenz, alle Ebenen auf derselben Fläche 768 × 1152 px
@@ -42,4 +45,4 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
 3. Karte in `karten/katalog.json` eintragen. Kartenbilder fürs Tracking:
    `docs/kartendesigns.md`.
 4. Prüfseite mit `?k=<id>` laufen lassen — keine Fehler.
-5. Am Handy durchspielen, Firmenfassung (`?k=<nr>`) und Public-Fassung (`?k=<nr>P`).
+5. Am Handy durchspielen: `?k=<code>` (S), `?k=<code>&v=B` und `?k=<code>&v=P`.

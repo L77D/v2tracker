@@ -51,7 +51,7 @@ async function seite(url) {
 
 try {
   /* ---- Boot-Zustände je URL ---------------------------------------------- */
-  const varianten = ["index.html", "index.html?k=000", "index.html?k=000P", "index.html?k=xyz", "index.html?karte=p07", "index.html?k=000&design=nope",
+  const varianten = ["index.html", "index.html?k=000", "index.html?k=000P", "index.html?k=000&v=B", "index.html?k=000&v=p", "index.html?k=000&v=x", "index.html?k=xyz", "index.html?karte=p07", "index.html?k=000&design=nope",
     "index.html?k=000&preflight=inapp", "index.html?k=000&preflight=nowebp", "index.html?k=000&tracker=alt", "index.html?k=000&tracker=foo", "index.html?k=000&tracker=8lerp&dev"];
   snapshot.boot = {};
   for (const u of varianten) {

@@ -1,11 +1,11 @@
-# Manuelle Prüfschritte (Stand Build 110, 2026-10-15)
+# Manuelle Prüfschritte (Stand Build 112, 2026-10-15)
 
 Was `node --test 'tests/*.test.mjs'` und `node tools/browser-check.mjs` nicht
 abdecken: Kamera, 8th-Wall-Engine, Gyro, Audio, CSS-Animationen und die echte
 Font-Messung. Nach jedem Umbau am Handy durchgehen (iPhone Safari und Android
-Chrome, gedruckte Karte P04). Erwartung = Verhalten von Build 110.
+Chrome, gedruckte Karte P04). Erwartung = Verhalten von Build 112.
 
-## 1. Normaler Ablauf (`?k=000`)
+## 1. Normaler Ablauf (`?k=000&v=B`; `?k=000` allein ist seit Build 112 Variante S ohne Link-Frage)
 1. Splash: „Du scannst · Elektroniker*in für Betriebstechnik · bei · Siemens“ als Text (kein Logo). Knopf „Scan starten“ wird erst aktiv, wenn der Font geladen ist. Mit `?tracker=…` steht die Marke oben rechts.
 2. „Scan starten“: Klick-Ton. iOS fragt die Bewegungs-Erlaubnis, dann die Kamera. Splash weg, Kamerabild, weiße Rahmen-Ecken, Panel unten „Halte auf die Karte“ als Laola-Welle, Handy-Icon mit offenem Mund schaut links/rechts.
 3. Karte ins Bild: Rahmen sofort weg, Ping, vier gelbe Eck-Marker wabern auf den Kartenecken, Panel „Karte gefunden / → Tipp sie an!“, Icon springt links aus dem Panel und hüpft in 3D auf der Kartenmitte mit flachem Schatten.
@@ -29,8 +29,10 @@ Antwort „bewerbung“ schaltet „Zeig mir die Seite“ (Reiter LINK) frei. An
 - Ab 1,5 s: Menü eingefroren (Taps ohne Wirkung, nicht gedimmt), Suchrahmen + „Halte auf die Karte“ oben mit 300-ms-Einblendung. Im Ruhezustand steht der Text stattdessen in der Panel-Zeile.
 - Wiederfinden: Rahmen und Hinweis sofort weg, Menü bedienbar.
 
-## 4. Editionen und Testdrucke
-- `?k=000P`: Splash ohne „bei“ und Firma; Begrüßung ohne „Siemens“; keine Link-Frage; `?stats` zeigt „PUBLIC“.
+## 4. Varianten und Testdrucke
+- `?k=000` und `?k=000&v=S`: wie B, aber „Zeig mir die Seite“ fehlt auch nach „bewerbung“; `?stats` zeigt „Variante S“.
+- `?k=000&v=P` und Alias `?k=000P`: Splash ohne „bei“ und Firma; Begrüßung ohne „Siemens“; keine Link-Frage; `?stats` zeigt „Variante P“.
+- `?k=000&v=x`: läuft als S. `?k=xyz`: Fehlerzeile nennt „XYZ“ (Code groß).
 - `?karte=p07`: lädt Karte 000 mit Design p07 (Firma).
 
 ## 5. Fehlerpfade

@@ -12,8 +12,10 @@ entscheidet und nimmt ab.
 
 **Zwei Fassungen, ein Auftrag.** Karten werden von Betrieben in Auftrag
 gegeben; deshalb entsteht zuerst die **Firmenfassung**. Aus ihr wird die
-**neutrale Fassung** für öffentliche Einrichtungen abgeleitet (`?k=<nr>P` im
-QR-Code) — ohne Logo, ohne Link, ohne Firmenbezüge. Beide haben zuerst einen
+**neutrale Fassung** für öffentliche Einrichtungen abgeleitet (Variante P,
+`?k=<code>&v=P` im QR-Code) — ohne Logo, ohne Link, ohne Firmenbezüge. Die
+Firmenfassung läuft in zwei Varianten: B (Business) mit Link-Frage und S
+(Schule) ohne Link-Frage, sonst gleich. Beide haben zuerst einen
 neutralen Bildungsauftrag: Sie vermitteln **inhaltlich deckungsgleich den
 Beruf**. Die Firmenfassung darf zusätzlich den Betrieb und allgemeine
 Firmenzusammenhänge nennen (A9), nie aber Angaben, die sich schnell ändern
@@ -514,7 +516,7 @@ zu verweisen.
 
 **Alle anderen Texte** bekommen kein Public-Feld; sie dürfen dann auch nichts
 enthalten, was den Betrieb kenntlich macht. Die Link-Frage braucht keine
-neutrale Fassung — sie entfällt in der Public-Fassung (`?k=<nr>P`) ganz.
+neutrale Fassung — sie entfällt in den Varianten P und S ganz (nur B hat sie).
 
 **`firmenbegriffe`** ist die Liste der Wörter, die nur die Firmenfassung
 nennen darf: Standort, eigene Bezeichnungen (z. B. „Ausbildungswerkstatt

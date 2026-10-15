@@ -302,7 +302,7 @@ export class StatsOverlay {
       // Karten-Kennung (2026-09-07): zeigt, welche Kartendatei der Browser
       // tatsächlich geladen hat — Safari cached jede Datei einzeln (Pages:
       // max-age 600), ein frischer Build kann eine alte Karte mitschleppen.
-      `Karte: ${this.env?.card?.id ?? "—"} · ${this.env?.card?.edition === "public" ? "PUBLIC" : "Firma"} · ${this.env?.card?.questions?.length ?? "?"} Fragen` +
+      `Karte: ${this.env?.card?.id ?? "—"} · Variante ${this.env?.card?.edition ?? "?"} · ${this.env?.card?.questions?.length ?? "?"} Fragen` +
       `${this.env?.card?.questions?.some((q) => q.link) ? " · Link-Frage" : ""}\n` +
       // Kartendesign (2026-09-15; seit Build 72 aus daten.json → designs,
       // gewählt per ?design): id, Target-Datei im Kartenordner und die

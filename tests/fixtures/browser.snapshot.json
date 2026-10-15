@@ -54,12 +54,66 @@
    ],
    "konsole": []
   },
+  "index.html?k=000&v=B": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "Siemens",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
+  "index.html?k=000&v=p": {
+   "body": "public",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
+  "index.html?k=000&v=x": {
+   "body": "",
+   "cardName": "Elektroniker*in für Betriebstechnik",
+   "companyText": "Siemens",
+   "logoHidden": true,
+   "err": "",
+   "errSichtbar": "",
+   "startKnopfAus": false,
+   "marke": "",
+   "markeKlassen": "",
+   "pfTitel": "Bitte im Browser öffnen",
+   "pfText": "",
+   "pfUrl": "",
+   "preload": [
+    "./vendor/8thwall/xr.js"
+   ],
+   "konsole": []
+  },
   "index.html?k=xyz": {
    "body": "",
    "cardName": "…",
    "companyText": "",
    "logoHidden": false,
-   "err": "Unbekannte Karte „xyz“ — bekannt: 000 (Parameter ?k, Katalog: karten/katalog.json)",
+   "err": "Unbekannte Karte „XYZ“ — bekannt: 000 (Parameter ?k, Katalog: karten/katalog.json)",
    "errSichtbar": "block",
    "startKnopfAus": true,
    "marke": "",
@@ -69,7 +123,7 @@
    "pfUrl": "",
    "preload": [],
    "konsole": [
-    "warning: DETAR Unbekannte Karte „xyz“ [000]"
+    "warning: DETAR Unbekannte Karte „XYZ“ [000]"
    ]
   },
   "index.html?karte=p07": {
@@ -203,7 +257,7 @@
  },
  "karten.html": {
   "titel": "DETAR — Kartendesigns",
-  "qr": 36,
+  "qr": 71,
   "links": [
    "./?karte=p04&stats",
    "./?karte=p04&stats",

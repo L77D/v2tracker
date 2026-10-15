@@ -55,7 +55,7 @@ test("paginate: Seiten aller Texte der Karte 000 (Firma + Public) gegen den Snap
   const { b } = aufbau();
   const out = {};
   for (const modus of ["firma", "public"]) {
-    const karte = prepareCard(prototypKarte().karte, { publicMode: modus === "public" });
+    const karte = prepareCard(prototypKarte().karte, { variante: modus === "public" ? "P" : "B" });
     out[modus] = Object.fromEntries(texte(karte).map(([k, t]) => [k, b.paginate(t)]));
     // Vergleich mit der Schätzung (tools/seitenSchaetzung.js): nur Diagnose, kein Vertrag
     out[modus + "Schaetzung"] = Object.fromEntries(texte(karte).map(([k, t]) => [k, schaetzeSeiten(t)]));

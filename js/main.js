@@ -34,11 +34,10 @@ import { el } from "./util.js";
 const params = new URLSearchParams(location.search);
 // (tools/build-lokal-prototyp.py patcht die Zeilen DESKTOP_MODE / DEV_MODE — Wortlaut halten)
 const DESKTOP_MODE = params.has("desktop");
-// Edition: Public-Fassung = Kartennummer mit angehängtem P (?k=000P, Build 75,
-// Michael 2026-10-08 — ersetzt das frühere Flag ?public). Ohne Firmenlogo/
-// -name im Splash und ohne Link-Frage im Dialog (js/edition.js). Bestimmt der
-// Kartenlader (resolved.publicMode); steht in der Query, bleibt also beim
-// Neuladen und bei „Link kopieren" erhalten.
+// Variante der Karte (Build 112): ?k=<code>&v=S|B|P, ohne v = S (Schule);
+// P = Public ohne Firmenlogo/-name im Splash und ohne Link-Frage (js/edition.js,
+// Alias ?k=000P). Bestimmt der Kartenlader (resolved.variante); steht in der
+// Query, bleibt also beim Neuladen und bei „Link kopieren" erhalten.
 let PUBLIC_MODE = false;
 // Debug NUR per URL (?debug) — bewusst kein Config-Key dafür (ein Leftover
 // aus Tuning-Sessions soll nie live erscheinen; SCENE.debug seit Build 61 weg).
@@ -93,7 +92,7 @@ async function boot() {
   // Unbekannte Karte/Design: Hinweis in der Fehlerzeile des Splash, Button
   // bleibt aus — statt einer leeren Seite nach dem Klick (Target-404).
   const resolved = await ladeKarte(params);
-  PUBLIC_MODE = !!resolved.publicMode;
+  PUBLIC_MODE = resolved.variante === "P";
   // Ohne ?k startet keine Karte (Build 74): Auffang-Seite statt Splash —
   // Vorrang vor der Vorabprüfung, denn ohne Karte gibt es nichts zu starten.
   if (resolved.keineKarte) {
@@ -146,7 +145,7 @@ async function boot() {
   if (PUBLIC_MODE) { document.body.classList.add("public"); logoImg.hidden = true; companyText.hidden = true; }
   else if (card.companyLogo) { logoImg.src = card.companyLogo; logoImg.alt = card.company; companyText.hidden = true; }
   else { logoImg.hidden = true; companyText.textContent = card.company ?? ""; }
-  log("DETAR Edition:", card.edition, "· Fragen:", card.questions.length);
+  log("DETAR Variante:", card.edition, "· Fragen:", card.questions.length);
   // (DET-Logo mit Job-Link nach dem Splash: seit dem UI-Update 2026-09-03 raus)
 
   // Font muss VOR dem ersten Bubble-measureText geladen sein.

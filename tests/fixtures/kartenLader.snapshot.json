@@ -12,6 +12,7 @@
  },
  "k000": {
   "ergebnis": {
+   "variante": "S",
    "publicMode": false,
    "design": {
     "id": "p04",
@@ -24,7 +25,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "S",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -59,7 +60,6 @@
      "jetzt_tun",
      "praktikum_wie",
      "praktikum_was",
-     "link",
      "ende"
     ],
     "initial": [
@@ -79,6 +79,7 @@
  },
  "k000P": {
   "ergebnis": {
+   "variante": "P",
    "publicMode": true,
    "design": {
     "id": "p04",
@@ -91,7 +92,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "public",
+    "edition": "P",
     "format": 2,
     "company": null,
     "companyLogo": null,
@@ -145,6 +146,7 @@
  },
  "k000p": {
   "ergebnis": {
+   "variante": "P",
    "publicMode": true,
    "design": {
     "id": "p04",
@@ -157,7 +159,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "public",
+    "edition": "P",
     "format": 2,
     "company": null,
     "companyLogo": null,
@@ -209,8 +211,9 @@
    "./karten/000/dialog.json [no-store]"
   ]
  },
- "kMitLeerzeichen": {
+ "v_B": {
   "ergebnis": {
+   "variante": "B",
    "publicMode": false,
    "design": {
     "id": "p04",
@@ -223,7 +226,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "B",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -276,33 +279,22 @@
    "./karten/000/dialog.json [no-store]"
   ]
  },
- "k999": {
+ "v_S": {
   "ergebnis": {
-   "error": "Unbekannte Karte „999“",
-   "ids": [
-    "000"
-   ],
-   "hinweis": " (Parameter ?k, Katalog: karten/katalog.json)"
-  },
-  "fetches": [
-   "./karten/katalog.json [no-store]"
-  ]
- },
- "design_p05": {
-  "ergebnis": {
+   "variante": "S",
    "publicMode": false,
    "design": {
-    "id": "p05",
-    "name": "Testdruck P05 — 05_2809_2_figma_noise_blue",
+    "id": "p04",
+    "name": "Testdruck P04 — 04_2809_1",
     "fassung": "firma",
-    "target": "targets/p05.json",
-    "targetUrl": "https://x.test/v2tracker/karten/000/targets/p05.json",
+    "target": "targets/p04.json",
+    "targetUrl": "https://x.test/v2tracker/karten/000/targets/p04.json",
     "breiteMm": 63,
-    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 05_2809_2_figma_noise_blue (646:833) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "S",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -337,7 +329,433 @@
      "jetzt_tun",
      "praktikum_wie",
      "praktikum_was",
+     "ende"
+    ],
+    "initial": [
+     "was",
+     "koennen",
+     "jetzt_tun",
+     "ende"
+    ],
+    "greeting": "Hey! Ich bin Jonas, ich mache bei Siemens eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+   }
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]",
+   "./karten/000/daten.json [no-store]",
+   "./karten/000/dialog.json [no-store]"
+  ]
+ },
+ "v_P": {
+  "ergebnis": {
+   "variante": "P",
+   "publicMode": true,
+   "design": {
+    "id": "p04",
+    "name": "Testdruck P04 — 04_2809_1",
+    "fassung": "firma",
+    "target": "targets/p04.json",
+    "targetUrl": "https://x.test/v2tracker/karten/000/targets/p04.json",
+    "breiteMm": 63,
+    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+   },
+   "card": {
+    "id": "000",
+    "edition": "P",
+    "format": 2,
+    "company": null,
+    "companyLogo": null,
+    "companyNeutral": "der Betrieb",
+    "profession": "Elektroniker*in für Betriebstechnik",
+    "vorschau": "https://x.test/v2tracker/karten/000/vorschau.jpg",
+    "idleReturnMs": 16000,
+    "figur": {
+     "posen": {
+      "idle": "https://x.test/v2tracker/karten/000/figur/body_idle.webp",
+      "affirm": "https://x.test/v2tracker/karten/000/figur/body_react_affirm.webp",
+      "think": "https://x.test/v2tracker/karten/000/figur/body_react_think.webp"
+     },
+     "kopf": "https://x.test/v2tracker/karten/000/figur/head.webp",
+     "gesicht": {
+      "neutral": "https://x.test/v2tracker/karten/000/figur/face_neutral.webp",
+      "blink": "https://x.test/v2tracker/karten/000/figur/face_blink.webp",
+      "talk": "https://x.test/v2tracker/karten/000/figur/face_talk.webp"
+     }
+    },
+    "fragen": [
+     "was",
+     "purpose",
+     "tag_ablauf",
+     "koennen",
+     "reden",
+     "technik",
+     "lernort",
+     "anstrengend",
+     "danach",
+     "bewerbung",
+     "jetzt_tun",
+     "praktikum_wie",
+     "praktikum_was",
+     "ende"
+    ],
+    "initial": [
+     "was",
+     "koennen",
+     "jetzt_tun",
+     "ende"
+    ],
+    "greeting": "Hey! Ich bin Jonas, ich mache hier eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+   }
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]",
+   "./karten/000/daten.json [no-store]",
+   "./karten/000/dialog.json [no-store]"
+  ]
+ },
+ "v_klein": {
+  "ergebnis": {
+   "variante": "P",
+   "publicMode": true,
+   "design": {
+    "id": "p04",
+    "name": "Testdruck P04 — 04_2809_1",
+    "fassung": "firma",
+    "target": "targets/p04.json",
+    "targetUrl": "https://x.test/v2tracker/karten/000/targets/p04.json",
+    "breiteMm": 63,
+    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+   },
+   "card": {
+    "id": "000",
+    "edition": "P",
+    "format": 2,
+    "company": null,
+    "companyLogo": null,
+    "companyNeutral": "der Betrieb",
+    "profession": "Elektroniker*in für Betriebstechnik",
+    "vorschau": "https://x.test/v2tracker/karten/000/vorschau.jpg",
+    "idleReturnMs": 16000,
+    "figur": {
+     "posen": {
+      "idle": "https://x.test/v2tracker/karten/000/figur/body_idle.webp",
+      "affirm": "https://x.test/v2tracker/karten/000/figur/body_react_affirm.webp",
+      "think": "https://x.test/v2tracker/karten/000/figur/body_react_think.webp"
+     },
+     "kopf": "https://x.test/v2tracker/karten/000/figur/head.webp",
+     "gesicht": {
+      "neutral": "https://x.test/v2tracker/karten/000/figur/face_neutral.webp",
+      "blink": "https://x.test/v2tracker/karten/000/figur/face_blink.webp",
+      "talk": "https://x.test/v2tracker/karten/000/figur/face_talk.webp"
+     }
+    },
+    "fragen": [
+     "was",
+     "purpose",
+     "tag_ablauf",
+     "koennen",
+     "reden",
+     "technik",
+     "lernort",
+     "anstrengend",
+     "danach",
+     "bewerbung",
+     "jetzt_tun",
+     "praktikum_wie",
+     "praktikum_was",
+     "ende"
+    ],
+    "initial": [
+     "was",
+     "koennen",
+     "jetzt_tun",
+     "ende"
+    ],
+    "greeting": "Hey! Ich bin Jonas, ich mache hier eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+   }
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]",
+   "./karten/000/daten.json [no-store]",
+   "./karten/000/dialog.json [no-store]"
+  ]
+ },
+ "v_unbekannt": {
+  "ergebnis": {
+   "variante": "S",
+   "publicMode": false,
+   "design": {
+    "id": "p04",
+    "name": "Testdruck P04 — 04_2809_1",
+    "fassung": "firma",
+    "target": "targets/p04.json",
+    "targetUrl": "https://x.test/v2tracker/karten/000/targets/p04.json",
+    "breiteMm": 63,
+    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+   },
+   "card": {
+    "id": "000",
+    "edition": "S",
+    "format": 2,
+    "company": "Siemens",
+    "companyLogo": null,
+    "companyNeutral": "der Betrieb",
+    "profession": "Elektroniker*in für Betriebstechnik",
+    "vorschau": "https://x.test/v2tracker/karten/000/vorschau.jpg",
+    "idleReturnMs": 16000,
+    "figur": {
+     "posen": {
+      "idle": "https://x.test/v2tracker/karten/000/figur/body_idle.webp",
+      "affirm": "https://x.test/v2tracker/karten/000/figur/body_react_affirm.webp",
+      "think": "https://x.test/v2tracker/karten/000/figur/body_react_think.webp"
+     },
+     "kopf": "https://x.test/v2tracker/karten/000/figur/head.webp",
+     "gesicht": {
+      "neutral": "https://x.test/v2tracker/karten/000/figur/face_neutral.webp",
+      "blink": "https://x.test/v2tracker/karten/000/figur/face_blink.webp",
+      "talk": "https://x.test/v2tracker/karten/000/figur/face_talk.webp"
+     }
+    },
+    "fragen": [
+     "was",
+     "purpose",
+     "tag_ablauf",
+     "koennen",
+     "reden",
+     "technik",
+     "lernort",
+     "anstrengend",
+     "danach",
+     "bewerbung",
+     "jetzt_tun",
+     "praktikum_wie",
+     "praktikum_was",
+     "ende"
+    ],
+    "initial": [
+     "was",
+     "koennen",
+     "jetzt_tun",
+     "ende"
+    ],
+    "greeting": "Hey! Ich bin Jonas, ich mache bei Siemens eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+   }
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]",
+   "./karten/000/daten.json [no-store]",
+   "./karten/000/dialog.json [no-store]"
+  ]
+ },
+ "codeKlein": {
+  "ergebnis": {
+   "error": "Unbekannte Karte „000“",
+   "ids": [
+    "A1"
+   ],
+   "hinweis": " (Parameter ?k, Katalog: karten/katalog.json)"
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]"
+  ]
+ },
+ "codeGrossKlein": {
+  "ergebnis": {
+   "variante": "B",
+   "publicMode": false,
+   "design": {
+    "id": "p04",
+    "name": "Testdruck P04 — 04_2809_1",
+    "fassung": "firma",
+    "target": "targets/p04.json",
+    "targetUrl": "https://x.test/v2tracker/karten/A1/targets/p04.json",
+    "breiteMm": 63,
+    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+   },
+   "card": {
+    "id": "A1",
+    "edition": "B",
+    "format": 2,
+    "company": "Siemens",
+    "companyLogo": null,
+    "companyNeutral": "der Betrieb",
+    "profession": "Elektroniker*in für Betriebstechnik",
+    "vorschau": "https://x.test/v2tracker/karten/A1/vorschau.jpg",
+    "idleReturnMs": 16000,
+    "figur": {
+     "posen": {
+      "idle": "https://x.test/v2tracker/karten/A1/figur/body_idle.webp",
+      "affirm": "https://x.test/v2tracker/karten/A1/figur/body_react_affirm.webp",
+      "think": "https://x.test/v2tracker/karten/A1/figur/body_react_think.webp"
+     },
+     "kopf": "https://x.test/v2tracker/karten/A1/figur/head.webp",
+     "gesicht": {
+      "neutral": "https://x.test/v2tracker/karten/A1/figur/face_neutral.webp",
+      "blink": "https://x.test/v2tracker/karten/A1/figur/face_blink.webp",
+      "talk": "https://x.test/v2tracker/karten/A1/figur/face_talk.webp"
+     }
+    },
+    "fragen": [
+     "was",
+     "purpose",
+     "tag_ablauf",
+     "koennen",
+     "reden",
+     "technik",
+     "lernort",
+     "anstrengend",
+     "danach",
+     "bewerbung",
+     "jetzt_tun",
+     "praktikum_wie",
+     "praktikum_was",
      "link",
+     "ende"
+    ],
+    "initial": [
+     "was",
+     "koennen",
+     "jetzt_tun",
+     "ende"
+    ],
+    "greeting": "Hey! Ich bin Jonas, ich mache bei Siemens eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+   }
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]",
+   "./karten/A1/daten.json [no-store]",
+   "./karten/A1/dialog.json [no-store]"
+  ]
+ },
+ "kMitLeerzeichen": {
+  "ergebnis": {
+   "variante": "S",
+   "publicMode": false,
+   "design": {
+    "id": "p04",
+    "name": "Testdruck P04 — 04_2809_1",
+    "fassung": "firma",
+    "target": "targets/p04.json",
+    "targetUrl": "https://x.test/v2tracker/karten/000/targets/p04.json",
+    "breiteMm": 63,
+    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 04_2809_1 (646:717) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+   },
+   "card": {
+    "id": "000",
+    "edition": "S",
+    "format": 2,
+    "company": "Siemens",
+    "companyLogo": null,
+    "companyNeutral": "der Betrieb",
+    "profession": "Elektroniker*in für Betriebstechnik",
+    "vorschau": "https://x.test/v2tracker/karten/000/vorschau.jpg",
+    "idleReturnMs": 16000,
+    "figur": {
+     "posen": {
+      "idle": "https://x.test/v2tracker/karten/000/figur/body_idle.webp",
+      "affirm": "https://x.test/v2tracker/karten/000/figur/body_react_affirm.webp",
+      "think": "https://x.test/v2tracker/karten/000/figur/body_react_think.webp"
+     },
+     "kopf": "https://x.test/v2tracker/karten/000/figur/head.webp",
+     "gesicht": {
+      "neutral": "https://x.test/v2tracker/karten/000/figur/face_neutral.webp",
+      "blink": "https://x.test/v2tracker/karten/000/figur/face_blink.webp",
+      "talk": "https://x.test/v2tracker/karten/000/figur/face_talk.webp"
+     }
+    },
+    "fragen": [
+     "was",
+     "purpose",
+     "tag_ablauf",
+     "koennen",
+     "reden",
+     "technik",
+     "lernort",
+     "anstrengend",
+     "danach",
+     "bewerbung",
+     "jetzt_tun",
+     "praktikum_wie",
+     "praktikum_was",
+     "ende"
+    ],
+    "initial": [
+     "was",
+     "koennen",
+     "jetzt_tun",
+     "ende"
+    ],
+    "greeting": "Hey! Ich bin Jonas, ich mache bei Siemens eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+   }
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]",
+   "./karten/000/daten.json [no-store]",
+   "./karten/000/dialog.json [no-store]"
+  ]
+ },
+ "k999": {
+  "ergebnis": {
+   "error": "Unbekannte Karte „999“",
+   "ids": [
+    "000"
+   ],
+   "hinweis": " (Parameter ?k, Katalog: karten/katalog.json)"
+  },
+  "fetches": [
+   "./karten/katalog.json [no-store]"
+  ]
+ },
+ "design_p05": {
+  "ergebnis": {
+   "variante": "S",
+   "publicMode": false,
+   "design": {
+    "id": "p05",
+    "name": "Testdruck P05 — 05_2809_2_figma_noise_blue",
+    "fassung": "firma",
+    "target": "targets/p05.json",
+    "targetUrl": "https://x.test/v2tracker/karten/000/targets/p05.json",
+    "breiteMm": 63,
+    "notiz": "Figma DETAR, Seite PRINT, Section „Druck MeinSpiel 63x88“ (646:364), Rahmen 05_2809_2_figma_noise_blue (646:833) ohne 3 mm Beschnitt, Export 2× = 1488×2078, image-target-cli, Standard-Crop 3:4 zentriert, 2026-10-09"
+   },
+   "card": {
+    "id": "000",
+    "edition": "S",
+    "format": 2,
+    "company": "Siemens",
+    "companyLogo": null,
+    "companyNeutral": "der Betrieb",
+    "profession": "Elektroniker*in für Betriebstechnik",
+    "vorschau": "https://x.test/v2tracker/karten/000/vorschau.jpg",
+    "idleReturnMs": 16000,
+    "figur": {
+     "posen": {
+      "idle": "https://x.test/v2tracker/karten/000/figur/body_idle.webp",
+      "affirm": "https://x.test/v2tracker/karten/000/figur/body_react_affirm.webp",
+      "think": "https://x.test/v2tracker/karten/000/figur/body_react_think.webp"
+     },
+     "kopf": "https://x.test/v2tracker/karten/000/figur/head.webp",
+     "gesicht": {
+      "neutral": "https://x.test/v2tracker/karten/000/figur/face_neutral.webp",
+      "blink": "https://x.test/v2tracker/karten/000/figur/face_blink.webp",
+      "talk": "https://x.test/v2tracker/karten/000/figur/face_talk.webp"
+     }
+    },
+    "fragen": [
+     "was",
+     "purpose",
+     "tag_ablauf",
+     "koennen",
+     "reden",
+     "technik",
+     "lernort",
+     "anstrengend",
+     "danach",
+     "bewerbung",
+     "jetzt_tun",
+     "praktikum_wie",
+     "praktikum_was",
      "ende"
     ],
     "initial": [
@@ -406,6 +824,7 @@
  },
  "karte_p01": {
   "ergebnis": {
+   "variante": "S",
    "publicMode": false,
    "design": {
     "id": "p01",
@@ -418,7 +837,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "S",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -453,7 +872,6 @@
      "jetzt_tun",
      "praktikum_wie",
      "praktikum_was",
-     "link",
      "ende"
     ],
     "initial": [
@@ -473,6 +891,7 @@
  },
  "karte_P01": {
   "ergebnis": {
+   "variante": "S",
    "publicMode": false,
    "design": {
     "id": "p01",
@@ -485,7 +904,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "S",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -520,7 +939,6 @@
      "jetzt_tun",
      "praktikum_wie",
      "praktikum_was",
-     "link",
      "ende"
     ],
     "initial": [
@@ -553,6 +971,7 @@
  },
  "k_vor_karte": {
   "ergebnis": {
+   "variante": "S",
    "publicMode": false,
    "design": {
     "id": "p04",
@@ -565,7 +984,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "S",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -600,7 +1019,6 @@
      "jetzt_tun",
      "praktikum_wie",
      "praktikum_was",
-     "link",
      "ende"
     ],
     "initial": [
@@ -714,6 +1132,7 @@
  },
  "breiteFehlt": {
   "ergebnis": {
+   "variante": "S",
    "publicMode": false,
    "design": {
     "id": "x",
@@ -726,7 +1145,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "S",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -761,7 +1180,6 @@
      "jetzt_tun",
      "praktikum_wie",
      "praktikum_was",
-     "link",
      "ende"
     ],
     "initial": [
@@ -781,6 +1199,7 @@
  },
  "lokalPrototyp": {
   "ergebnis": {
+   "variante": "S",
    "publicMode": false,
    "design": {
     "id": "p04",
@@ -793,7 +1212,7 @@
    },
    "card": {
     "id": "000",
-    "edition": "firma",
+    "edition": "S",
     "format": 2,
     "company": "Siemens",
     "companyLogo": null,
@@ -828,7 +1247,6 @@
      "jetzt_tun",
      "praktikum_wie",
      "praktikum_was",
-     "link",
      "ende"
     ],
     "initial": [

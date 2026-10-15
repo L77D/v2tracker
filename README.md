@@ -19,13 +19,16 @@ Ausgeliefert wird `main` dieses Repos (`L77D/v2tracker`, Haupt-Repo seit
 2026-10-12): https://l77d.github.io/v2tracker/ — das alte Repo `L77D/detar`
 (MindAR, Build 33) ist veraltet.
 
-**Zwei Editionen pro Karte:** Firmenversion (Standard) mit Logo/Firmenname im
-Splash und Link zur Ausbildungsseite im Dialog, und die neutrale Public-
-Version über die Kartennummer mit angehängtem P, **`?k=<nr>P`** (z. B. `?k=000P`, im
-QR-Code der Public-Karte, eigenes Erkennungsbild): kein
-Firmenblock im Splash, Fragen mit `branded: true` entfallen, Texte mit
-`{firma}` laufen in ihrer Public-Fassung (`textPublic` usw.) — der Betrieb wird
-dort nie genannt. Eine Kartendatei für beides (`js/edition.js`).
+**Drei Varianten pro Karte (Build 112, Anforderung Studio2B):** Link
+**`?k=<code>&v=S|B|P`**, ohne `v` gilt S. **B** (Business) = Firmenkarte mit
+Logo/Firmenname im Splash und Link zur Ausbildungsseite im Dialog; **S**
+(Schule, Standard) = dieselbe Karte ohne die Link-Frage; **P** (Public) =
+neutral: kein Firmenblock im Splash, Fragen mit `branded: true` entfallen,
+Texte mit `{firma}` laufen in ihrer Public-Fassung (`textPublic` usw.) — der
+Betrieb wird dort nie genannt; eigenes Erkennungsbild. Studio2B druckt
+`DETAR.IO/A1/S`, `/A1/B`, `/A1/P`, `/A1`; der Server leitet auf die Query-Form
+um (Regel unten). `?k=<nr>P` bleibt als Alias für `v=P`. Eine Kartendatei für
+alle drei (`js/edition.js`).
 
 **Engine und Karten getrennt (Build 63, 2026-10-06):** Die Engine
 (`index.html`, `js/`, `css/`, `assets/`, `vendor/`) liegt einmal zentral; jede
@@ -97,7 +100,8 @@ auch, liefert `.wasm` aber ohne MIME-Typ.
   **`?preflight=inapp|nocam|insecure|nowasm|nowebp`** — Hinweis-Bildschirme
   der Vorabprüfung ansehen (nur Test). **`?k=<id>`** — Karte
   aus `karten/katalog.json` (ohne Parameter: Auffang-Seite, keine Karte);
-  **`?k=<id>P`** (auch `p`) — Public-Edition derselben Karte.
+  **`&v=S|B|P`** — Variante derselben Karte (Schule, Business, Public; ohne `v` = S);
+  **`?k=<id>P`** (auch `p`) — Alias für `v=P`.
   **`?design=<id>`** — Kartenbild (Design) der Karte aus `daten.json → designs`
   (ohne Parameter: das erste, heute `p04`; weitere: Testdrucke `p01`–`p35`). Übersicht mit
   QR-Codes zum Umschalten am Handy: `karten.html`. (`?karte=<id>` gibt es seit
@@ -163,8 +167,8 @@ karten/<id>/
    ablegen; in `daten.json` die Kartendaten (`id`, `profession`, `company`, `companyLogo`,
    `companyNeutral`, `figur`, `designs`) anpassen. Firmenbezug nur über
    `company`, `{firma}` (höchstens zweimal, je mit Public-Fassung
-   `textPublic` usw.) und `branded: true` — dann funktioniert `?k=<nr>P` ohne
-   zweite Datei. Prüfen mit **`tools/kartenpruefung.html?k=<id>`** (über den
+   `textPublic` usw.), `branded: true` und `link: true` — dann funktionieren
+   die Varianten S/B/P ohne zweite Datei. Prüfen mit **`tools/kartenpruefung.html?k=<id>`** (über den
    Dev-Server oder den Testlink, kein Terminal). Pfade in `daten.json` gelten
    relativ zum Kartenordner.
 3. Figur in `figur/` austauschen: aus den 1024×1536-PNGs des Nano-Banana-
@@ -179,8 +183,16 @@ karten/<id>/
 4. Kartenbild als 8th-Wall-Target erzeugen (s. u.), Dateien nach `targets/`,
    Eintrag in `designs` (`id`, `name`, `target`, `breiteMm`, `notiz`).
 5. Karte in `karten/katalog.json` eintragen (`id`, `name`, `aktiv: true`).
-   QR-Codes: `…/?k=<nr>` (Firma) und `…/?k=<nr>P` (Public). Public-Erkennungsbild =
-   Design mit `"fassung": "public"` in `daten.json`.
+   QR-Codes: `…/?k=<code>&v=S` (Schule), `…&v=B` (Business), `…&v=P`
+   (Public); Code groß geschrieben. Public-Erkennungsbild = Design mit
+   `"fassung": "public"` in `daten.json`. Pfad-Form `/A1/S` → Server-Regel:
+
+   ```
+   # Nginx
+   location ~ ^/([A-Z0-9]{2,3})(?:/([SBP]))?/?$ { return 302 /?k=$1&v=$2; }
+   # Apache (.htaccess)
+   RewriteRule ^([A-Z0-9]{2,3})(?:/([SBP]))?/?$ /?k=$1&v=$2 [R=302,L]
+   ```
 6. Zeichen außerhalb des festen Schriftsatzes fallen auf die Systemschrift
    zurück — Prüfbefehl im Kopf von `tools/build-fonts.sh`.
 
@@ -230,7 +242,7 @@ css/question-menu.css Bottom-UI (Themen, Fragen-Karussell, Optionen, Weiter)
 js/main.js            Boot, Engine-Variante (SIMD/nicht-SIMD), 8th-Wall-Setup (Pipeline-Modul), Figur-Tap, Loop
 js/kartenLader.js     Karte laden (?k, ?design): Katalog, daten.json + dialog.json, Format-Prüfung, Pfade
 js/preflight.js       Vorabprüfung im Splash (In-App-Browser, HTTPS, Kamera-API, WASM, WebP)
-js/edition.js         Edition Firma/Public (?k=<nr>P): Karte filtern, Public-Texte, {firma} ersetzen
+js/edition.js         Variante S/B/P (?k=<code>&v=): Karte filtern, Public-Texte, {firma} ersetzen
 js/version.js         Build-Nummer (?stats vergleicht mit dem Live-Stand)
 js/util.js            gemeinsame Helfer (el, rand, normalizeAngle, finiteVec, progress)
 js/config.js          ALLE Tuning-Dashboards + tuning.json-Merge

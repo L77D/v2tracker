@@ -156,6 +156,9 @@ export function pruefeKarte(karte, { seiten = null, firma = "", dateien = null }
   if (p && "lehrjahr" in p) F("persona.lehrjahr heißt seit Build 79 persona.jahr.");
   if (k.art != null && !ARTEN.includes(k.art)) F("art muss " + ARTEN.map((a) => "„" + a + "“").join(" oder ") + " sein.");
   if (fragen.some((q) => q.id === "berufsschule")) F("Die Pflichtfrage „berufsschule“ heißt seit Build 79 „lernort“ (auch in unlocks).");
+  // Kartencode (Build 112, Studio2B): nur Großbuchstaben und Ziffern — er steht
+  // groß im QR-Code, und der Ordnername muss dazu passen.
+  if (k.id != null && !/^[A-Z0-9]+$/.test(String(k.id))) F("Kartencode „" + k.id + "“: nur Großbuchstaben und Ziffern (steht so im QR-Code und als Ordnername).");
 
   /* --- Nur vorgesehene Felder (A11) ------------------------------------- */
   if (dateien) { // aus dem Repo geladen: jede Datei für sich
@@ -410,15 +413,23 @@ export function pruefeKarte(karte, { seiten = null, firma = "", dateien = null }
   if (!name) H("Kein Firmenname bekannt — die Prüfung auf den ausgeschriebenen Firmennamen entfällt.");
 
   /* --- Belegung je Thema und Länge, je Fassung --------------------------- */
+  // Texte: Firma = Variante B (mit Link-Frage), Public = Variante P. Variante
+  // S hat die Texte von B ohne die Link-Frage — nur die Themen-Belegung wird
+  // dort zusätzlich geprüft (Build 112).
   const texte = [];
   for (const publicMode of [false, true]) {
-    let fassung;
-    try { fassung = prepareCard({ ...k, company: name || k.company }, { publicMode }); }
+    let fassung, schule = null;
+    try {
+      fassung = prepareCard({ ...k, company: name || k.company }, { variante: publicMode ? "P" : "B" });
+      if (!publicMode) schule = prepareCard({ ...k, company: name || k.company }, { variante: "S" });
+    }
     catch (e) { F("Karte lässt sich nicht für die " + (publicMode ? "Public" : "Firmen") + "-Fassung aufbereiten: " + e.message); continue; }
     const label = publicMode ? "Public" : "Firma";
     for (const t of THEMEN) {
       const n = fassung.questions.filter((q) => q.thema === t.id && !q.requires).length;
       if (n < MIN_JE_THEMA) F("Thema „" + t.label + "“ hat in der " + label + "-Fassung nur " + n + " Fragen (mind. " + MIN_JE_THEMA + ", Zweigfragen zählen nicht).");
+      const nS = schule ? schule.questions.filter((q) => q.thema === t.id && !q.requires).length : n;
+      if (nS < MIN_JE_THEMA) F("Thema „" + t.label + "“ hat in der Variante S (ohne Link-Frage) nur " + nS + " Fragen (mind. " + MIN_JE_THEMA + ").");
     }
     const fs = textstellen(fassung);
     const ausrufe = fs.reduce((n, s) => n + (ohneTags(s.obj[s.feld]).match(/!/g) ?? []).length, 0);
@@ -462,8 +473,8 @@ export function pruefeKarte(karte, { seiten = null, firma = "", dateien = null }
 /* Lesefassung: der komplette Dialog einer Fassung am Stück, in der Reihenfolge,
    in der ihn ein Schüler höchstens sehen kann (Begrüßung, Themen mit Fragen,
    Rückfragen, Ausstieg, Wiedereinstieg). Liefert [{art, titel, text, notiz}]. */
-export function lesefassung(karte, { publicMode = false, firma = "" } = {}) {
-  const k = prepareCard({ ...karte, company: karte.company || firma || karte.company }, { publicMode });
+export function lesefassung(karte, { publicMode = false, variante = null, firma = "" } = {}) {
+  const k = prepareCard({ ...karte, company: karte.company || firma || karte.company }, { variante: variante ?? (publicMode ? "P" : "B") });
   const out = [];
   if (k.greeting) out.push({ art: "figur", titel: "Begrüßung", text: k.greeting.text });
   const zweig = (q) => q.requires ? "nur nach Antwort „" + Object.values(q.requires).flat().join(", ") + "“" : "";

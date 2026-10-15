@@ -43,7 +43,7 @@ des Designs, `karten.html` zeigt sie so, und der Kartenlader löst
   `vendor/qrcode/qrcode.js` (qrcode-generator 2.0.4, MIT), kein CDN.
 - `?design` überlebt „Neu laden" und „Link kopieren" (beides behält die Query)
   und lässt sich mit allen anderen Flags kombinieren
-  (`?k=000P&design=x&stats`).
+  (`?k=000&v=P&design=x&stats`).
 
 ## Neues Design hinzufügen
 
