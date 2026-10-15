@@ -73,11 +73,6 @@ export const IDLE = {
   // ≈ 55 % × 68 % der Karte. Vorher roamFraction 1.1 = Fuß-Mittelpunkt bis
   // 110 % der Karte (Build 97; davor 122 % × 121 %).
   markerWidth: 0.059, markerHeight: 0.0824, footFraction: 0.62,
-  // Lebendig-Phase nach einer Antwort (CHOREO.livelyAfterMs, 2026-10-14,
-  // Michael): Gewichtsverlagerung = seitliches Kippen (rad) mit Frequenz (Hz),
-  // Atem-Bop × livelyBopFactor; Umschauen nach lookChance. Startwerte, am Gerät
-  // nachstellen.
-  shiftRollMax: 0.05, shiftFrequency: 0.35, livelyBopFactor: 2,
   bopAmplitude: 0.015, bopFrequency: 0.5,
   walkSpeed: 0.04, walkFrequency: 2.2, walkRollMax: 0.18, stepSquash: 0.05,
   headLookMax: 0.5, headPitchMax: 0.35,
@@ -105,8 +100,9 @@ export const CHOREO = {
                          // 2026-10-14 (Michael, Build 108): verdoppelt (vorher 5500),
                          // Karte 000 16000 statt 8000 — Antworten stehen länger.
   livelyAfterMs: 2000,   // so lange nach dem Tippen bleibt die Figur ruhig, dann
-                         // Lebendig-Phase (Pose idle, Umschauen, Gewicht verlagern,
-                         // noch ohne Gehen) bis zur Haltezeit (2026-10-14, Michael)
+                         // Lebendig-Phase (Pose idle, Umschauen nach IDLE.lookChance,
+                         // noch ohne Gehen) bis zur Haltezeit (2026-10-14, Michael;
+                         // Gewichtsverlagerung 2026-10-15 wieder raus, Build 109)
   greetingPose: "idle",
   billboardLerp: 0.2,
   bubblePitchMax: 70,    // Sprechblase neigt sich zur Kamera, höchstens so viele Grad

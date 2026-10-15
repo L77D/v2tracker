@@ -345,8 +345,8 @@ export class CardController {
   cancelIdleReturn() { this.clearT("idle"); }
   /* Lebendig-Phase (2026-10-14, Michael): die Antwort steht doppelt so lange
      (idleReturnMs), dafür bleibt die Figur nur CHOREO.livelyAfterMs nach dem
-     Tippen ruhig — dann Pose zurück auf idle, Umschauen und
-     Gewichtsverlagerung am Platz (IdleWander.setLively), noch ohne Gehen,
+     Tippen ruhig — dann Pose zurück auf idle und Umschauen am Platz
+     (IdleWander.setLively; Gewichtsverlagerung seit Build 109 raus), noch ohne Gehen,
      weil die Blase an der Figur hängt. Gilt auch, solange ein Weiter wartet.
      Gehen erst nach der Lesezeit (scheduleIdleReturn → setAttending(false)). */
   scheduleLively() {

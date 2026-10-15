@@ -73,8 +73,9 @@ export class IdleWander {
     }
   }
   /* Lebendig-Phase im Antwort-Modus (CardController.scheduleLively,
-     2026-10-14): Umschauen + Gewichtsverlagerung am Platz, nie Gehen (die
-     Blase hängt an der Figur). Wirkt nur, solange attending gilt. */
+     2026-10-14): Umschauen am Platz, nie Gehen (die Blase hängt an der
+     Figur). Wirkt nur, solange attending gilt. Gewichtsverlagerung (Kippen +
+     stärkerer Atem) 2026-10-15 auf Michaels Wunsch wieder raus (Build 109). */
   setLively(value) {
     this.lively = value;
     if (!value && this.state === "look_around") {
@@ -121,12 +122,9 @@ export class IdleWander {
       }
     }
     if (this.state === "face_cam") { this.doFaceCam(dt, camHeading); return; }
-    // Gewichtsverlagerung in der Lebendig-Phase: langsames seitliches Kippen
-    const shift = this.attending && this.lively
-      ? Math.sin(this.clock * this.P.shiftFrequency * Math.PI * 2) * this.P.shiftRollMax : 0;
     switch (this.state) {
       case "bop":
-        this.fadeRoll(dt, shift);
+        this.fadeRoll(dt, 0);
         if (this.attending) {
           this.fadeHead(dt, this.computeHeadTowardCamera());
           this.fadePitch(dt, this.computeHeadPitchTowardCamera());
@@ -136,7 +134,7 @@ export class IdleWander {
         }
         break;
       case "look_around":
-        this.fadeRoll(dt, shift); this.fadeHead(dt, this.headTargetY); this.fadePitch(dt, this.headBaseRotX);
+        this.fadeRoll(dt, 0); this.fadeHead(dt, this.headTargetY); this.fadePitch(dt, this.headBaseRotX);
         break;
       case "walk":
         this.doWalk(dt); this.fadeHead(dt, this.headBaseRotY); this.fadePitch(dt, this.headBaseRotX);
@@ -221,8 +219,7 @@ export class IdleWander {
   }
   applyBopScale() {
     const s = (Math.sin(this.clock * this.P.bopFrequency * Math.PI * 2) + 1) / 2;
-    const amp = this.attending && this.lively ? this.P.bopAmplitude * this.P.livelyBopFactor : this.P.bopAmplitude;
-    this.nodes.BodyPivot.scale.y = 1 + s * amp;
+    this.nodes.BodyPivot.scale.y = 1 + s * this.P.bopAmplitude;
     this.nodes.BodyPivot.scale.x = 1;
   }
   computeHeadingTowardCamera() {

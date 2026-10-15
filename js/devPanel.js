@@ -86,9 +86,6 @@ export class DevPanel {
         { o: IDLE, k: "markerWidth", l: "Lauffeld Breite", min: 0.01, max: 0.3, step: 0.005 },
         { o: IDLE, k: "markerHeight", l: "Lauffeld Tiefe", min: 0.01, max: 0.3, step: 0.005 },
         { o: IDLE, k: "footFraction", l: "Fußbreite (Anteil Leinwand)", min: 0, max: 1, step: 0.01 },
-        { o: IDLE, k: "shiftRollMax", l: "Lebendig: Gewicht-Kippen", min: 0, max: 0.3, step: 0.005 },
-        { o: IDLE, k: "shiftFrequency", l: "Lebendig: Kipp-Frequenz", min: 0.05, max: 2, step: 0.05 },
-        { o: IDLE, k: "livelyBopFactor", l: "Lebendig: Atem-Faktor", min: 1, max: 5, step: 0.1 },
       ]},
       { g: "Aktivierung (Karten-FX)", items: [
         { o: ACTFX, k: "markerSize", l: "Marker-Größe (Kartenbreite)", min: 0.05, max: 0.4, step: 0.01, on: () => this.fx?.applySizes() },
