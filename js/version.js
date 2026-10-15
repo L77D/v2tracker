@@ -7,4 +7,4 @@
    (cache: no-store) — steht dort eine höhere Nummer, läuft am Gerät ein alter
    Cache → „neu laden". Damit ist am Handy ablesbar, ob der Stand aktuell ist.
    ============================================================================= */
-export const BUILD = 110;
+export const BUILD = 111;
