@@ -4,7 +4,7 @@
    headless Chromium (Playwright, global installiert oder über NODE_PATH) und
    hält fest, was ein Nutzer sieht: Boot-Zustand je URL-Variante (body-Klassen,
    Kartenname, Fehlerzeile, Start-Knopf, Tracker-Marke, Hinweis-Text, Konsole),
-   karten.html / tracker-vergleich.html / tools/kartenpruefung.html, und den
+   karten.html / tools/kartenpruefung.html, und den
    Desktop-Ablauf (?desktop) bis zur ersten Antwort (Phasen, Menü-Kacheln).
    Dazu Messwerte (nicht Teil des Snapshots): Requests/Bytes vor und nach dem
    Start, Zeit bis zum freien Start-Knopf, JS-Selbstzeit je Datei im Profiler.
@@ -71,7 +71,7 @@ try {
   }
 
   /* ---- Übersichtsseiten ---------------------------------------------------- */
-  for (const u of ["karten.html", "tracker-vergleich.html?k=000"]) {
+  for (const u of ["karten.html"]) {
     const { page, konsole } = await seite(u);
     await page.waitForTimeout(1200);
     snapshot[u] = await page.evaluate(() => ({

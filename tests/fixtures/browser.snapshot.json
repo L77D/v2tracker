@@ -152,7 +152,7 @@
    "err": "",
    "errSichtbar": "",
    "startKnopfAus": false,
-   "marke": "alt",
+   "marke": "alt? → 8lerp",
    "markeKlassen": "show",
    "pfTitel": "Bitte im Browser öffnen",
    "pfText": "",
@@ -269,18 +269,6 @@
   "text": "DETAR — Kartendesigns Quelle: karten/katalog.json + karten/<id>/daten.json (designs) · QR-Code scannen oder „Starten\" tippen → App mit ?k=<karte> (Firmenfassung) bzw. ?k=<karte>P (Public-Fassung); &design=<design> nur bei einem anderen als dem Standard-Design der Fassung (kürzerer QR-Code). Testdrucke (Feld qr) zeigen den Link wie gedruckt, z. B. ?karte=p01. Zusatz-Flags im Link: stats (Diagnose) ",
   "konsole": []
  },
- "tracker-vergleich.html?k=000": {
-  "titel": "DETAR — Tracker-Vergleich (QR)",
-  "qr": 4,
-  "links": [
-   "./index.html?k=000&stats&tracker=8roh",
-   "./index.html?k=000&stats&tracker=alt",
-   "./index.html?k=000&stats&tracker=neu",
-   "./index.html?k=000&stats&tracker=8lerp"
-  ],
-  "text": "Tracker-Vergleich Gleicher Stand, vier Varianten, jeweils mit ?stats. Reihenfolge am Gerät: erst Nulllinie, dann alt, dann neu, dann 8lerp — Fälle F0 bis F4, „Messung 10 s\", Zeile kopieren. Karte QR-Codes neu 8roh 8roh — Nulllinie Engine 1:1, kein Filter, kein Gyro, bei Verlust sofort weg ./index.html?k=000&stats&tracker=8roh alt alt — PoseStabilizer Standard bis Build 109; Zapworks-Port, Monate G",
-  "konsole": []
- },
  "tools/kartenpruefung.html?k=000": {
   "kopf": [
    "Kartenprüfung",
@@ -316,7 +304,6 @@
    "js/main.js",
    "js/phoneFrame.js",
    "js/poseArbiter.js",
-   "js/poseStabilizer.js",
    "js/preflight.js",
    "js/questionMenu.js",
    "js/rig.js",
@@ -326,9 +313,7 @@
    "js/statsOverlay.js",
    "js/supportUI.js",
    "js/tapInput.js",
-   "js/tracker.js",
    "js/tracker8lerp.js",
-   "js/tracker8roh.js",
    "js/trackerWahl.js",
    "js/util.js",
    "js/vendor/tiks.js",

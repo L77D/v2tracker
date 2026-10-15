@@ -1,9 +1,11 @@
 /* =============================================================================
-   DETAR — Tracker-Varianten (Build 92, 2026-10-12): mehrere Tracking-Filter
-   liegen parallel im Code, EINE läuft je Sitzung. Auswahl: ?tracker=<name>,
-   sonst der Standard STAB.tracker (config.js). Diese Codebasis ist intern —
-   am Ende fällt eine Entscheidung, die Verlierer fliegen samt Tests raus, und
-   die Engine wird bereinigt ausgeliefert.
+   DETAR — Tracker-Wahl (Build 92, 2026-10-12): mehrere Tracking-Filter lagen
+   bis Build 110 parallel im Code (alt = PoseStabilizer, neu = tracker.js,
+   8roh = Nulllinie, 8lerp). Seit Build 111 (Michael 2026-10-15) ist nur noch
+   8lerp im Live-Code; die anderen liegen in archiv/tracker-varianten/ (README
+   dort). Auswahl weiterhin: ?tracker=<name> in der URL, sonst der Standard
+   STAB.tracker (config.js) — ein unbekannter Name (auch „alt", „neu", „8roh")
+   fällt mit Warnung auf den Standard zurück, die Marke zeigt „alt? → 8lerp".
 
    VERTRAG einer Variante (alles, was arSession.js, ?stats und die Tests nutzen):
      constructor(target, gyro)            messgetrieben: bekommt jede neue Messung
@@ -13,26 +15,17 @@
      Ausgabe: target.matrix = Pose × Scale, Scale = Kartenbreite; target.visible =
      Sichtbarkeits-Wunsch (target = poseTarget in arSession.js, seit Build 99 ein
      Proxy — stabRoot blendet SceneFade weich nach)
-   snapshot() liefert die Felder, die statsOverlay.js liest (s. poseStabilizer.js).
-   Das Szenario tests/stabilizerSzenario.mjs und der Vergleich in
-   tests/tracker.test.mjs laufen mit jeder Klasse, die den Vertrag hält.
+   snapshot() liefert die Felder, die statsOverlay.js liest (s. tracker8lerp.js).
+   Das Szenario tests/stabilizerSzenario.mjs läuft mit jeder Klasse, die den
+   Vertrag hält (Goldstandard: tests/tracker8lerp.test.mjs).
 
-   Neue Variante: Modul anlegen, hier eintragen, in tests/tracker.test.mjs in
-   die Vergleichsliste aufnehmen. Alle Varianten werden statisch geladen (je
-   ~15 KB, 8roh/8lerp ~4 KB) — bei mehr Varianten lieber per import() erst in
-   startAR.
+   Neue Variante: Modul anlegen, hier eintragen, Szenario-Test dazu.
    ============================================================================= */
 import { STAB } from "./config.js";
-import { PoseStabilizer } from "./poseStabilizer.js";
-import { Tracker } from "./tracker.js";
-import { Tracker8roh } from "./tracker8roh.js";
 import { Tracker8lerp } from "./tracker8lerp.js";
 
 export const TRACKER_VARIANTEN = {
-  alt: { Klasse: PoseStabilizer, beschreibung: "PoseStabilizer (Zapworks-Port, liest anchor.matrix je Frame)" },
-  neu: { Klasse: Tracker, beschreibung: "tracker.js (messgetrieben, 2026-10-09)" },
-  "8roh": { Klasse: Tracker8roh, beschreibung: "8th Wall roh: jede Messung 1:1, kein Filter, kein Gyro, bei Verlust sofort weg (Nulllinie)" },
-  "8lerp": { Klasse: Tracker8lerp, beschreibung: "8roh + Lerp/Slerp auf die letzte Messung (τ lerpPosMs/lerpRotMs) + Schwerkraft-Schiedsrichter, sonst nichts" },
+  "8lerp": { Klasse: Tracker8lerp, beschreibung: "8th Wall roh + Lerp/Slerp auf die letzte Messung (τ lerpPosMs/lerpRotMs) + Schwerkraft-Schiedsrichter, sonst nichts" },
 };
 // Rückfall ohne config und bei unbekanntem Namen — gleich STAB.tracker
 // (2026-10-15, Michael: Standard 8lerp statt alt).
