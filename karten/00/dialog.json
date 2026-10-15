@@ -1,0 +1,307 @@
+{
+  "art": "ausbildung",
+  "persona": {
+    "name": "Jonas",
+    "jahr": 2,
+    "haltung": "ruhig und direkt, erzählt aus der Werkstatt mit Gegenständen und Größen, ab und zu ein trockener Satz"
+  },
+  "firmenbegriffe": [],
+  "themen": [
+    {
+      "id": "alltag",
+      "label": "Alltag im Job"
+    },
+    {
+      "id": "beruf",
+      "label": "Was der Beruf bringt"
+    },
+    {
+      "id": "wege",
+      "label": "Wie man reinkommt"
+    }
+  ],
+  "initial": [
+    "was",
+    "koennen",
+    "jetzt_tun",
+    "ende"
+  ],
+  "greeting": {
+    "tag": "winken",
+    "text": "Hey! Ich bin Jonas, ich mache bei {firma} eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>.",
+    "textPublic": "Hey! Ich bin Jonas, ich mache hier eine Ausbildung zum Elektroniker für Betriebstechnik. Frag mich <welle>was</welle>."
+  },
+  "asks": [
+    {
+      "id": "neigung",
+      "trigger": {
+        "afterAnswers": 1
+      },
+      "tag": "denken",
+      "prompt": "Sag mal — arbeitest du lieber mit Menschen oder lieber mit Maschinen?",
+      "options": [
+        {
+          "label": "Eher mit Menschen",
+          "sets": {
+            "neigung": "menschen"
+          },
+          "unlocks": [
+            "reden"
+          ],
+          "tag": "schulterzucken",
+          "reply": "Verstehe. Im Team wird ständig geredet. Den Großteil des Tages hast du aber Werkzeug in der Hand, nicht Leute vor dir [Annahme]."
+        },
+        {
+          "label": "Eher mit Maschinen",
+          "sets": {
+            "neigung": "maschinen"
+          },
+          "unlocks": [
+            "technik"
+          ],
+          "tag": "bestaetigen",
+          "reply": "Kenn ich. Der Tag geht fast komplett für den Kasten drauf — geredet wird vor allem mit den zwei Leuten, mit denen man dransteht [Annahme]."
+        },
+        {
+          "label": "Weiß ich noch nicht",
+          "sets": {
+            "neigung": "unbekannt"
+          },
+          "tag": "schulterzucken",
+          "reply": "Musst du auch nicht. Das merkt man meistens erst, wenn man es mal gemacht hat."
+        }
+      ]
+    },
+    {
+      "id": "quiz",
+      "trigger": {
+        "afterAnswers": 3
+      },
+      "tag": "denken",
+      "prompt": "Rate mal: Wie viele einzelne Kabel stecken in so einem Kasten, den wir bauen?",
+      "options": [
+        {
+          "label": "So zwanzig",
+          "tag": "schulterzucken",
+          "reply": "Deutlich mehr: ein paar hundert [Annahme]. Jedes wird auf Länge geschnitten, festgeschraubt und geprüft."
+        },
+        {
+          "label": "Ein paar hundert",
+          "tag": "bestaetigen",
+          "reply": "<knall>Genau.</knall> Jedes wird geschnitten, festgeschraubt und geprüft. Deshalb dauert ein Kasten mehrere Tage [Annahme]."
+        },
+        {
+          "label": "Tausende",
+          "tag": "schulterzucken",
+          "reply": "So viele dann doch nicht. Ein paar hundert bei einem größeren Kasten [Annahme] — aber jedes davon geht einzeln durch meine Hände."
+        },
+        {
+          "label": "Keine Ahnung",
+          "tag": "schulterzucken",
+          "reply": "Ein paar hundert [Annahme]. Und jedes einzelne wird auf Länge geschnitten, festgeschraubt und geprüft."
+        }
+      ]
+    },
+    {
+      "id": "fazit",
+      "trigger": {
+        "onExit": true
+      },
+      "tag": "denken",
+      "prompt": "Bevor du gehst — könntest du dir sowas vorstellen?",
+      "options": [
+        {
+          "label": "Ja, klingt gut",
+          "tag": "bestaetigen",
+          "unlocks": [
+            "praktikum_wie"
+          ],
+          "reply": "Gut. Am ehesten merkst du es in einem Praktikum — da siehst du den Alltag und nicht nur die guten Tage."
+        },
+        {
+          "label": "Eher nicht",
+          "tag": "bestaetigen",
+          "reply": "Auch ein Ergebnis. Dann weißt du das jetzt, ohne es drei Jahre lang auszuprobieren."
+        },
+        {
+          "label": "Keine Ahnung",
+          "tag": "schulterzucken",
+          "reply": "Völlig okay. Guck dir noch ein paar andere an, das sortiert sich mit der Zeit."
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "was",
+      "thema": "alltag",
+      "label": "Was machst du hier eigentlich?",
+      "tag": "erklaeren",
+      "text": "Ich baue Schaltanlagen — Stromkästen, so groß wie ein Kleiderschrank [Annahme]. Ich schraube sie zusammen, ziehe Kabel und prüfe alles.",
+      "unlocks": [
+        "tag_ablauf",
+        "purpose"
+      ]
+    },
+    {
+      "id": "purpose",
+      "thema": "beruf",
+      "label": "Wem hilft das, was du baust?",
+      "tag": "stolz",
+      "text": "Die Kästen gehen in Fabriken, Krankenhäuser und Wasserwerke [Annahme]. Fällt dort der Strom aus, merken es <marker>alle sofort</marker>.",
+      "unlocks": [
+        "anstrengend"
+      ]
+    },
+    {
+      "id": "tag_ablauf",
+      "thema": "alltag",
+      "label": "Wie sieht dein Tag aus?",
+      "tag": "erklaeren",
+      "text": "Um halb sieben geht's los: kurz besprechen, dann an den Kasten [Annahme]. Vormittags schrauben, nachmittags messen [Annahme].",
+      "unlocks": [
+        "anstrengend",
+        "lernort"
+      ]
+    },
+    {
+      "id": "koennen",
+      "thema": "beruf",
+      "label": "Was muss ich dafür können?",
+      "tag": "erklaeren",
+      "text": "Bei uns brauchst du Mittlere Reife. Physik und Mathe sollten dir liegen. Und: Bei Strom ist Schludern <marker>keine Option</marker>.",
+      "unlocks": [
+        "lernort",
+        "bewerbung"
+      ]
+    },
+    {
+      "id": "reden",
+      "thema": "alltag",
+      "label": "Redet man da überhaupt mit jemandem?",
+      "tag": "erklaeren",
+      "requires": {
+        "neigung": [
+          "menschen"
+        ]
+      },
+      "text": "Im Team dauernd, wir bauen zu zweit oder zu dritt an einem Kasten [Annahme]. Die Leute, für die wir bauen, sehe ich aber fast nie [Annahme]."
+    },
+    {
+      "id": "technik",
+      "thema": "alltag",
+      "label": "Wie technisch wird es wirklich?",
+      "tag": "erklaeren",
+      "requires": {
+        "neigung": [
+          "maschinen"
+        ]
+      },
+      "text": "Technischer als gedacht. Ist der Kasten fertig, messe ich, ob der Strom überall richtig ankommt. Stimmt was nicht, suche ich den Fehler."
+    },
+    {
+      "id": "lernort",
+      "thema": "beruf",
+      "label": "Was lernst du in der Berufsschule?",
+      "tag": "erklaeren",
+      "text": "Einmal die Woche Berufsschule [Annahme]: Strom, Schaltungen, viel Rechnen. Dazu Deutsch und Sozialkunde [Annahme].",
+      "unlocks": [
+        "danach"
+      ]
+    },
+    {
+      "id": "anstrengend",
+      "thema": "alltag",
+      "label": "Was ist daran anstrengend?",
+      "tag": "erschoepft",
+      "text": "Den ganzen Tag <zittern>stehen</zittern>, im Sommer in einer warmen Halle [Annahme]. Am meisten schlaucht das Prüfen: Da darf nichts durchrutschen [Annahme].",
+      "unlocks": [
+        "danach"
+      ]
+    },
+    {
+      "id": "danach",
+      "thema": "beruf",
+      "label": "Und was kommt danach?",
+      "tag": "stolz",
+      "text": "Die Ausbildung dauert dreieinhalb Jahre. Danach arbeitest du als Fachkraft — oder lernst weiter, etwa an der Technikerschule.",
+      "unlocks": [
+        "bewerbung",
+        "praktikum_wie"
+      ]
+    },
+    {
+      "id": "bewerbung",
+      "thema": "wege",
+      "label": "Wie bewirbt man sich?",
+      "tag": "zeigen",
+      "text": "Online, über die Ausbildungsseite von {firma}. Da steht, was du brauchst und wann es losgeht.",
+      "textPublic": "Du bewirbst dich direkt bei den Betrieben, meistens online. Was sie sehen wollen, steht in der Ausschreibung.",
+      "unlocks": [
+        "link"
+      ]
+    },
+    {
+      "id": "jetzt_tun",
+      "thema": "wege",
+      "label": "Was sollte ich jetzt schon tun?",
+      "tag": "erklaeren",
+      "text": "Ein Praktikum — zwei Wochen Werkstatt sagen mehr als jede Broschüre. Und in Physik bei Strom gut aufpassen.",
+      "unlocks": [
+        "praktikum_wie"
+      ]
+    },
+    {
+      "id": "praktikum_wie",
+      "thema": "wege",
+      "label": "Wie kommt man an ein Praktikum?",
+      "tag": "erklaeren",
+      "text": "Über die Schule, die hat feste Praktikumswochen [Annahme]. Oder per Mail an den Betrieb: Name, Klasse, Zeitraum, warum der Beruf.",
+      "unlocks": [
+        "praktikum_was"
+      ]
+    },
+    {
+      "id": "praktikum_was",
+      "thema": "wege",
+      "label": "Und was bringt mir das?",
+      "tag": "stolz",
+      "text": "Du siehst den echten Alltag: wie laut es ist, wie gearbeitet wird. Selbst machen darfst du wenig [Annahme], aber du merkst, ob's dich packt."
+    },
+    {
+      "id": "link",
+      "thema": "wege",
+      "label": "Zeig mir die Seite",
+      "tag": "zeigen",
+      "link": true,
+      "branded": true,
+      "url": "https://example.com/ausbildung",
+      "text": "Ich mach dir die Seite auf. Da steht das Offizielle drin — Voraussetzungen, Ansprechpersonen, alles Aktuelle."
+    },
+    {
+      "id": "ende",
+      "label": "Ich muss weiter",
+      "tag": "winken",
+      "end": true,
+      "text": "Alles klar. Mach's gut — und viel Erfolg bei dem, was du dann machst!"
+    }
+  ],
+  "reentry": {
+    "rules": [
+      {
+        "ifVisit": 4,
+        "tag": "schulterzucken",
+        "text": "Du schon wieder — langsam kenn ich dich."
+      },
+      {
+        "ifVisit": 3,
+        "tag": "bestaetigen",
+        "text": "Na, doch noch was offen?"
+      },
+      {
+        "tag": "bestaetigen",
+        "text": "Ah, da bist du ja wieder. Frag ruhig."
+      }
+    ]
+  }
+}

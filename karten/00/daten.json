@@ -1,0 +1,40 @@
+{
+  "format": 2,
+  "id": "00",
+  "profession": "Elektroniker*in für Betriebstechnik",
+  "company": "Musterbetrieb",
+  "companyLogo": "logo.webp",
+  "companyNeutral": "der Betrieb",
+  "idleReturnMs": 16000,
+  "figur": {
+    "posen": {
+      "idle": "figur/body_idle.webp",
+      "affirm": "figur/body_react_affirm.webp",
+      "think": "figur/body_react_think.webp"
+    },
+    "kopf": "figur/head.webp",
+    "gesicht": {
+      "neutral": "figur/face_neutral.webp",
+      "blink": "figur/face_blink.webp",
+      "talk": "figur/face_talk.webp"
+    }
+  },
+  "designs": [
+    {
+      "id": "firma",
+      "fassung": "firma",
+      "name": "Beispielkarte, Firmenkarte (Varianten S und B)",
+      "target": "targets/firma.json",
+      "breiteMm": 63,
+      "notiz": "Kartenbild 63 × 88 mm ohne Beschnitt (1488 × 2078 px), image-target-cli, Standard-Crop 3:4 zentriert. Platzhalter: in der Beispielkarte dasselbe Kartenbild wie das Public-Design; eine Produktionskarte bringt hier das Kartenbild mit Logo."
+    },
+    {
+      "id": "public",
+      "fassung": "public",
+      "name": "Beispielkarte, Public-Karte (Variante P)",
+      "target": "targets/public.json",
+      "breiteMm": 63,
+      "notiz": "Platzhalter: in der Beispielkarte dasselbe Kartenbild wie das Firmen-Design; eine Produktionskarte bringt hier das Kartenbild ohne Logo."
+    }
+  ]
+}
