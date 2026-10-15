@@ -173,7 +173,10 @@ export const STAB = {
   // + Lerp/Slerp + Schiedsrichter (Build 105). ?tracker=<name> in der URL hat
   // Vorrang. Die Entscheidung am Ende: hier den Gewinner eintragen, Verlierer
   // samt Tests entfernen, Engine bereinigt ausliefern.
-  tracker: "alt",
+  // 2026-10-15 (Michael, nach dem Handytest): Standard "alt" → "8lerp" — ohne
+  // ?tracker= im Link (also auch bei gedruckten QR-Codes) läuft 8lerp; alt/neu/
+  // 8roh bleiben per ?tracker=<name> wählbar.
+  tracker: "8lerp",
   // --- Feature-Schalter (Dev-Panel „Tracking-Features an/aus") ---------------
   // Jeder Baustein einzeln abschaltbar, um sein Verhalten zu isolieren.
   enabled: true,     // 1 PoseStabilizer komplett (false = rohe Anchor-Pose 1:1)

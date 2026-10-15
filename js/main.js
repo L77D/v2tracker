@@ -72,7 +72,7 @@ let desktop = null;
 /* Tracker-Marke (Build 106, Michael 2026-10-13): steht ?tracker= im Link,
    zeigt die Ecke oben rechts klein, welche Variante läuft — auf jedem
    Bildschirm (Splash, Vorabprüfung, AR), unabhängig von ?stats. Unbekannter
-   Name: „xyz? → alt" (die Sitzung läuft mit dem Standard, s. trackerWahl.js). */
+   Name: „xyz? → 8lerp" (die Sitzung läuft mit dem Standard, s. trackerWahl.js). */
 function zeigeTrackerMarke() {
   const gewuenscht = (params.get("tracker") || "").trim();
   if (!gewuenscht) return;

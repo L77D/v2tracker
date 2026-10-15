@@ -34,7 +34,9 @@ export const TRACKER_VARIANTEN = {
   "8roh": { Klasse: Tracker8roh, beschreibung: "8th Wall roh: jede Messung 1:1, kein Filter, kein Gyro, bei Verlust sofort weg (Nulllinie)" },
   "8lerp": { Klasse: Tracker8lerp, beschreibung: "8roh + Lerp/Slerp auf die letzte Messung (τ lerpPosMs/lerpRotMs) + Schwerkraft-Schiedsrichter, sonst nichts" },
 };
-export const TRACKER_STANDARD = "alt";
+// Rückfall ohne config und bei unbekanntem Namen — gleich STAB.tracker
+// (2026-10-15, Michael: Standard 8lerp statt alt).
+export const TRACKER_STANDARD = "8lerp";
 
 /* Name aus der URL (?tracker=) oder config (STAB.tracker) → Eintrag.
    Unbekannt → Standard mit Warnung (die Sitzung läuft trotzdem). */

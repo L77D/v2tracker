@@ -43,9 +43,9 @@
     (function () {
       var VARIANTEN = [
         { name: "8roh", tag: "roh", titel: "8roh — Nulllinie", sub: "Engine 1:1, kein Filter, kein Gyro, bei Verlust sofort weg" },
-        { name: "alt",  tag: "alt", titel: "alt — PoseStabilizer", sub: "Standard heute; Zapworks-Port, Monate Gerätetests" },
+        { name: "alt",  tag: "alt", titel: "alt — PoseStabilizer", sub: "Standard bis Build 109; Zapworks-Port, Monate Gerätetests" },
         { name: "neu",  tag: "neu", titel: "neu — tracker.js", sub: "messgetrieben; Ausreißer halten, Gyro-Brücke, kein Snap beim Anfahren" },
-        { name: "8lerp", tag: "lerp", titel: "8lerp — roh + Lerp", sub: "8roh + Lerp/Slerp auf die letzte Messung + Schiedsrichter, sonst nichts" },
+        { name: "8lerp", tag: "lerp", titel: "8lerp — roh + Lerp", sub: "Standard seit Build 110; 8roh + Lerp/Slerp auf die letzte Messung + Schiedsrichter" },
       ];
       var basis = location.href.replace(/[?#].*$/, "").replace(/[^/]*$/, "") + "index.html";
       var grid = document.getElementById("grid");
@@ -72,7 +72,7 @@
         grid.innerHTML = "";
         var k = (kInput.value || "000").trim();
         VARIANTEN.forEach(function (v) {
-          var url = basis + "?k=" + encodeURIComponent(k) + "&stats" + (v.name === "alt" ? "" : "&tracker=" + v.name);
+          var url = basis + "?k=" + encodeURIComponent(k) + "&stats&tracker=" + v.name; // immer explizit (Standard wechselt, Build 110)
           var box = document.createElement("div");
           box.className = "box";
           box.innerHTML = '<span class="tag ' + v.tag + '">' + v.name + '</span><h2>' + v.titel + '</h2><div class="sub">' + v.sub + '</div>';
