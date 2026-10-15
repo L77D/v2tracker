@@ -5,6 +5,7 @@
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 import { IDLE } from "./config.js";
+import { roamHalf } from "./idleWander.js";
 
 const DEBUG_PINK = 0xff2fd6;
 const FACECAM_SEGS = 24;
@@ -60,8 +61,7 @@ export class DebugOverlay {
   tick() {
     if (!this.group.visible) return;
     const FigureRoot = this.nodes.FigureRoot;
-    const halfW = (IDLE.markerWidth * IDLE.roamFraction) / 2;
-    const halfH = (IDLE.markerHeight * IDLE.roamFraction) / 2;
+    const { halfW, halfH } = roamHalf(this.nodes);
     const y = 0.0015;
     const a = this.roamRectGeo.attributes.position.array;
     a.set([-halfW, y, -halfH, halfW, y, -halfH, halfW, y, halfH, -halfW, y, halfH]);

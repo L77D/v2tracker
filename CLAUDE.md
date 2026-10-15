@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-13 · Build 107 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
+Stand: 2026-10-14 · Build 108 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session + Animalese-Stimme raus, Anfangston je Antwort + Antworten stehen doppelt so lange mit Lebendig-Phase + Lauffeld: ganze Figur bleibt auf der Karte · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
 
 ## Projekt
 
@@ -58,7 +58,11 @@ Eck-Marker · Karte verloren = Menü eingefroren, nicht bedienbar.
   Build 82: 0.4; Build 84, Michael 2026-10-09: `figureScale 0.5`; Build 85:
   Hüpf-Icon doppelt so groß, `ACTFX.iconHeight 0.68`; Build 97: FigureRoot-Höhe
   skaliert mit figureScale — vorher schwebte die Figur —, Lauffeld `IDLE`
-  = Karte 63 × 88 mm × `roamFraction 1.1`, höchstens 10 % größer) ·
+  = Karte 63 × 88 mm × `roamFraction 1.1`; seit Build 108, Michael
+  2026-10-14: die ganze Figur bleibt auf der Karte — `roamHalf()` in
+  idleWander.js zieht die Fußhalbbreite (`IDLE.footFraction 0.62` der
+  Leinwand × Ruhe-Scale der Figur) vom Kartenrand ab, ≈ 55 % × 68 % der
+  Karte; `roamFraction` gibt es nicht mehr) ·
   Panel-Raster in Titelzeilen-Blau, beginnt 20 % unter der Panel-Oberkante
   (Splash-Raster bleibt gelb) · Icon ohne Schlagschatten · „Ich muss weiter"
   nur im Hauptmenü · Ruhezustand + Karte verloren: Panel-Zeile wechselt auf
@@ -197,6 +201,17 @@ synchron halten.
   (window.open braucht die Nutzergeste). Ausstieg → Fazit → Abschied →
   `activation.playOut()` (Figur klappt ein) → Phase `resting` → Tap auf die
   Karte → Wiedereinstieg (beiläufige Zeile, Zustand bleibt).
+  **Build 108 (Michael 2026-10-14):** jede Antwort beginnt mit einem
+  Anfangston (`sound.bubbleOpen()`, zwei steigende Rechteck-Töne, ~85 ms,
+  `SOUND.bubble*`, nur Seite 1); das Tippen ist lautlos — Animalese-Stimme
+  (`js/voice.js`, `SOUND.speech*`) und Tipp-Ticks (`SOUND.typeTicks`) sind
+  raus. Lesezeit verdoppelt (Karte 000 `idleReturnMs` 16000, Fallback 11000);
+  `CHOREO.livelyAfterMs` (2 s) nach dem Tippen beginnt die Lebendig-Phase
+  (`scheduleLively` → Pose idle + `wander.setLively(true)`: Umschauen,
+  Gewichtsverlagerung `IDLE.shiftRollMax/shiftFrequency`, Atem ×
+  `livelyBopFactor`, noch ohne Gehen, weil die Blase an der Figur hängt;
+  gilt auch, solange ein Weiter wartet); nach der Lesezeit Blase weg und
+  freies Idle mit Gehen.
 - `js/speechBubble.js` — `paginate()` schneidet am Satzende (Notfall Komma/
   Gedankenstrich, dann Wortgrenze), gemessen am echten Font. Seitenzähler
   „1/3" seit Build 30 aus (`TYPO.pageLabel: false`, Michael 2026-09-07);
@@ -210,7 +225,7 @@ synchron halten.
   ungenutzt.
 - `config.js → POSES`: Emotion-Tag → Körper (idle/affirm/think), bis der Rig
   die elf Posen liefert; die Posenliste der Karte hat Vorrang (s. „Engine und Karten"). `CHOREO`: continueDelayMs, collapseDelayMs,
-  collapseSec, trackingLostMs (Menü friert nach Verlust ein, Suchrahmen kommt),
+  collapseSec, livelyAfterMs (Lebendig-Phase nach dem Tippen, Build 108), trackingLostMs (Menü friert nach Verlust ein, Suchrahmen kommt),
   lostFadeMs/foundFadeMs (Szene aus-/einblenden, je 300 ms).
 - Randzustände: Kamera abgelehnt → `body.camera-denied` (eigener Bildschirm im
   Splash). **Tracking verloren (Build 99, Michael 2026-10-12):** nach der
@@ -295,7 +310,7 @@ anfassen). Vanilla ES-Module, GitHub Pages (liefert NUR `main` aus).
 - **Schalter sind Booleans (Build 89, Refactoring Stufe 3d):** `STAB.enabled`,
   `normalize`, `deadZones`, `lostHold`, `nanGuard`, `snap`, `scaleLock`,
   `gravityArbiter`, `extrapolate`, `GYRO.enabled`, `SOUND.enabled`,
-  `SOUND.typeTicks`, `CHOREO.requireTap`, `ACTFX.hopper`, `TYPO.pageLabel` sind
+  `CHOREO.requireTap`, `ACTFX.hopper`, `TYPO.pageLabel` sind
   `true`/`false` — bis Build 88 die Strings `"ja"`/`"nein"`, verglichen mit
   `!== "nein"` in sieben Modulen. Jedes Einspielen eines Presets läuft über
   `config.applyTuning()` (tuning.json, Dev-Panel-Presets + localStorage-Stand,
@@ -500,8 +515,9 @@ Takte — Messungen (20–30 Hz) filtern mit dem Messtakt als dt, Render-Frames
   Die MindAR-Keys `filterMinCF/filterBeta/missTolerance/warmupTolerance`
   gibt es hier nicht mehr.
 - `CHOREO.tapDebounceMs 120` · `tapMaxPx 6` · `tapMaxMs 400` (Tap-Erkennung,
-  tapInput.js) · `idleReturnMs 5500` als Fallback — die Karte (`idleReturnMs` in
-  daten.json, heute 8000) hat Vorrang.
+  tapInput.js) · `idleReturnMs 11000` als Fallback — die Karte (`idleReturnMs` in
+  daten.json, heute 16000; beides seit Build 108 verdoppelt) hat Vorrang ·
+  `livelyAfterMs 2000`.
 - Feature-Toggles 1–10 im Dev-Panel (`?dev`), Nr. 9 = Scale-Lock, Nr. 10 =
   Schwerkraft-Schiedsrichter (Pose-Flip).
 

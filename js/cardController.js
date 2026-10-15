@@ -40,7 +40,8 @@ export class CardController {
     this.onSearch = onSearch;
     this.searching = false;   // Suchrahmen nach Verlust steht (onSearch(true) gerufen)
     // Timer nach Namen (2026-09-15): idle = Lesezeit, next = automatisches
-    // Weiter, lost = Menü einfrieren nach Tracking-Verlust. setT/clearT statt
+    // Weiter, lost = Menü einfrieren nach Tracking-Verlust, lively = Beginn
+    // der Lebendig-Phase nach einer Antwort (2026-10-14). setT/clearT statt
     // drei Feldern mit je eigenem clearTimeout-Block.
     this.timers = {};
     this.pendingContinue = null;
@@ -52,6 +53,7 @@ export class CardController {
   /* Replay (Dev-Panel): kompletter Reset + erneuter „Scan". */
   replay() {
     this.clearTimers();
+    this.wander.setLively(false);
     this.setSearching(false);
     this.activation.cancel();
     this.fx?.stop();
@@ -148,14 +150,18 @@ export class CardController {
     const pages = this.bubble.paginate(markup);
     const step = (i) => {
       this.menu.clear();
+      this.endLively();
       this.speaking = true;
       this.wander.setAttending(!opts.first);
       this.face.setTalking(true);
       this.setPose(poseFor(tag, this.data.figur?.posen));
+      // Anfangston nur auf Seite 1 (2026-10-14, Michael) — Weiterblättern bleibt still
+      if (i === 0) sound.bubbleOpen();
       const label = pages.length > 1 ? (i + 1) + "/" + pages.length : ""; // Seitenzähler; Anzeige per TYPO.pageLabel (seit Build 30 aus)
       this.bubble.setText(pages[i], () => {
         this.speaking = false;
         this.face.setTalking(false);
+        this.scheduleLively();
         if (i + 1 < pages.length) this.waitContinue(() => step(i + 1), "Weiter");
         else onDone?.();
       }, label);
@@ -253,6 +259,7 @@ export class CardController {
   /* Figur klappt in die Karte zurück; Tracking läuft weiter, Zustand bleibt. */
   collapse() {
     this.cancelIdleReturn();
+    this.endLively();
     this.phase = "resting";
     this.bubble.hide();
     this.face.setTalking(false);
@@ -336,4 +343,21 @@ export class CardController {
     }, delay);
   }
   cancelIdleReturn() { this.clearT("idle"); }
+  /* Lebendig-Phase (2026-10-14, Michael): die Antwort steht doppelt so lange
+     (idleReturnMs), dafür bleibt die Figur nur CHOREO.livelyAfterMs nach dem
+     Tippen ruhig — dann Pose zurück auf idle, Umschauen und
+     Gewichtsverlagerung am Platz (IdleWander.setLively), noch ohne Gehen,
+     weil die Blase an der Figur hängt. Gilt auch, solange ein Weiter wartet.
+     Gehen erst nach der Lesezeit (scheduleIdleReturn → setAttending(false)). */
+  scheduleLively() {
+    this.setT("lively", () => {
+      if (this.phase !== "live" || this.speaking) return;
+      this.setPose("idle");
+      this.wander.setLively(true);
+    }, CHOREO.livelyAfterMs);
+  }
+  endLively() {
+    this.clearT("lively");
+    this.wander.setLively(false);
+  }
 }

@@ -23,7 +23,10 @@ function attrappen() {
     setText: (text, onDone, label) => { calls.push("bubble.setText"); bubble.text = text; bubble.onDone = onDone; bubble.label = label; },
   };
   const face = { setTalking: rec("face.setTalking") };
-  const wander = { reset: rec("wander.reset"), setBusy: rec("wander.setBusy"), setAttending: rec("wander.setAttending") };
+  const wander = {
+    reset: rec("wander.reset"), setBusy: rec("wander.setBusy"), setAttending: rec("wander.setAttending"),
+    setLively: (v) => { calls.push("wander.setLively(" + v + ")"); wander.lively = v; },
+  };
   const activation = {
     cancel: rec("activation.cancel"), prime: rec("activation.prime"),
     play: (cb) => { calls.push("activation.play"); cb(); },
@@ -89,6 +92,24 @@ test("Blasen-Tap: überspringt beim Tippen, löst Weiter aus, sonst nichts", () 
   c.waitContinue(() => calls.push("weiter"), "Weiter");
   assert.equal(c.onBubbleTapped(), true);
   assert.ok(calls.includes("weiter"));
+  c.clearTimers();
+});
+
+test("Lebendig-Phase: livelyAfterMs nach dem Tippen Pose idle + lebendig, nächste Antwort beendet sie", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const { c, bubble, nodes, wander } = controller();
+  c.onCardSeen(); c.onCardTapped(); bubble.onDone(); // Begrüßung → Hub
+  const q = c.data.questions.find((x) => !x.end && !x.link);
+  c.answerQuestion(q);
+  c.setPose("affirm"); // Antwort-Pose, unabhängig vom Tag der Frage
+  bubble.onDone();
+  t.mock.timers.tick(CHOREO.livelyAfterMs - 1);
+  assert.notEqual(wander.lively, true, "vorher ruhig");
+  t.mock.timers.tick(1);
+  assert.equal(wander.lively, true);
+  assert.equal(nodes.bodies.idle.visible, true, "Pose zurück auf idle");
+  c.answerQuestion(c.data.questions.find((x) => x !== q && !x.end && !x.link));
+  assert.equal(wander.lively, false, "neue Antwort beendet die Lebendig-Phase");
   c.clearTimers();
 });
 

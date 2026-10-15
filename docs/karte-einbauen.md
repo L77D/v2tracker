@@ -21,7 +21,7 @@ Nummer: `karten/001/`, Aufruf `?k=001`.
    | `company` | Firmenname (für `{firma}` und den Splash) |
    | `companyLogo` | `logo.webp` (fehlt in der Public-Fassung automatisch) |
    | `companyNeutral` | „der Betrieb" (Notnagel, falls `{firma}` in der Public-Fassung steht) |
-   | `idleReturnMs` | Haltezeit nach einem Text, Standard 8000 |
+   | `idleReturnMs` | Haltezeit nach einem Text, Standard 16000 |
    | `vorschau` | `vorschau.jpg` (Kartenbild für `?desktop`) |
    | `figur` | `posen` (Pose → Bild, `idle` Pflicht), `kopf`, `gesicht` (`neutral`, `blink`, `talk`) |
    | `designs` | je Fassung ein Erkennungsbild: `id`, `fassung` (`firma`/`public`), `name`, `target`, `breiteMm` (63), `qr` (nur Testdrucke: Link wie im gedruckten QR-Code), `notiz` |

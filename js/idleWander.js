@@ -20,6 +20,20 @@ import { rand, normalizeAngle } from "./util.js";
 const _camL = new THREE.Vector3();
 const _headW = new THREE.Vector3();
 
+/* Lauffeld als halbe Breite/Tiefe für den Fuß-Mittelpunkt (2026-10-14,
+   Michael, Build 108): die ganze Figur bleibt auf der Karte. Abstand zum
+   Rand = Fußhalbbreite (IDLE.footFraction der Leinwand, Plane 1024:1536 aus
+   rig.js, × Ruhe-Scale der FigureRoot — folgt also SCENE.figureScale), in
+   beiden Achsen abgezogen, weil die Figur sich dreht. Auch debugOverlay.js. */
+export function roamHalf(nodes) {
+  const scale = nodes.FIGURE_HOME?.scale.x ?? nodes.FigureRoot.scale.x;
+  const foot = (IDLE.footFraction / 2) * (1024 / 1536) * scale;
+  return {
+    halfW: Math.max(0, IDLE.markerWidth / 2 - foot),
+    halfH: Math.max(0, IDLE.markerHeight / 2 - foot),
+  };
+}
+
 export class IdleWander {
   constructor(nodes, frame) {
     this.P = IDLE;
@@ -43,11 +57,13 @@ export class IdleWander {
     this.yawSmooth = this.heading;
     this.walkTarget = null;
     this.attending = false;
+    this.lively = false;
     this.pickNextState(true);
   }
   /* Antwort-Modus: stehen bleiben + zur Kamera drehen; Kopf folgt der Kamera. */
   setAttending(value) {
     this.attending = value;
+    if (!value) this.lively = false;
     if (value) {
       this.walkTarget = null;
       this.state = "face_cam";
@@ -56,12 +72,23 @@ export class IdleWander {
       this.pickNextState(true);
     }
   }
+  /* Lebendig-Phase im Antwort-Modus (CardController.scheduleLively,
+     2026-10-14): Umschauen + Gewichtsverlagerung am Platz, nie Gehen (die
+     Blase hängt an der Figur). Wirkt nur, solange attending gilt. */
+  setLively(value) {
+    this.lively = value;
+    if (!value && this.state === "look_around") {
+      this.state = "bop";
+      this.stateTime = 0;
+      this.stateDuration = rand(this.P.bopHoldMin, this.P.bopHoldMax);
+    }
+  }
   /* Replay-Reset (Dev-Panel): sauber zurück auf Anfang. */
   reset() {
     this.state = "bop"; this.stateTime = 0; this.clock = 0;
     this.heading = 0; this.rollSmooth = 0;
     this.yawSmooth = 0; this.walkTarget = null;
-    this.attending = false; this.busy = false;
+    this.attending = false; this.lively = false; this.busy = false;
     this.headSmoothY = this.headBaseRotY; this.headSmoothX = this.headBaseRotX;
     this.element.rotation.y = 0;
     this.element.rotation.z = this.figureBaseRotZ();
@@ -94,9 +121,12 @@ export class IdleWander {
       }
     }
     if (this.state === "face_cam") { this.doFaceCam(dt, camHeading); return; }
+    // Gewichtsverlagerung in der Lebendig-Phase: langsames seitliches Kippen
+    const shift = this.attending && this.lively
+      ? Math.sin(this.clock * this.P.shiftFrequency * Math.PI * 2) * this.P.shiftRollMax : 0;
     switch (this.state) {
       case "bop":
-        this.fadeRoll(dt, 0);
+        this.fadeRoll(dt, shift);
         if (this.attending) {
           this.fadeHead(dt, this.computeHeadTowardCamera());
           this.fadePitch(dt, this.computeHeadPitchTowardCamera());
@@ -106,7 +136,7 @@ export class IdleWander {
         }
         break;
       case "look_around":
-        this.fadeRoll(dt, 0); this.fadeHead(dt, this.headTargetY); this.fadePitch(dt, this.headBaseRotX);
+        this.fadeRoll(dt, shift); this.fadeHead(dt, this.headTargetY); this.fadePitch(dt, this.headBaseRotX);
         break;
       case "walk":
         this.doWalk(dt); this.fadeHead(dt, this.headBaseRotY); this.fadePitch(dt, this.headBaseRotX);
@@ -151,8 +181,7 @@ export class IdleWander {
     let nx = el.position.x + Math.sin(courseYaw) * dist;
     let nz = el.position.z + Math.cos(courseYaw) * dist;
 
-    const halfW = (this.P.markerWidth * this.P.roamFraction) / 2;
-    const halfH = (this.P.markerHeight * this.P.roamFraction) / 2;
+    const { halfW, halfH } = roamHalf(this.nodes);
     let hitEdge = false;
     if (nx > halfW || nx < -halfW) { nx = THREE.MathUtils.clamp(nx, -halfW, halfW); hitEdge = true; }
     if (nz > halfH || nz < -halfH) { nz = THREE.MathUtils.clamp(nz, -halfH, halfH); hitEdge = true; }
@@ -174,8 +203,7 @@ export class IdleWander {
     this.stateDuration = rand(minPause, maxPause);
   }
   pickWalkTarget() {
-    const halfW = (this.P.markerWidth * this.P.roamFraction) / 2;
-    const halfH = (this.P.markerHeight * this.P.roamFraction) / 2;
+    const { halfW, halfH } = roamHalf(this.nodes);
     const pos = this.element.position;
     const camH = this.computeHeadingTowardCamera();
     const thr = (this.P.cameraFacingThreshold * Math.PI) / 180 * 0.9;
@@ -193,7 +221,8 @@ export class IdleWander {
   }
   applyBopScale() {
     const s = (Math.sin(this.clock * this.P.bopFrequency * Math.PI * 2) + 1) / 2;
-    this.nodes.BodyPivot.scale.y = 1 + s * this.P.bopAmplitude;
+    const amp = this.attending && this.lively ? this.P.bopAmplitude * this.P.livelyBopFactor : this.P.bopAmplitude;
+    this.nodes.BodyPivot.scale.y = 1 + s * amp;
     this.nodes.BodyPivot.scale.x = 1;
   }
   computeHeadingTowardCamera() {
@@ -271,6 +300,14 @@ export class IdleWander {
       return;
     }
     if (this.attending) {
+      // Lebendig-Phase: ab und zu umschauen (Kopf kommt danach im bop zur
+      // Kamera zurück) — Gehen und look_cam bleiben dem freien Idle vorbehalten
+      if (this.lively && Math.random() < this.P.lookChance) {
+        this.state = "look_around";
+        this.headTargetY = this.headBaseRotY + (Math.random() < 0.5 ? -1 : 1) * rand(this.P.headLookMax * 0.4, this.P.headLookMax);
+        this.stateDuration = rand(this.P.actionMin, this.P.actionMax);
+        return;
+      }
       this.state = "bop";
       this.stateDuration = rand(this.P.bopHoldMin, this.P.bopHoldMax);
       return;

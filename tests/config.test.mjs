@@ -13,7 +13,6 @@ test("kein Schalter in config.js ist noch ein String „ja“/„nein“", () =>
   }
   assert.equal(typeof GYRO.enabled, "boolean");
   assert.equal(typeof SOUND.enabled, "boolean");
-  assert.equal(typeof SOUND.typeTicks, "boolean");
   assert.equal(typeof TYPO.pageLabel, "boolean");
   assert.equal(typeof CHOREO.requireTap, "boolean");
   assert.equal(typeof ACTFX.hopper, "boolean");
@@ -27,13 +26,13 @@ test("uebersetzeSchalter: nur „ja“/„nein“ werden übersetzt, alles ander
 test("applyTuning: altes Preset (Strings) und neues Preset (Booleans) laden gleich", () => {
   const alt = { STAB: { ...STAB }, GYRO: { ...GYRO }, SOUND: { ...SOUND } };
   try {
-    assert.equal(applyTuning({ STAB: { enabled: "nein", snap: "nein", minCutoff: 0.2 }, GYRO: { enabled: "nein" }, SOUND: { speech: "aus" } }), true);
+    assert.equal(applyTuning({ STAB: { enabled: "nein", snap: "nein", minCutoff: 0.2 }, GYRO: { enabled: "nein" }, SOUND: { theme: "soft" } }), true);
     assert.equal(STAB.enabled, false);
     assert.equal(STAB.snap, false);
     assert.equal(STAB.minCutoff, 0.2);
     assert.equal(STAB.normalize, true); // unberührt
     assert.equal(GYRO.enabled, false);
-    assert.equal(SOUND.speech, "aus");
+    assert.equal(SOUND.theme, "soft");
     applyTuning({ STAB: { enabled: true, snap: true }, GYRO: { enabled: true } });
     assert.equal(STAB.enabled, true);
     assert.equal(GYRO.enabled, true);

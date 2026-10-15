@@ -5,7 +5,7 @@
   "company": "Siemens",
   "companyLogo": null,
   "companyNeutral": "der Betrieb",
-  "idleReturnMs": 8000,
+  "idleReturnMs": 16000,
   "vorschau": "vorschau.jpg",
   "figur": {
     "posen": {
