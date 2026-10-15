@@ -139,7 +139,7 @@ export const CHOREO = {
 export const SCENE = {
   cardWidth: 0.059,  // SZENEN-Einheit der Kartenbreite (Karte 59 × 91 mm hochkant, Michael
                      // 2026-09-07; vorher 0.17 → 0.095). Die PHYSISCHE Breite fürs Tracking
-                     // kommt seit Build 57 aus targets/8thwall/karten.json (breiteMm).
+                     // kommt seit Build 57 aus daten.json der Karte (designs[].breiteMm).
   cardAspect: 88 / 63,     // Höhe/Breite der Karte in Anchor-Einheiten → Eck-Marker, Tap-Fläche,
                            // Desktop-Plane. 2026-10-12 (Michael, Build 98): 1,40 = gedruckte
                            // Karte 63×88 mm (Druckspezifikation, P04). Bis Build 97 stand hier

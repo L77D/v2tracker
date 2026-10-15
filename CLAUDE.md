@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-15 · Build 110 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session + Animalese-Stimme raus, Anfangston je Antwort + Antworten stehen doppelt so lange mit Lebendig-Phase (Gewichtsverlagerung seit Build 109 wieder raus) + Lauffeld: ganze Figur bleibt auf der Karte + Standard-Tracker `8lerp` (Build 110) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
+Stand: 2026-10-15 · Build 111 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session + Animalese-Stimme raus, Anfangston je Antwort + Antworten stehen doppelt so lange mit Lebendig-Phase (Gewichtsverlagerung seit Build 109 wieder raus) + Lauffeld: ganze Figur bleibt auf der Karte + Standard-Tracker `8lerp` (Build 110) + Refactoring 2026-10-15: Characterization Tests + Browser-Snapshot, Tracker alt/neu/8roh ins Archiv `archiv/tracker-varianten/`, tote Reste raus, STAB auf 8lerp-Werte reduziert (Build 111) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
 
 ## Projekt
 
@@ -222,8 +222,7 @@ synchron halten.
   Fragen mit Reitern NEU/LINK/✅) · options · next · idle; Optik siehe „UI".
   Ausstieg als Kachel (`engine.exitQuestion()`). Link-Frage „link" ist seit
   Build 31 eine normale Frage im Thema `wege` (Reiter LINK, „Seite öffnen" →
-  neuer Tab), freigeschaltet durch „bewerbung"; `permaQuestions()` bleibt
-  ungenutzt.
+  neuer Tab), freigeschaltet durch „bewerbung".
 - `config.js → POSES`: Emotion-Tag → Körper (idle/affirm/think), bis der Rig
   die elf Posen liefert; die Posenliste der Karte hat Vorrang (s. „Engine und Karten"). `CHOREO`: continueDelayMs, collapseDelayMs,
   collapseSec, livelyAfterMs (Lebendig-Phase nach dem Tippen, Build 108), trackingLostMs (Menü friert nach Verlust ein, Suchrahmen kommt),
@@ -344,8 +343,10 @@ anfassen). Vanilla ES-Module, GitHub Pages (liefert NUR `main` aus).
   Kartendaten im Projektordner: `Karten/<nr>_<firma>_<beruf>/Export/<nr>/` = `karten/<nr>/` hier
   (Übernahme per `_Karte übernehmen.app`, 2026-10-08).
   Das Skript patcht Quelltextzeilen per `assert` (markiert mit
-  „Patch-Anker build-lokal-prototyp.py" in main.js, config.js, rig.js,
-  supportUI.js, kartenLader.js, desktopMode.js) — Wortlaut dort nicht ändern.
+  „Patch-Anker build-lokal-prototyp.py" in main.js, rig.js, supportUI.js,
+  kartenLader.js, desktopMode.js; in config.js ist die tuning.json-Fetch-Zeile
+  OHNE Marker-Kommentar der Anker) — Wortlaut dort nicht ändern;
+  `tests/vertrag.test.mjs` prüft alle Anker.
   Seit Build 63 bettet es `karten/` ein (Bilder als data:-URIs, JSON als
   `window.__JSON`, ohne `targets/`).
   **Feinschliff (Michael 2026-09-04), seit Build 22 live, seit Build 61 direkt
@@ -362,15 +363,26 @@ anfassen). Vanilla ES-Module, GitHub Pages (liefert NUR `main` aus).
   werden die DOM-freien Module: dialogEngine, edition, bubbleText, poseArbiter
   (three.js aus `vendor/` läuft in Node), jitterMetrics und die Regeln in
   `tools/kartenpruefung.js` — die Prototyp-Karte 000 muss dort fehlerfrei
-  bleiben. Datengrundlage lädt `tests/karte.mjs`. Seit Build 88 auch der
-  **PoseStabilizer**: `tests/stabilizerSzenario.mjs` (gefälschte Uhr + Gyro,
-  feste Tracking-Werte `STAB_FEST`, 1300 Ticks durch alle Stufen; läuft auch
-  durch jede Tracker-Variante, s. „Tracker-Varianten") gegen den
-  Goldstandard `tests/fixtures/poseStabilizer.golden.json` (Stand Build 87)
-  je Feature-Schalter-Variante, Toleranz 1e-9. Der Goldstandard bricht bei
-  JEDER Verhaltensänderung im Filter — gewollt; bei einer gewollten Änderung
-  mit dem Stand davor neu erzeugen (Anleitung im Kopf von
-  `tests/poseStabilizer.test.mjs`); Tuning in config.js berührt ihn nicht.
+  bleiben. Datengrundlage lädt `tests/karte.mjs`. Seit Build 88 ein
+  **Goldstandard** für den Tracker: `tests/stabilizerSzenario.mjs` (gefälschte
+  Uhr + Gyro, feste Tracking-Werte `STAB_FEST`, 1300 Ticks durch alle Phasen)
+  gegen `tests/fixtures/tracker8lerp.golden.json` (Stand Build 110, erzeugt
+  2026-10-15; bis Build 110 `poseStabilizer.golden.json`, jetzt im Archiv) je
+  Feature-Schalter-Variante, Toleranz 1e-9. Der Goldstandard bricht bei JEDER
+  Verhaltensänderung im Filter — gewollt; bei einer gewollten Änderung mit dem
+  Stand davor neu erzeugen (`SNAPSHOT_SCHREIBEN=1 node --test
+  tests/tracker8lerp.test.mjs`); Tuning in config.js berührt ihn nicht.
+  **Characterization Tests (Build 111, Refactoring 2026-10-15):** Snapshot-
+  Tests über `tests/snapshot.mjs` (Fixtures `tests/fixtures/*.json`, neu
+  schreiben nur bei gewollter Änderung mit `SNAPSHOT_SCHREIBEN=1`) für
+  Kartenlader, Sprechblase (Canvas-Attrappe), Menü (Mini-DOM
+  `tests/domAttrappe.mjs`), IdleWander, Animationen, Gyro, Tap, Vorabprüfung,
+  Sound, Controller-Abläufe und Verträge nach außen (`tests/vertrag.test.mjs`:
+  Patch-Anker, DOM-IDs, config-Defaults, Kompatibilitäts-Syntax). Dazu
+  `node tools/browser-check.mjs` (headless Chromium: Boot-Zustände je URL,
+  Übersichtsseiten, Desktop-Ablauf, Messwerte; `--schreiben` erneuert
+  `tests/fixtures/browser.snapshot.json`) und `docs/pruefschritte-manuell.md`
+  für alles mit Kamera/Engine/Gyro/Audio.
   Vor jedem Push laufen lassen; wer eine Regel in Regelwerk/Prüfseite
   ändert, zieht den Test nach.
 - Kommentare/Commits auf Deutsch, Commit-Trailer `Co-Authored-By: Claude`.
@@ -406,6 +418,11 @@ StatsOverlay, attachDevTools}` an die Module:
   sammelt `js/` rekursiv, neue Module brauchen dort nichts.
 
 ## Tracking-Architektur
+
+**Seit Build 111 läuft an der Stelle „PoseStabilizer.tick()" der Tracker
+`8lerp` (s. „Tracker"); die Stufenbeschreibung darunter (NaN-Guard → Scale-Lock →
+Median → One-Euro …) ist die des archivierten PoseStabilizers und bleibt als
+Herleitung stehen.**
 
 ```
 8th Wall XrController (xr-tracking.js) → reality.imagefound/imageupdated/imagelost
@@ -447,63 +464,40 @@ adaptives Rotations-SLERP → Dead-Zones (nur Ruhe). GyroFusion liefert
 Kamera-Dreh-Deltas (Akkumulations-Dead-Band: qPrev rückt nur bei angewendetem
 Delta vor) als Prediction + Verlust-Brücke.
 
-## Tracker-Varianten (Build 92, 2026-10-12, `js/trackerWahl.js`)
+## Tracker (seit Build 111 nur `8lerp`, `js/trackerWahl.js`)
 
-Mehrere Tracking-Filter liegen parallel im Code, EINE Variante läuft je
-Sitzung: `?tracker=<name>` in der URL, sonst `STAB.tracker` in config.js
-(seit Build 110 `"8lerp"`, Michael 2026-10-15 nach dem Handytest — vorher `"alt"`; `TRACKER_STANDARD` in trackerWahl.js gleich); unbekannter Name → Standard mit Warnung in der Konsole. Ohne Flag läuft also auch bei gedruckten QR-Codes 8lerp; `tracker-vergleich.html` setzt `&tracker=` seit Build 110 immer explizit.
-Umschalten = Seite neu laden. `?stats` zeigt Name und Beschreibung.
-**`tracker-vergleich.html`** (Build 94): QR-Codes für den Gerätevergleich (seit Build 105 vier, mit `8lerp`),
-je Variante mit `?stats`, Karte wählbar; Links zeigen auf die Auslieferung,
-in der die Seite liegt (Testlink oder Tunnel). Diese
-Codebasis ist intern (Michael 2026-10-12): am Ende fällt eine Entscheidung,
-der Gewinner wird Standard, Verlierer fliegen samt Tests und Goldstandard
-raus, die Engine wird bereinigt ausgeliefert.
+Bis Build 110 lagen vier Tracking-Filter parallel im Code (`alt` =
+PoseStabilizer, `neu` = tracker.js, `8roh` = Nulllinie, `8lerp`); Michael hat
+am 2026-10-15 entschieden: **8lerp bleibt, alt/neu/8roh gehen ins Archiv**
+`archiv/tracker-varianten/` (unverändert, mit README zum Reaktivieren; für die
+Übergabe an die Produktion wird später separat aufgeräumt). `?tracker=<name>`
+in der URL und `STAB.tracker` in config.js wählen weiterhin; ein unbekannter
+Name (auch `alt`, `neu`, `8roh`) fällt mit Konsolenwarnung auf `8lerp` zurück,
+die Marke oben rechts zeigt dann „alt? → 8lerp". `tracker-vergleich.html`
+liegt ebenfalls im Archiv.
 
-| Name | Modul | Stand |
-|---|---|---|
-| `alt` | `js/poseStabilizer.js` | Standard bis Build 109. Zapworks-Port, liest `anchor.matrix` je Frame, Monate Gerätetests, Goldstandard-Test |
-| `neu` | `js/tracker.js` | messgetrieben (Build 91), nur Szenario-Tests, kein Gerätetest |
-| `8roh` | `js/tracker8roh.js` | Nulllinie (Build 93): jede Messung 1:1, kein Filter, kein Gyro, kein Schiedsrichter, bei Verlust sofort weg; in `?stats` ist roh = stab, die Rauschzahl ist die der Engine; Pose-Flip und Treppensignal absichtlich sichtbar; Schalter 1–10 ohne Wirkung. Jede Filtervariante muss das messbar schlagen. (Nicht dasselbe wie Schalter 1 „Glättung aus" im alten Filter — dort laufen Haltezeit und Rest der Kette weiter.) |
-| `8lerp` | `js/tracker8lerp.js` | **Standard seit Build 110** (Michael 2026-10-15). Build 105 (Michael 2026-10-13: „die Summe der Filter in alt/neu macht die UX ruckelig"): 8roh + Lerp/Slerp im Render-Takt auf die letzte Messung (framerate-unabhängig, a = 1 − exp(−dt/τ), τ = `STAB.lerpPosMs`/`lerpRotMs` 50 ms, Dev-Panel-Regler) + Schwerkraft-Schiedsrichter auf jeder Messung — sonst NICHTS (kein Modus, keine Dead-Zone, kein Median, keine Ausreißer-Regel, keine Haltezeit, kein Gyro-Delta). Bei Verlust sofort weg (SceneFade blendet), beim Wiederfinden gleitet sie von der letzten Pose (kein Snap); nicht-endliche Messung wird nur nicht zum Ziel (sonst bliebe der Zustand NaN). Schalter 1 (aus = 1:1) und 10 wirken. Vergleichsszenario: Ruhe-Zittern 0,035 mm (8roh 0,156), Nachlauf 3 cm/s 1,8 mm (≈ v·τ), Ausreißer sichtbar gedämpft (51 mm statt 80 mm, klingt über ~τ ab). **Zurückgestellt (Michael 2026-10-13, „für später merken"):** kurze Haltezeit bei Verlust (`lostHoldMs`), Snap beim Wiederfinden, NaN-Schutz, Gyro-Brücke/-Kompensation (gegen Nachhinken bei Handy-Drehung, am Gerät prüfen). |
+**`8lerp`** (`js/tracker8lerp.js`, Build 105, Standard seit Build 110 —
+Michael 2026-10-13: „die Summe der Filter in alt/neu macht die UX ruckelig"):
+8th-Wall-Messung 1:1 + Lerp/Slerp im Render-Takt auf die letzte Messung
+(framerate-unabhängig, a = 1 − exp(−dt/τ), τ = `STAB.lerpPosMs`/`lerpRotMs`
+50 ms, Dev-Panel-Regler) + Schwerkraft-Schiedsrichter (`js/poseArbiter.js`)
+auf jeder Messung — sonst NICHTS (kein Modus, keine Dead-Zone, kein Median,
+keine Ausreißer-Regel, keine Haltezeit, kein Gyro-Delta). Bei Verlust sofort
+weg (SceneFade blendet), beim Wiederfinden gleitet sie von der letzten Pose
+(kein Snap); nicht-endliche Messung wird nur nicht zum Ziel. Schalter 1 (aus =
+1:1) und 10 wirken. **Zurückgestellt (Michael 2026-10-13, „für später
+merken"):** kurze Haltezeit bei Verlust, Snap beim Wiederfinden, NaN-Schutz,
+Gyro-Brücke/-Kompensation (am Gerät prüfen).
 
 **Vertrag einer Variante** (steht im Kopf von trackerWahl.js): Konstruktor
 `(target, gyro)` mit `measure(matrix)` je neuer Messung ODER `(source, target,
 gyro)` mit eigenem Lesen in `tick()`; `onFound/onLost/reacquire/tick/snapshot`;
 Ausgabe `target.matrix` = Pose × Scale + `target.visible` (target = `poseTarget`
 in arSession, seit Build 99 nicht mehr stabRoot selbst — SceneFade blendet
-weich). `baueTracker()` wählt den Bauweg,
-arSession ruft `measure()` nur, wenn es die Klasse hat (Flag `fresh` bei
-`imagefound`/`imageupdated`). Dritte Variante: Modul anlegen, in
-`TRACKER_VARIANTEN` eintragen, in `tests/tracker.test.mjs` in den Vergleich
-aufnehmen — Szenario und Vergleich laufen mit jeder Klasse, die den Vertrag
-hält. Alle Varianten werden statisch geladen (je ~15 KB); ab der dritten
-besser per `import()` erst in `startAR`.
-
-**`neu` gegenüber `alt`** (aus dem Code hergeleitet, Vergleichsszenario mit
-bekannter Wahrheit in `tests/tracker.test.mjs`, 0,2 mm/0,1° Rauschen): zwei
-Takte — Messungen (20–30 Hz) filtern mit dem Messtakt als dt, Render-Frames
-(60 Hz) nur Gyro-Kompensation, Verlust-Haltung, Extrapolation, Schreiben.
-- **Ausreißer** = Sprung gegenüber der LETZTEN Messung, nicht „fern vom
-  geglätteten Zustand": eine einzelne ferne Messung wird exakt gehalten (alt:
-  2,5 mm und 7° Nachziehen über ~1 s). Fern vom Zustand, aber zusammenhängend
-  = der Filter hinkt → Bewegt-Modus erzwingen statt Snap (alt snappt bei
-  Anfahrt > ~4 cm/s aus der Ruhe: neun Snaps im Goldstandard-Szenario). Ein
-  Sprung mit zusammenhängender Folgemessung ist echt → Snap + Median.
-- **Verlust-Haltung** nach „Gyro lebt" (`getOrientation()` liefert) und
-  Schalter 7 — nicht nach dem einzelnen Delta, das bei ruhiger Hand fehlt
-  (alt: 250 ms statt 1,2 s Brücke, sobald die Hand still ist).
-- **Schiedsrichter** nur auf echten Messungen; keine Stale-Erkennung, kein
-  Scale-Lock, keine Normierungsstufe (Kartenbreiten ab der Messung).
-- **beta-Gate bleibt** (nur im Bewegt-Modus): beta 10 ist als Öffnung bei
-  Bewegung kalibriert; ungegated öffnet schon 0,2 mm Rauschen den Filter auf
-  ~0,6 Hz (Befund beim Bau, Szenario-Ruhezittern 0,37 mm).
-- Schalter ohne Wirkung bei `neu`: 2 normalize, 5 nanGuard (immer an), 9 scaleLock.
-- Gleich gut im Vergleichsszenario: Ruhe (0,12 mm Lagefehler, 0 Zittern),
-  Bewegung 3 cm/s (0,6 mm / 0,9° Nachlauf). Nulllinie `8roh` im selben
-  Szenario: Ruhe 0,34 mm Fehler / 0,16 mm Zittern, Ausreißer voll (80 mm, 40°),
-  bei Verlust 0 Frames sichtbar. Offen: Gerätevergleich (?stats, F0–F4); die
-  One-Euro-Werte sind unverändert übernommen (Cutoffs in Hz).
+weich). `baueTracker()` wählt den Bauweg, arSession ruft `measure()` nur, wenn
+es die Klasse hat (Flag `fresh` bei `imagefound`/`imageupdated`). Neue
+Variante: Modul anlegen, in `TRACKER_VARIANTEN` eintragen, Goldstandard über
+`tests/stabilizerSzenario.mjs` anlegen (Vorbild `tests/tracker8lerp.test.mjs`).
 
 ## Aktuelle Kern-Werte (config.js)
 

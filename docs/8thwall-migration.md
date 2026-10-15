@@ -268,8 +268,10 @@ das Nötigste reduziert — PNGs bewusst noch nicht (kommt separat):
 
 - Prüfstand-Seiten (`Tracking-Pruefstand/`) importieren noch MindAR-Pfade und
   müssten für einen A/B nachgezogen werden.
-- Stabilizer-A/B am Gerät (welche der 9 Toggles noch etwas bringen) — dann
-  `js/poseStabilizer.js` + `gyroFusion.js` entsprechend kürzen.
+- ~~Stabilizer-A/B am Gerät (welche der 9 Toggles noch etwas bringen) — dann
+  `js/poseStabilizer.js` + `gyroFusion.js` entsprechend kürzen.~~ — erledigt
+  2026-10-15: PoseStabilizer archiviert (`archiv/tracker-varianten/`), `8lerp`
+  ist der Tracker (Build 110/111).
 - ~~Figur-PNGs → WebP~~ — erledigt in `v2tracker-prod` (Abschnitt 7).
 - Ob 8th Wall `detail.scale` bei bewegter Karte wirklich konstant hält (Scale-
   Lock-Annahme) — am Gerät über `Re-Erk.`/„Roh↔Stab" in `?stats` ablesen.

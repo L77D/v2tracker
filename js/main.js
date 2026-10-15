@@ -52,7 +52,7 @@ const log = (...a) => { if (DEV_LOG) console.log(...a); };
 
 // Kontext für die Module (gefüllt in boot()): Karte (Content) kommt seit
 // Build 63 aus karten/<id>/daten.json + dialog.json (js/kartenLader.js,
-// ?k=<id>) — vorher statischer Import von cards/elektroniker.js. `design` =
+// ?k=<id>) — bis Build 62 statischer Import einer Kartendatei. `design` =
 // gewähltes Kartenbild fürs Tracking (?design). `gyro` wird in der START-Geste
 // angelegt (iOS-Permission). Dev-Module werden NUR mit ihrem URL-Flag geladen
 // (kein Byte davon im Normalfall): ?debug → debugOverlay.js · ?stats →
