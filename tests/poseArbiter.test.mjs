@@ -8,7 +8,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as THREE from "../vendor/three/three.module.js";
-import { arbitrateUpright } from "../js/poseArbiter.js";
+import { arbitrateUpright, Q_SCREEN_UP } from "../js/poseArbiter.js";
 
 const DEG = Math.PI / 180;
 const X = new THREE.Vector3(1, 0, 0);
@@ -114,4 +114,76 @@ test("allgemeine Lage: Karte seitlich im Bild und um die eigene Achse gedreht", 
   const q2 = qTrue.clone();
   assert.equal(arbitrateUpright(pos, q2, qEarth, MARGIN, {}).flipped, false);
   nahe(q2.angleTo(qTrue), 0);
+});
+
+/* ---- Bildschirm-Oben-Prior (Build 113, ohne Gyro) ---------------------------
+   Referenz = Kamera-+Y statt Erd-Z. In der Tisch-Szene oben zeigt die wahre
+   Normale nach Bildschirm-oben (n.y = sin kipp > 0), die Spiegel-Lösung nach
+   unten — der Prior entscheidet identisch zum Gyro-Schiedsrichter. */
+const Y = new THREE.Vector3(0, 1, 0);
+const nY = (q) => Z.clone().applyQuaternion(q).y;
+
+test("Q_SCREEN_UP: z-Anteil im Oben-Frame = y-Anteil im Kamera-Frame", () => {
+  const v = new THREE.Vector3(0.2, 0.7, -0.3);
+  nahe(v.clone().applyQuaternion(Q_SCREEN_UP).z, v.y);
+  nahe(Y.clone().applyQuaternion(Q_SCREEN_UP).z, 1);
+});
+
+test("Prior, Tisch 15°–75°: Spiegel wird exakt zurückgedreht, wahre Pose bleibt", () => {
+  for (const kipp of [15, 30, 45, 60, 75]) {
+    const { pos, qTrue } = szene(kipp);
+    assert.ok(nY(qTrue) > 0 && nY(spiegel(pos, qTrue)) < 0, `Kipp ${kipp}: wahre Normale nach Bildschirm-oben, Spiegel nach unten`);
+    const q = spiegel(pos, qTrue);
+    const out = arbitrateUpright(pos, q, Q_SCREEN_UP, MARGIN, {});
+    assert.equal(out.flipped, true, `Kipp ${kipp}: Spiegel korrigiert`);
+    nahe(q.angleTo(qTrue), 0);
+    nahe(out.zChosen, Math.sin(kipp * DEG));
+    const q2 = qTrue.clone();
+    assert.equal(arbitrateUpright(pos, q2, Q_SCREEN_UP, MARGIN, {}).flipped, false, `Kipp ${kipp}: wahre Pose bleibt`);
+    nahe(q2.angleTo(qTrue), 0);
+  }
+});
+
+test("Prior, Karte seitlich im Bild und gedreht: wie mit Gyro", () => {
+  const pos = new THREE.Vector3(1.2, -0.7, -4);
+  const qTrue = szene(40).qTrue.multiply(new THREE.Quaternion().setFromAxisAngle(Z, 30 * DEG));
+  const q = spiegel(pos, qTrue);
+  assert.equal(arbitrateUpright(pos, q, Q_SCREEN_UP, MARGIN, {}).flipped, true);
+  nahe(q.angleTo(qTrue), 0);
+  const q2 = qTrue.clone();
+  assert.equal(arbitrateUpright(pos, q2, Q_SCREEN_UP, MARGIN, {}).flipped, false);
+});
+
+test("Prior, Frontalsicht: unter 3° keine Entscheidung; Hysterese greift bis ~4,3° (2·sin θ < margin), bei 10° wird entschieden", () => {
+  // Der Oben-Anteil ist hier sin θ statt cos 2θ — der Unterschied der Kandidaten
+  // (2·sin θ) wächst schneller als mit der Gyro-Lage (1 − cos 2θ); der Prior
+  // entscheidet also früher. Beide Kandidaten liegen bei 10° nur 20° auseinander.
+  const nah = szene(1);
+  assert.equal(arbitrateUpright(nah.pos, spiegel(nah.pos, nah.qTrue), Q_SCREEN_UP, 0, {}).flipped, false);
+  const s4 = szene(4);
+  assert.equal(arbitrateUpright(s4.pos, spiegel(s4.pos, s4.qTrue), Q_SCREEN_UP, MARGIN, {}).flipped, false, "2·sin 4° = 0,14 < 0,15");
+  const { pos, qTrue } = szene(10);
+  const q = spiegel(pos, qTrue);
+  assert.equal(arbitrateUpright(pos, q, Q_SCREEN_UP, MARGIN, {}).flipped, true, "2·sin 10° = 0,35 > 0,15");
+  nahe(q.angleTo(qTrue), 0);
+});
+
+test("Prior, bekannte Grenze: senkrechte Karte von OBEN betrachtet wird gekippt (Characterization)", () => {
+  // Wand: Kartennormale waagerecht zur Kamera; Kamera nickt 30° nach unten → n.y < 0
+  const kamera = new THREE.Quaternion().setFromAxisAngle(X, -30 * DEG);
+  const qTrue = kamera.clone().invert();
+  const pos = new THREE.Vector3(0, 0, -5);
+  assert.ok(nY(qTrue) < 0);
+  const q = qTrue.clone();
+  assert.equal(arbitrateUpright(pos, q, Q_SCREEN_UP, MARGIN, {}).flipped, true, "Prior hält die wahre Pose für die Spiegel-Lösung");
+  nahe(q.angleTo(qTrue), 60 * DEG); // um 2θ gekippt
+  // Dieselbe Grenze hat der Gyro-Schiedsrichter: die Spiegel-Kandidatin der
+  // Wandkarte liegt wie ein Tisch (Normale im Erdframe nach oben, z = sin 60°)
+  // und gewinnt gegen die waagerechte wahre Normale (z = 0).
+  const qEarthWand = new THREE.Quaternion().setFromAxisAngle(X, 90 * DEG).multiply(kamera); // Kamera → Erdframe (Z oben)
+  const qg = qTrue.clone();
+  const out = arbitrateUpright(pos, qg, qEarthWand, MARGIN, {});
+  assert.equal(out.flipped, true);
+  nahe(out.zRaw, 0); nahe(out.zChosen, Math.sin(60 * DEG));
+  nahe(qg.angleTo(q), 0, 1e-6); // beide Referenzen wählen dieselbe (falsche) Lage
 });

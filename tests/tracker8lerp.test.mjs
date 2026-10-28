@@ -2,7 +2,11 @@
    über das Szenario tests/stabilizerSzenario.mjs — jede Variante von KONFIGS,
    dazu τ fest auf 50 ms (STAB.lerpPosMs/lerpRotMs), damit späteres Tuning in
    config.js den Stand nicht bricht. Erzeugt am 2026-10-15 mit dem Stand
-   Build 110 (vor dem Refactoring). Toleranz 1e-9 relativ.
+   Build 110 (vor dem Refactoring); neu erzeugt 2026-10-28 (Build 113): der
+   Schiedsrichter nimmt ohne Gyro-Lage Bildschirm-oben als Referenz — die
+   synthetische Pose des Szenarios (baseQ, Normale leicht nach Bildschirm-unten)
+   wird in allen Phasen ohne qEarth gespiegelt, deshalb änderten sich alle
+   Varianten außer `ohneArbiter`. Toleranz 1e-9 relativ.
 
    Neu erzeugen (nur bei GEWOLLTER Verhaltensänderung, mit dem Stand davor):
      SNAPSHOT_SCHREIBEN=1 node --test tests/tracker8lerp.test.mjs */
@@ -24,7 +28,7 @@ const VARIANTEN = { ...KONFIGS, ohneLerp: { STAB: { lerpPosMs: 0, lerpRotMs: 0 }
 if (process.env.SNAPSHOT_SCHREIBEN) {
   const konfigs = {};
   for (const [name, k] of Object.entries(VARIANTEN)) konfigs[name] = laufSzenario(Tracker8lerp, konfig8lerp(k), { jederTick: name === "standard" ? 1 : 20 });
-  fs.writeFileSync(DATEI, JSON.stringify({ erzeugt: "2026-10-15, js/tracker8lerp.js Stand Build 110, Szenario tests/stabilizerSzenario.mjs", konfigs }) + "\n");
+  fs.writeFileSync(DATEI, JSON.stringify({ erzeugt: "2026-10-28, js/tracker8lerp.js Stand Build 113 (Schiedsrichter mit Bildschirm-Oben-Prior, wo keine Gyro-Lage; vorher 2026-10-15 Build 110), Szenario tests/stabilizerSzenario.mjs", konfigs }) + "\n");
 }
 const golden = JSON.parse(fs.readFileSync(DATEI, "utf8"));
 
@@ -33,7 +37,7 @@ test("8lerp-Goldstandard deckt alle Varianten ab", () => {
 });
 
 for (const [name, k] of Object.entries(VARIANTEN)) {
-  test("8lerp-Szenario „" + name + "“ ist bitidentisch zu Build 110", () => {
+  test("8lerp-Szenario „" + name + "“ ist bitidentisch zum Goldstandard", () => {
     const soll = golden.konfigs[name];
     const ist = laufSzenario(Tracker8lerp, konfig8lerp(k), { jederTick: name === "standard" ? 1 : 20 });
     assert.deepEqual(ist.zaehler, soll.zaehler, "Zähler");

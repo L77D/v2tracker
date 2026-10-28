@@ -1,6 +1,6 @@
 # CLAUDE.md — DETAR WebAR
 
-Stand: 2026-10-28 · Build 113 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session + Animalese-Stimme raus, Anfangston je Antwort + Antworten stehen doppelt so lange mit Lebendig-Phase (Gewichtsverlagerung seit Build 109 wieder raus) + Lauffeld: ganze Figur bleibt auf der Karte + Standard-Tracker `8lerp` (Build 110) + Refactoring 2026-10-15: Characterization Tests + Browser-Snapshot, Tracker alt/neu/8roh ins Archiv `archiv/tracker-varianten/`, tote Reste raus, STAB auf 8lerp-Werte reduziert (Build 111) + Fehlerjagd 2026-10-28: Wiedereinstieg während des Einklappens, Rückfrage nach Link-Antwort, click-Fallback prüft Weg/Dauer, kein Tap bei verlorener Karte, karten.html-Public-Kachel (Build 112) + Start-Geste: Kamera erst nach beantworteter iOS-Bewegungsabfrage, Technik-Zeile auf „Ohne Kamera geht's nicht“ (Build 113) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
+Stand: 2026-10-28 · Build 113 (Haupt-Repo `L77D/v2tracker`: 8th Wall + Entschlackung + Production-Härtung + Editionen (?k=<nr>P) + Kartendesigns + Schwerkraft-Schiedsrichter gegen den Pose-Flip + Refactoring Stufe 1/2 + Handheld-Messwerkzeug in ?stats + Engine/Karten getrennt: karten/<id>/ per ?k + fester Font-Zeichensatz + Regelwerk/Prüfseite für Kartendialoge, Public-Texte + 35 Testdrucke p01–p35 als Designs mit ?karte=<design> + AR-Szene figureScale 0.5, Handy-Icon doppelt + Doku-Verweise auf den Projektordner + Tests `node --test` für die reinen Module = Refactoring Stufe 3a + main.js zerlegt in arSession/experience/tapInput/figureJump = Stufe 3b + PoseStabilizer in Stufen mit `snapshot()` und Goldstandard-Test = Stufe 3c + Schalter als Booleans, `applyTuning()` übersetzt alte Presets = Stufe 3d + Controller ohne DOM, `syncCssVars` beim Menü = Stufe 3e + Tracker-Varianten parallel im Code: `js/tracker.js` messgetrieben, Auswahl `?tracker=<name>` / `STAB.tracker` über `js/trackerWahl.js`, Nulllinie `8roh` + Karte 000: Standard-Design `p04`, `card` und `tarn` aussortiert, `SCENE.cardAspect` 1,40 + Tracking-Verlust: Szene faded (`js/sceneFade.js`), Suchrahmen + „Halte auf die Karte" nach 1,5 s, Eck-Marker bleiben mit der Figur) + Sprechblase billboardet auch in der Neigung (`CHOREO.bubblePitchMax` 70°) + Tracker-Variante `8lerp` = 8roh + Lerp/Slerp + Schiedsrichter + Tracker-Marke oben rechts bei `?tracker=` + Skill „detar-dialog“: Dialog-Generierung samt Prüfprogramm ohne Browser für eine fremde Claude-Session + Animalese-Stimme raus, Anfangston je Antwort + Antworten stehen doppelt so lange mit Lebendig-Phase (Gewichtsverlagerung seit Build 109 wieder raus) + Lauffeld: ganze Figur bleibt auf der Karte + Standard-Tracker `8lerp` (Build 110) + Refactoring 2026-10-15: Characterization Tests + Browser-Snapshot, Tracker alt/neu/8roh ins Archiv `archiv/tracker-varianten/`, tote Reste raus, STAB auf 8lerp-Werte reduziert (Build 111) + Fehlerjagd 2026-10-28: Wiedereinstieg während des Einklappens, Rückfrage nach Link-Antwort, click-Fallback prüft Weg/Dauer, kein Tap bei verlorener Karte, karten.html-Public-Kachel (Build 112) + keine iOS-Bewegungsabfrage mehr: Schiedsrichter mit Bildschirm-Oben-Prior (`Q_SCREEN_UP`), Gyro-Lage nur wo frei (Android), Technik-Zeile auf „Ohne Kamera geht's nicht“ (Build 113) · Ausgeliefert (`main`): https://l77d.github.io/v2tracker/ · Veraltet/Archiv: `L77D/detar` (Build 33, MindAR, https://l77d.github.io/detar)
 
 ## Projekt
 
@@ -398,7 +398,7 @@ anfassen). Vanilla ES-Module, GitHub Pages (liefert NUR `main` aus).
 ## Boot und Szene (seit Build 87, Refactoring Stufe 3b)
 
 `main.js` ist nur noch der Boot (URL-Flags, Vorabprüfung, Karte laden, Splash,
-Start-Geste mit Sound + Gyro-Permission, Fehlerpfade, Dev-Werkzeuge) und
+Start-Geste mit Sound + Gyro-Listener, Fehlerpfade, Dev-Werkzeuge) und
 reicht einen Kontext `ctx` `{card, design, gyro, log, devLog, DebugOverlay,
 StatsOverlay, attachDevTools}` an die Module:
 
@@ -444,7 +444,7 @@ Stufen mit expliziter Rohpose `raw`; nach außen liest nur `snapshot()` —
 statsOverlay greift auf kein Feld mehr direkt zu): NaN-Guard → **Schwerkraft-Schiedsrichter** (Build 59,
 `js/poseArbiter.js`, Toggle 10: aus der Rohpose die Spiegel-Kandidatin der
 ebenen Pose berechnen und die Lage wählen, deren Kartennormale im Erdframe
-nach oben zeigt — nur beta/gamma nötig, ohne Gyro passiv; Hysterese
+nach oben zeigt — nur beta/gamma nötig; seit Build 113 ohne Gyro-Lage Bildschirm-oben statt passiv; Hysterese
 `STAB.arbiterMargin`) → Einheiten-Normierung auf Kartenbreiten →
 **Scale-Lock** (Scale strukturell konstant; >10 % Abweichung = Fehl-Homographie
 → Frame verwerfen; hält die Abweichung `scaleRelockMs` am Stück an → **Re-Lock**
@@ -482,7 +482,12 @@ Michael 2026-10-13: „die Summe der Filter in alt/neu macht die UX ruckelig"):
 8th-Wall-Messung 1:1 + Lerp/Slerp im Render-Takt auf die letzte Messung
 (framerate-unabhängig, a = 1 − exp(−dt/τ), τ = `STAB.lerpPosMs`/`lerpRotMs`
 50 ms, Dev-Panel-Regler) + Schwerkraft-Schiedsrichter (`js/poseArbiter.js`)
-auf jeder Messung — sonst NICHTS (kein Modus, keine Dead-Zone, kein Median,
+auf jeder Messung — Referenz „oben“ seit Build 113 (Michael 2026-10-28) der
+**Bildschirm-Oben-Prior** `Q_SCREEN_UP` (Kamera-+Y: bei Karte auf Tisch/in
+der Hand zeigt die wahre Normale nach Bildschirm-oben, die Spiegel-Lösung nach
+unten; Herleitung `docs/8thwall-migration.md` 9), die Gyro-Lage (Erd-oben) nur,
+wo sie ohne Abfrage vorliegt (Android; `?nogyro` erzwingt den Prior); Grenze
+beider Referenzen: senkrechte Karte von OBEN betrachtet wird gekippt — sonst NICHTS (kein Modus, keine Dead-Zone, kein Median,
 keine Ausreißer-Regel, keine Haltezeit, kein Gyro-Delta). Bei Verlust sofort
 weg (SceneFade blendet), beim Wiederfinden gleitet sie von der letzten Pose
 (kein Snap); nicht-endliche Messung wird nur nicht zum Ziel. Schalter 1 (aus =
@@ -514,6 +519,8 @@ Variante: Modul anlegen, in `TRACKER_VARIANTEN` eintragen, Goldstandard über
   tapInput.js) · `idleReturnMs 11000` als Fallback — die Karte (`idleReturnMs` in
   daten.json, heute 16000; beides seit Build 108 verdoppelt) hat Vorrang ·
   `livelyAfterMs 2000`.
+- `GYRO` seit Build 113 nur `enabled` (Lage-Events für den Schiedsrichter;
+  `bridgeMs`, `deltaDeadZone`, `deltaMax` gehörten zur archivierten Gyro-Fusion).
 - Feature-Toggles im Dev-Panel (`?dev`), seit Build 111 nur 1 Glättung ·
   5 NaN-Schutz · 7 Gyro · 10 Schwerkraft-Schiedsrichter (Pose-Flip); die
   Nummern bleiben wie bis Build 110 (2/3/4/6/8/9 gehörten zum PoseStabilizer).
@@ -530,7 +537,7 @@ Engine-Variante, Design, Zeile „Flip": Schiedsrichter-Zustand, Kippwinkel,
 n·up roh/gewählt, Flips/Snaps/Re-Lock-Zähler; seit Build 60 handytauglich:
 oben links, umbrechend, Knopf „📊" blendet es aus, Zustand in localStorage) · `?k=<id>` (Pflicht — ohne: Auffang-Seite; Karte aus
 `karten/katalog.json`) · `?design=<id>` (Kartenbild aus daten.json → designs, Übersicht `karten.html`) · `?dev` (Regler) · `?debug` · `?desktop` · `?timeline` ·
-`?nogyro` · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?tracker=<name>` (Tracker-Variante
+`?nogyro` (Schiedsrichter immer Bildschirm-oben) · `?gyrofrage` (iOS-Bewegungsabfrage wie bis Build 112, nur zum Messen) · `?nosimd` (Nicht-SIMD-Engine erzwingen) · `?tracker=<name>` (Tracker-Variante
 `alt`/`neu`/`8roh`/`8lerp`, s. „Tracker-Varianten"; ohne = `STAB.tracker`; `?stats` zeigt die Wahl; seit Build 106 steht der Name zusätzlich klein oben rechts (`#trackerMarke`, main.js → `zeigeTrackerMarke`, auf jedem Bildschirm, unabhängig von `?stats`, mit `?dev` unter dem Dev-Knopf; unbekannter Name → „xyz? → 8lerp"; ohne Flag keine Marke) · `?k=<nr>P` (Public-Edition, steht im
 QR-Code der neutralen Karte) ·
 `?preflight=inapp|nocam|insecure|nowasm|nowebp` (Hinweis-Screens erzwingen),
@@ -597,10 +604,14 @@ Seit Build 61 sind die mm-Werte ECHTE Millimeter (Kartenbreite des Designs,
   an, der Pointer-Events schluckt → `pointerEvents:none`; MindARs elementweiser
   Matrix-Filter erzeugt nicht-starre Matrizen → Grund für den Scale-Lock; MindAR
   schätzt das Kamera-FOV nur (Kipp-Wobble, Strategie A3).
-- iOS: Gyro-Permission MUSS in der Start-Geste angefragt werden (vor allen
-  awaits); die Kamera startet erst NACH der Antwort (Build 113, main.js — parallel
-  endete es auf iPhones ohne gespeicherte Bewegungs-Erlaubnis in „Ohne Kamera
-  geht's nicht“, Technik-Zeile `#permDetail` zeigt Fehler + Gerät); Safari cached JS aggressiv → Build-Check in ?stats nutzen. Achtung:
+- iOS: KEINE Bewegungsabfrage mehr (Build 113, Michael 2026-10-28) — bis Build
+  112 rief die Start-Geste `requestPermission()` parallel zur Kamera-Abfrage,
+  auf iPhones ohne gespeicherte Erlaubnis endete das in „Ohne Kamera geht's
+  nicht“. `GyroFusion.enable()` setzt nur den Listener (iOS liefert ohne
+  Erlaubnis nichts → Prior); nur `?gyrofrage` fragt (Messen mit `?stats`),
+  dann in der Geste vor allen awaits, die Kamera wartet auf die Antwort
+  (`GYRO_ANTWORT_MAX_MS`). Technik-Zeile `#permDetail` auf dem Kamera-Bildschirm
+  zeigt Fehler + Gerät + Gyro-Zustand. Safari cached JS aggressiv → Build-Check in ?stats nutzen. Achtung:
   Safari cached JEDE Datei einzeln (Pages: max-age 600) — `version.js` kann
   frisch sein, während ein anderes Modul noch alt ist (daten.json/dialog.json/katalog.json
   holt der Kartenlader seit Build 63 mit no-store). `?stats` zeigt deshalb seit

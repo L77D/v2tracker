@@ -446,7 +446,7 @@ UNTEN betrachtet werden, würden falsch entschieden (für Tisch/Hand irrelevant)
 Figur steht, Zeile `Flip: GESPIEGELT→korrigiert`, `n·up roh` negativ/klein,
 `gew.` nahe 1. Toggle 10 AUS: Figur kippt sofort in die Tischebene; beim
 langsamen Kippen des Handys lehnt sie doppelt so schnell wie das Handy
-(Signatur 2θ). `?nogyro`: Zeile „kein Gyro", Schiedsrichter passiv. Karte
+(Signatur 2θ). `?nogyro`: bis Build 112 Zeile „kein Gyro", Schiedsrichter passiv (seit Build 113 Bildschirm-oben, s. u.). Karte
 1,5 s abdecken: kommt die Engine richtig zurück? `Snaps`/`Re-Lock` zählen die
 bis Build 58 unsichtbaren automatischen Neuaufsetzer. Jitter stab in Ruhe
 weiter < 0,3 mm, Vision-Hz unverändert.
@@ -455,3 +455,56 @@ weiter < 0,3 mm, Vision-Hz unverändert.
 Monorepo (Wurzelbehandlung, erst nach Bestätigung am Handy und Lesen des
 Tracker-Quellcodes), Stabilizer-Schwellen (`snapAngle`, `acquireFrames`)
 drehen — wirkungslos gegen die Quelle.
+
+### 9.1 Build 113 (2026-10-28): Bildschirm-Oben-Prior — der Schiedsrichter ohne Gyro
+
+**Anlass (Michael):** Die iOS-Bewegungsabfrage („Bewegung und Ausrichtung")
+war der einzige Grund, den Gyro noch anzufragen (Prediction und Brücke liegen
+seit Build 111 im Archiv) — und sie kollidierte beim Start mit der
+Kamera-Abfrage (zwei iPhones: „Ohne Kamera geht's nicht" trotz „Erlauben").
+Frage: Gibt es eine Taktik ohne Gyro, die Figur aufrecht zu halten?
+
+**Antwort:** Dieselbe Involution, andere Referenz. Die Spiegel-Lösung ist die
+Kartennormale n an der Sichtlinie u gespiegelt. Für die Karte auf dem Tisch
+oder in der Hand, Handy von oben oder schräg darauf, zeigt die WAHRE Normale im
+Kamera-Frame nach Bildschirm-oben (n.y > 0: die Kartenunterkante ist der
+Kamera näher als die Oberkante), die Spiegel-Lösung nach Bildschirm-unten
+(n.y < 0) — das ist das Fehlerbild „Kopf unter den Füßen". `arbitrateUpright()`
+bekommt deshalb statt der Gyro-Lage das feste Quaternion `Q_SCREEN_UP` =
+Rx(+90°), das Kamera-+Y auf +Z abbildet (z' = y); die Logik bleibt identisch.
+Mit der Tisch-Szene aus `tests/poseArbiter.test.mjs` nachgerechnet (Kamera
+mittig und seitlich versetzt):
+
+| Kipp θ | n.y wahr | n.y Spiegel | Prior | Restfehler |
+|---|---|---|---|---|
+| 15° | +0,26 | −0,26 | korrigiert | 0,00° |
+| 30° | +0,50 | −0,50 | korrigiert | 0,00° |
+| 45° | +0,71 | −0,71 | korrigiert | 0,00° |
+| 60° | +0,87 | −0,87 | korrigiert | 0,00° |
+| 75° | +0,97 | −0,97 | korrigiert | 0,00° |
+
+Die wahre Pose bleibt in allen Fällen stehen. Unterschied zur Gyro-Referenz:
+der Oben-Anteil ist sin θ statt cos 2θ, die Kandidaten trennen sich also
+schneller (2·sin θ) — die Hysterese `arbiterMargin 0.15` hält bis ≈ 4,3°
+statt ≈ 22°; darunter greift `MIN_TILT` (3°). Bei 10° entscheidet der Prior
+schon (beide Kandidaten liegen dort nur 20° auseinander).
+
+**Grenze (nachgerechnet, als Test festgehalten):** Eine SENKRECHTE Karte, die
+von OBEN betrachtet wird (Oberkante näher als Unterkante, n.y < 0), wird
+gekippt. Der Gyro-Schiedsrichter macht dort denselben Fehler: die
+Spiegel-Kandidatin der Wandkarte liegt wie ein Tisch (Normale im Erdframe
+z = sin 2θ) und gewinnt gegen die waagerechte wahre Normale (z = 0). Für die
+63×88-mm-Karte in Hand/Tisch irrelevant; ein Poster an der Wand müsste von
+unten oder frontal gefilmt werden.
+
+**Umsetzung:** `js/poseArbiter.js` (`Q_SCREEN_UP`, Parameter `qUp`),
+`js/tracker8lerp.js` (`arbitrate`: Gyro-Lage, wenn frisch, sonst Prior;
+`arb.quelle` für ?stats), `js/gyroFusion.js` (`enable({ fragen })`, Standard
+ohne Abfrage; `getDelta` raus), `js/main.js` (`?gyrofrage` nur zum Messen),
+`js/config.js` (`GYRO` nur `enabled`). Android liefert `deviceorientation`
+ohne Abfrage → dort weiter Erd-oben; `?nogyro` erzwingt den Prior. Goldstandard
+`tests/fixtures/tracker8lerp.golden.json` neu erzeugt: die synthetische Pose
+des Szenarios (baseQ) hat n.y < 0 und wird in allen Phasen ohne Gyro-Lage
+gespiegelt — gewollt, `ohneArbiter` unverändert.
+
+**Am Handy prüfen:** `docs/pruefschritte-manuell.md` Abschnitt 7.

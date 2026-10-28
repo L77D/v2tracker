@@ -180,11 +180,13 @@ export const STAB = {
                         //   manchmal stabil die gespiegelte (Karte um 2θ gekippt, Figur liegt
                         //   flach zum Betrachter, Kopf unten). Aus der Rohpose wird die
                         //   Spiegel-Kandidatin berechnet und die Lage gewählt, deren Normale
-                        //   im Erdframe nach oben zeigt (js/poseArbiter.js). Ohne Gyro passiv.
+                        //   nach „oben" zeigt (js/poseArbiter.js): Erd-oben aus der Gyro-Lage,
+                        //   wo frei vorhanden, sonst Bildschirm-oben (Build 113; bis dahin
+                        //   ohne Gyro passiv).
   // 7 = GYRO.enabled (unten)
   // SCHWERKRAFT-SCHIEDSRICHTER (2026-09-15): Hysterese — die Spiegel-Kandidatin
-  // gewinnt erst, wenn ihr z-Anteil (Normale im Erdframe, 1 = senkrecht nach
-  // oben) um mehr als arbiterMargin über dem der Rohpose liegt. Nahe der
+  // gewinnt erst, wenn ihr Oben-Anteil (Normale im Oben-Frame, 1 = senkrecht
+  // nach oben) um mehr als arbiterMargin über dem der Rohpose liegt. Nahe der
   // Frontalsicht sind beide Kandidaten gleich → kein Umschalten, kein Flattern.
   arbiterMargin: 0.15,
   // TRACKER „8lerp" (Build 105, 2026-10-13, js/tracker8lerp.js): Zeitkonstante
@@ -237,18 +239,14 @@ export const SOUND = {
   bubbleVolume: 0.4,   // Pegel relativ zum Master (volume × bubbleVolume)
 };
 
-// Gyro-Fusion: Handy-Gyroskop stützt die visuelle Pose (Prediction) und
-// überbrückt kurze Tracking-Aussetzer. Kill-Switch zusätzlich per ?nogyro.
+// Gyro (js/gyroFusion.js): liefert nur noch die Lage der Kamera für den
+// Schwerkraft-Schiedsrichter (Referenz „oben"), wo sie ohne Abfrage vorliegt
+// (Android); iOS ohne Bewegungsabfrage liefert keine Events → Bildschirm-oben
+// (Build 113). Kill-Switch zusätzlich per ?nogyro. Prediction/Brücke
+// (bridgeMs, deltaDeadZone, deltaMax) liegen mit dem PoseStabilizer im Archiv;
+// alte Presets mit diesen Schlüsseln laden weiter, die Werte wirken nirgends.
 export const GYRO = {
-  enabled: true,
-  bridgeMs: 1200,        // wie lange ein Aussetzer gyro-geführt überbrückt wird
-  deltaDeadZone: 0.0012, // rad; AKKUMULATIONS-Schwelle (2026-07-14, Finding 4):
-                         // qPrev rückt in GyroFusion nur vor, wenn das Delta auch
-                         // ANGEWENDET wird — langsame Drehungen summieren sich auf
-                         // und feuern in ~0.07°-Quanten, statt Frame für Frame
-                         // verworfen zu werden (vorher trug die Prediction bei
-                         // Schwenks < ~4°/s NICHTS bei). Rauschen bleibt draußen.
-  deltaMax: 0.2,         // rad; größere Deltas = Sensor-Glitch → verwerfen (resync)
+  enabled: true,         // 7 Lage-Events lesen (false = Schiedsrichter immer Bildschirm-oben)
 };
 
 // Kamera: Die 8th-Wall-Engine wählt die Auflösung selbst (geräteabhängige

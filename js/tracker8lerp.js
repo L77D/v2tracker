@@ -11,8 +11,10 @@
       8th-Wall-Bildziele): framerate-unabhängig exponentiell, a = 1 − exp(−dt/τ)
       mit τ = STAB.lerpPosMs / lerpRotMs. Glättet die Treppe der 20–30-Hz-
       Messungen; Nachlauf bei gleichmäßiger Bewegung ≈ τ. τ = 0 → 1:1.
-   2. SCHWERKRAFT-SCHIEDSRICHTER auf jeder Messung (js/poseArbiter.js, wie in
-      tracker.js) gegen den Pose-Flip; ohne Gyro-Lage passiv.
+   2. SCHWERKRAFT-SCHIEDSRICHTER auf jeder Messung (js/poseArbiter.js) gegen
+      den Pose-Flip. Referenz „oben": Gyro-Lage, wo sie ohne Abfrage vorliegt
+      (Android), sonst Bildschirm-oben (Q_SCREEN_UP, seit Build 113 — vorher
+      ohne Gyro passiv; die iOS-Bewegungsabfrage ist weg).
 
    Bei Verlust sofort unsichtbar (SceneFade blendet in CHOREO.lostFadeMs aus);
    beim Wiederfinden gleitet die Pose von der letzten Stelle her (kein Snap).
@@ -38,7 +40,7 @@
 import * as THREE from "../vendor/three/three.module.js";
 import { STAB } from "./config.js";
 import { finiteVec, finiteQuat } from "./util.js";
-import { arbitrateUpright } from "./poseArbiter.js";
+import { arbitrateUpright, Q_SCREEN_UP } from "./poseArbiter.js";
 
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
 const _w = new THREE.Vector3();
@@ -68,7 +70,7 @@ export class Tracker8lerp {
     this.visionHz = null;
     this.flipCount = 0;
     this.diag = { newMeas: false, rawPos: new THREE.Vector3(), rawQuat: new THREE.Quaternion(), nanCount: 0 };
-    this.arb = { flipped: false, zRaw: 0, zChosen: 0, tiltDeg: 0, active: false };
+    this.arb = { flipped: false, zRaw: 0, zChosen: 0, tiltDeg: 0, active: false, quelle: "—" }; // quelle: gyro | bildschirm (?stats)
     this.snap = {};
   }
 
@@ -91,13 +93,15 @@ export class Tracker8lerp {
     if (!this.hasPose) { this.pos.copy(_p); this.quat.copy(_q); this.hasPose = true; }
   }
 
-  /* Schwerkraft-Schiedsrichter (poseArbiter.js): nur auf echten Messungen. */
+  /* Schwerkraft-Schiedsrichter (poseArbiter.js): nur auf echten Messungen.
+     Referenz „oben" = Gyro-Lage, wenn frisch da, sonst Bildschirm-oben (Build 113). */
   arbitrate(p, q) {
-    const qEarth = STAB.gravityArbiter ? (this.gyro?.getOrientation() ?? null) : null;
-    this.arb.active = !!qEarth;
-    if (!qEarth) { this.arb.flipped = false; return; }
+    if (!STAB.gravityArbiter) { this.arb.active = false; this.arb.flipped = false; this.arb.quelle = "—"; return; }
+    const qGyro = this.gyro?.getOrientation() ?? null;
+    this.arb.active = true;
+    this.arb.quelle = qGyro ? "gyro" : "bildschirm";
     const was = this.arb.flipped;
-    arbitrateUpright(p, q, qEarth, STAB.arbiterMargin, this.arb);
+    arbitrateUpright(p, q, qGyro ?? Q_SCREEN_UP, STAB.arbiterMargin, this.arb);
     if (this.arb.flipped !== was) this.flipCount++;
   }
 

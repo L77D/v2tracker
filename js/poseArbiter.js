@@ -18,12 +18,27 @@
    Gewählt wird die Kandidatin, deren Kartennormale im ERDFRAME stärker nach
    oben zeigt. Dafür zählt nur der z-Anteil der Normale — der hängt allein an
    beta/gamma (Neigung), nicht an alpha (Kompass): der iOS-Alpha-Offset und
-   das Dead-Band von GyroFusion.getDelta() sind irrelevant. Hysterese über
+   das frühere Delta-Dead-Band sind irrelevant. Hysterese über
    STAB.arbiterMargin: nahe der Frontalsicht sind beide Kandidaten praktisch
    gleich, dort wird nicht umgeschaltet (kein Flattern, kein sichtbarer Sprung).
 
-   Reine Mathematik, kein Zustand, kein DOM. Ohne frisches Gyro-Signal (keine
-   Permission, Desktop, ?nogyro) ruft der Stabilizer den Arbiter nicht auf.
+   REFERENZ „OBEN" (2026-10-28, Build 113 — Michael: „gibt es eine Taktik ohne
+   Gyro?"): Der Vergleich braucht nur ein Quaternion, das den Kamera-Frame in
+   einen Frame mit +Z = oben dreht. Zwei Quellen:
+   • Gyro-Lage (GyroFusion.getOrientation(), Erd-oben) — wo sie ohne Abfrage da
+     ist (Android). Grenze: Karten, die von UNTEN betrachtet werden.
+   • Q_SCREEN_UP = Bildschirm-oben (Kamera-+Y): die Spiegel-Lösung ist die
+     Normale an der Sichtlinie gespiegelt — bei Karte auf dem Tisch oder in der
+     Hand, Handy von oben/schräg darauf, zeigt die WAHRE Normale im Kamera-Frame
+     nach Bildschirm-oben (n.y > 0), die Spiegel-Lösung nach unten (n.y < 0;
+     genau das Fehlerbild „Kopf unter den Füßen"). Nachgerechnet mit der Szene
+     aus tests/poseArbiter.test.mjs, Kipp 15°–75°, auch seitlich versetzt:
+     Spiegel wird exakt zurückgedreht, wahre Pose bleibt. Grenze: eine
+     SENKRECHTE Karte (Wand), von OBEN betrachtet, hat n.y < 0 und würde gekippt
+     — für die 63×88-mm-Karte in Hand/Tisch irrelevant. Keine Permission nötig,
+     deshalb seit Build 113 die Grundlage auf allen Geräten (keine iOS-
+     Bewegungsabfrage mehr); die Gyro-Lage gewinnt, wo sie frei vorliegt.
+   Reine Mathematik, kein Zustand, kein DOM.
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
 
@@ -36,21 +51,26 @@ const _qAlt = new THREE.Quaternion();
 const _tmp = new THREE.Vector3();
 const MIN_TILT = 0.05; // rad (~3°): darunter sind beide Kandidaten identisch
 
+/* Bildschirm-oben als Referenz: Rx(+90°) bildet Kamera-+Y auf +Z ab (z' = y),
+   damit in arbitrateUpright der z-Anteil = Anteil nach Bildschirm-oben ist. */
+export const Q_SCREEN_UP = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+
 /**
  * Wählt zwischen der Rohpose und ihrer Spiegel-Kandidatin die Lage, deren
- * Kartennormale im Erdframe stärker nach oben zeigt.
+ * Kartennormale im „Oben"-Frame stärker nach oben zeigt.
  * @param pos    Kartenposition im Kamera-Frame (nur die Richtung zählt)
  * @param quat   Kartenrotation im Kamera-Frame — wird bei Wechsel ÜBERSCHRIEBEN
- * @param qEarth Screen-/Kamera-Frame → Erdframe (GyroFusion.getOrientation())
+ * @param qUp    Kamera-Frame → Frame mit +Z = oben: Gyro-Lage
+ *               (GyroFusion.getOrientation(), Erd-oben) oder Q_SCREEN_UP (Bildschirm-oben)
  * @param margin Hysterese: Differenz der z-Anteile, ab der die Spiegel-Kandidatin gewinnt
  * @param out    { flipped, zRaw, zChosen, tiltDeg } — wird befüllt und zurückgegeben
  */
-export function arbitrateUpright(pos, quat, qEarth, margin, out) {
+export function arbitrateUpright(pos, quat, qUp, margin, out) {
   out.flipped = false;
   _n.set(0, 0, 1).applyQuaternion(quat);          // Kartennormale (Kamera-Frame)
   _u.copy(pos).negate();                           // Karte → Kamera
   const len = _u.length();
-  out.zRaw = _tmp.copy(_n).applyQuaternion(qEarth).z;
+  out.zRaw = _tmp.copy(_n).applyQuaternion(qUp).z;
   out.zChosen = out.zRaw;
   out.tiltDeg = 0;
   if (len < 1e-9) return out;
@@ -67,7 +87,7 @@ export function arbitrateUpright(pos, quat, qEarth, margin, out) {
   _qFlip.setFromAxisAngle(_axis, 2 * theta);
   _qAlt.copy(_qFlip).multiply(quat);              // R' = Rot(axis, 2θ) · R
   _nAlt.set(0, 0, 1).applyQuaternion(_qAlt);
-  const zAlt = _tmp.copy(_nAlt).applyQuaternion(qEarth).z;
+  const zAlt = _tmp.copy(_nAlt).applyQuaternion(qUp).z;
   if (zAlt - out.zRaw > margin) {
     quat.copy(_qAlt);
     out.flipped = true;

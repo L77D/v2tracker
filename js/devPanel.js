@@ -117,8 +117,6 @@ export class DevPanel {
         { o: STAB, k: "lerpPosMs", l: "8lerp τ Position (ms)", min: 0, max: 300, step: 5 },
         { o: STAB, k: "lerpRotMs", l: "8lerp τ Rotation (ms)", min: 0, max: 300, step: 5 },
         { o: STAB, k: "arbiterMargin", l: "Schiedsrichter-Hysterese (z-Anteil)", min: 0, max: 0.6, step: 0.01 },
-        { o: GYRO, k: "bridgeMs", l: "Gyro-Brücke (ms)", min: 0, max: 3000, step: 100 },
-        { o: GYRO, k: "deltaDeadZone", l: "Gyro-Dead-Band (rad)", min: 0, max: 0.01, step: 0.0002 },
       ]},
     ];
   }
