@@ -37,6 +37,10 @@ export class ActivationAnim {
     this.baseRotY = this.element.rotation.y;
     this.captureScale();
     this.element.scale.set(0, 0, 0);
+    // Ein laufendes Einklappen abbrechen (2026-10-28, Build 112): Tap auf
+    // „Tipp auf die Karte" während playOut ließ collapsing stehen — tick()
+    // klappte weiter ein, meldete „fertig" und die Figur blieb auf Scale 0.
+    this.collapsing = false;
     this.playing = true;
   }
   cancel() {

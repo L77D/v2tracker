@@ -222,7 +222,11 @@ export class CardController {
     }
     const nextAsk = again ? null : this.engine.askAfterAnswers();
     const after = () => {
-      if (q.link) { window.open(q.url, "_blank", "noopener"); this.backTo(); return; }
+      // Link: Seite öffnen (synchron in der Geste des Weiter-Tipps). Eine
+      // fällige Rückfrage folgt trotzdem (2026-10-28, Build 112): bis Build 111
+      // ging es hier direkt zurück in den Hub — war der Link die 1. oder 3.
+      // Antwort, kam die Rückfrage nie (afterAnswers prüft auf Gleichheit).
+      if (q.link) window.open(q.url, "_blank", "noopener");
       if (nextAsk) { this.askBack(nextAsk, () => this.backTo()); return; }
       this.backTo();
     };
