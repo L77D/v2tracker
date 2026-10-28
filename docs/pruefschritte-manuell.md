@@ -7,7 +7,7 @@ Chrome, gedruckte Karte P04). Erwartung = Verhalten von Build 110.
 
 ## 1. Normaler Ablauf (`?k=000`)
 1. Splash: „Du scannst · Elektroniker*in für Betriebstechnik · bei · Siemens“ als Text (kein Logo). Knopf „Scan starten“ wird erst aktiv, wenn der Font geladen ist. Mit `?tracker=…` steht die Marke oben rechts.
-2. „Scan starten“: Klick-Ton. iOS fragt die Bewegungs-Erlaubnis, dann die Kamera. Splash weg, Kamerabild, weiße Rahmen-Ecken, Panel unten „Halte auf die Karte“ als Laola-Welle, Handy-Icon mit offenem Mund schaut links/rechts.
+2. „Scan starten“: Klick-Ton. iOS fragt die Bewegungs-Erlaubnis, dann die Kamera — die Kamera-Abfrage erscheint erst, wenn die Bewegungsfrage beantwortet ist (seit Build 113; Test mit einem Gerät ohne gespeicherte Erlaubnis, z. B. Safari-Website-Daten für l77d.github.io löschen). Bei „Ohne Kamera geht's nicht“ steht unten klein die Technik-Zeile (Fehler, iOS, Browser) — Screenshot davon. Splash weg, Kamerabild, weiße Rahmen-Ecken, Panel unten „Halte auf die Karte“ als Laola-Welle, Handy-Icon mit offenem Mund schaut links/rechts.
 3. Karte ins Bild: Rahmen sofort weg, Ping, vier gelbe Eck-Marker wabern auf den Kartenecken, Panel „Karte gefunden / → Tipp sie an!“, Icon springt links aus dem Panel und hüpft in 3D auf der Kartenmitte mit flachem Schatten.
 4. Tap auf die Karte: Swoosh, Marker ploppen und bleiben still auf den Ecken, Pop-Ton, Figur dreht sich zweimal und ploppt mit Überschwinger auf.
 5. Begrüßung: Anfangston „bi-ip“, Text tippt lautlos (28 ms/Zeichen), `<welle>`-Wort steht still. Blase billboardet zur Kamera (Drehung und Neigung bis 70°).

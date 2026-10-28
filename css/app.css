@@ -509,6 +509,7 @@ body.keine-karte #auffangScreen { display: flex; }
   max-width: 330px;
 }
 .perm-text--small { font-size: 12px; opacity: 0.8; }
+.perm-detail { margin-top: 18px; font-size: 10px; opacity: 0.55; word-break: break-word; }
 /* Knopf der Hinweis-Bildschirme: .d-btn (oben), kleiner */
 .d-btn--perm { width: 250px; height: 72px; margin-top: 8px; }
 .d-btn--perm > span { font-size: 36px; padding-top: 5px; }
