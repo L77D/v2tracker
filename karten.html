@@ -152,17 +152,23 @@
           holeJson("./karten/" + eintrag.id + "/daten.json", function (karte) {
             // Je Fassung (Firma, Public) eine Kachel pro Design; Standard = erstes
             // Design der Fassung. Ohne Public-Design nimmt die Public-Fassung das
-            // erste Design (wie js/kartenLader.js).
+            // erste Design (wie js/kartenLader.js) — dann aber über ?k=<nr>P, nie
+            // über dessen gedruckten Link (qr): der trägt die Fassung des Designs
+            // (Firma). Das P versteht der Lader nur hinter einer Nummer; Karten mit
+            // anderer Id (z. B. „demo") bekommen ohne Public-Design keine
+            // Public-Kachel (2026-10-28, Build 112: bis dahin führte sie in die
+            // Firmenfassung).
             var ds = karte.designs || [];
             proKarte[eintrag.id] = [];
             var fassungen = ["firma", "public"];
             for (var f = 0; f < fassungen.length; f++) {
               var eigene = [];
               for (var d = 0; d < ds.length; d++) if ((ds[d].fassung || "firma") === fassungen[f]) eigene.push(ds[d]);
-              if (!eigene.length && fassungen[f] === "public" && ds.length) eigene = [ds[0]];
+              var ersatz = false;
+              if (!eigene.length && fassungen[f] === "public" && ds.length && /^\d+$/.test(eintrag.id)) { eigene = [ds[0]]; ersatz = true; }
               for (var e = 0; e < eigene.length; e++) proKarte[eintrag.id].push({
                 karte: eintrag.id, public: fassungen[f] === "public", id: eigene[e].id, erstes: e === 0,
-                target: eigene[e].target, breiteMm: eigene[e].breiteMm, qr: eigene[e].qr,
+                target: eigene[e].target, breiteMm: eigene[e].breiteMm, qr: ersatz ? null : eigene[e].qr,
                 name: (eintrag.name || eintrag.id) + " — " + (fassungen[f] === "public" ? "Public — " : "") + (eigene[e].name || eigene[e].id),
                 notiz: eigene[e].notiz });
             }

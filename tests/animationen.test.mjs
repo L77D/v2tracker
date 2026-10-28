@@ -85,3 +85,17 @@ test("ActivationAnim: prime → play (Ease-Out-Back + 2 Spins) → playOut (Ease
   // playOut mit Dauer 0 → Mindestdauer 0,05 s
   a.playOut(null, 0); assert.equal(a.outSec, 0.05);
 });
+
+test("ActivationAnim: play() mitten im playOut bricht das Einklappen ab — Figur ploppt wieder auf (Build 112)", () => {
+  const FigureRoot = new THREE.Group();
+  FigureRoot.scale.setScalar(0.0638);
+  const a = new ActivationAnim({ FigureRoot });
+  const rufe = [];
+  a.playOut(() => rufe.push("playOut"), 0.5);
+  for (let i = 0; i < 6; i++) a.tick(DT); // ~100 ms eingeklappt
+  a.play(() => rufe.push("play")); // Wiedereinstieg per Tap
+  for (let i = 0; i < 120; i++) a.tick(DT);
+  assert.deepEqual(rufe, ["play"]);
+  assert.ok(Math.abs(FigureRoot.scale.x - 0.0638) < 1e-12, "volle Größe statt Scale 0");
+  assert.equal(a.collapsing, false);
+});

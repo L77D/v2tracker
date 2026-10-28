@@ -20,13 +20,15 @@ Chrome, gedruckte Karte P04). Erwartung = Verhalten von Build 110.
 12. Tap auf die Figur: Hüpfer zur Kartenmitte, Pose kurz „talk“-Gesicht.
 13. „Ich muss weiter“: Fazit-Rückfrage → Abschiedszeile → nach 0,9 s klappt die Figur ein, Marker bleiben, Panel „Tipp auf die Karte“ pulsiert.
 14. Tap auf die Karte: Wiedereinstieg mit beiläufiger Zeile (ab dem 3./4. Besuch andere Zeilen), Hub im alten Zustand, „Ich muss weiter“ wieder ohne Haken.
+15. Noch einmal „Ich muss weiter“ und SOFORT beim Einklappen auf „Tipp auf die Karte“ tippen: Figur ploppt wieder auf (bis Build 111 blieb sie unsichtbar).
 
 ## 2. Link-Frage
-Antwort „bewerbung“ schaltet „Zeig mir die Seite“ (Reiter LINK) frei. Antwort → Kachel „Seite öffnen“ → neuer Tab (kein Popup-Blocker), zurück im Hub.
+Antwort „bewerbung“ schaltet „Zeig mir die Seite“ (Reiter LINK) frei. Antwort → Kachel „Seite öffnen“ → neuer Tab (kein Popup-Blocker), zurück im Hub. Ist der Link die 1. oder 3. Antwort, stellt die Figur danach ihre Rückfrage (seit Build 112).
 
 ## 3. Tracking-Verlust
 - Karte verdecken: Szene blendet in 300 ms aus (8lerp sofort). Unter 1,5 s zurück: kein Rahmen, Szene blendet ein und gleitet (kein Sprung).
 - Ab 1,5 s: Menü eingefroren (Taps ohne Wirkung, nicht gedimmt), Suchrahmen + „Halte auf die Karte“ oben mit 300-ms-Einblendung. Im Ruhezustand steht der Text stattdessen in der Panel-Zeile.
+- Karte weg (Ruhezustand oder „Karte gefunden“): Tap auf die Stelle, wo die Karte war, tut nichts — kein Pop-Ton (seit Build 112).
 - Wiederfinden: Rahmen und Hinweis sofort weg, Menü bedienbar.
 
 ## 4. Editionen und Testdrucke

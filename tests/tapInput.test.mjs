@@ -1,7 +1,7 @@
 /* TapInput (js/tapInput.js): Entprellung, Tap ≠ Drag, click-Fallback, NDC-
-   Strahl — Characterization Test (Stand Build 110). Festgehalten wird auch,
-   dass der native click-Fallback tapMaxPx/tapMaxMs NICHT prüft (nur die
-   Entprellung) — Ist-Verhalten, keine Bewertung. */
+   Strahl — Characterization Test (Stand Build 110). Seit Build 112 prüft auch
+   der native click-Fallback tapMaxPx/tapMaxMs (bis Build 111 nur die
+   Entprellung — ein click nach einem Drag löste einen Tap aus). */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as THREE from "../vendor/three/three.module.js";
@@ -55,12 +55,26 @@ test("Drag (Weg > tapMaxPx) und langes Halten (> tapMaxMs) lösen über pointeru
     t.uhr.t += CHOREO.tapMaxMs + 1;
     t.h.pointerup({ clientX: 100, clientY: 100 });
     assert.equal(t.taps.length, 1, "zu lang gehalten");
-    // Ist-Verhalten: der click-Fallback kennt weder Weg noch Dauer
-    t.uhr.t += 1000;
+  } finally { t.ende(); }
+});
+
+test("click-Fallback prüft Weg und Dauer wie pointerup (Build 112); nach pointercancel zählt ein kurzer click", () => {
+  const t = aufbau();
+  try {
     t.h.pointerdown({ clientX: 100, clientY: 100 });
     t.h.pointerup({ clientX: 300, clientY: 300 }); // Drag → kein Tap
-    t.h.click({ clientX: 300, clientY: 300 });      // … aber der click feuert
-    assert.equal(t.taps.length, 2);
+    t.h.click({ clientX: 300, clientY: 300 });      // … auch nicht über click
+    assert.equal(t.taps.length, 0, "click nach Drag");
+    t.uhr.t += 1000;
+    t.h.pointerdown({ clientX: 100, clientY: 100 });
+    t.uhr.t += CHOREO.tapMaxMs + 1;
+    t.h.click({ clientX: 100, clientY: 100 });
+    assert.equal(t.taps.length, 0, "click nach langem Halten");
+    t.uhr.t += 1000;
+    t.h.pointerdown({ clientX: 100, clientY: 100 }); // iOS: pointercancel, kein pointerup
+    t.uhr.t += 80;
+    t.h.click({ clientX: 102, clientY: 101 });
+    assert.equal(t.taps.length, 1, "kurzer click ohne pointerup");
   } finally { t.ende(); }
 });
 

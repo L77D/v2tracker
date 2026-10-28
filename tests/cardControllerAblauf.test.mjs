@@ -137,3 +137,21 @@ test("Ablauf 3: Ausstieg → Fazit → Abschied → Ruhezustand → Tap → Wied
     pruefeSnapshot("cardController.ablauf3", calls);
   } finally { ende(); }
 });
+
+test("Link-Frage als 3. Antwort: Seite öffnen, danach die fällige Rückfrage (Build 112, vorher ging sie verloren)", (t) => {
+  const { c, calls, a, ende, start } = aufbau(t);
+  try {
+    start();
+    const quiz = c.engine.card.asks.find((x) => x.trigger?.afterAnswers === 3);
+    assert.ok(quiz, "Karte hat eine Rückfrage nach der 3. Antwort");
+    c.engine.unlock(["bewerbung", "link"]);
+    c.engine.asked.add("was"); c.engine.asked.add("koennen"); // zwei Antworten schon gegeben
+    c.answerQuestion("link");
+    a.bubble.onDone();
+    c.onNext(); // „Seite öffnen"
+    assert.ok(calls.some((x) => x.startsWith("window.open(")), "Seite geöffnet");
+    assert.equal(c.engine.asksDone.has(quiz.id), true, "Rückfrage gestellt");
+    a.bubble.onDone();
+    assert.equal(calls[calls.length - 1], "menu.showOptions(" + quiz.options.length + ")");
+  } finally { ende(); }
+});

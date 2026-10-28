@@ -33,12 +33,17 @@ export class TapInput {
     domElement.addEventListener("pointerdown", (e) => {
       this.downX = e.clientX; this.downY = e.clientY; this.downT = performance.now();
     });
-    domElement.addEventListener("pointerup", (e) => {
-      if (Math.hypot(e.clientX - this.downX, e.clientY - this.downY) > CHOREO.tapMaxPx) return;
-      if (performance.now() - this.downT > CHOREO.tapMaxMs) return;
-      this.tap(e.clientX, e.clientY);
-    });
-    domElement.addEventListener("click", (e) => this.tap(e.clientX, e.clientY));
+    // Weg und Dauer prüfen BEIDE Wege (2026-10-28, Build 112): bis Build 111
+    // nur pointerup — der click nach einem Drag oder langen Halten löste
+    // trotzdem einen Tap aus (z. B. Orbit-Drag im Desktop-Modus startete die Figur).
+    domElement.addEventListener("pointerup", (e) => { if (this.isTap(e)) this.tap(e.clientX, e.clientY); });
+    domElement.addEventListener("click", (e) => { if (this.isTap(e)) this.tap(e.clientX, e.clientY); });
+  }
+
+  /* Tap ≠ Drag/Halten: Weg und Dauer seit dem letzten pointerdown. */
+  isTap(e) {
+    if (Math.hypot(e.clientX - this.downX, e.clientY - this.downY) > CHOREO.tapMaxPx) return false;
+    return performance.now() - this.downT <= CHOREO.tapMaxMs;
   }
 
   tap(clientX, clientY) {

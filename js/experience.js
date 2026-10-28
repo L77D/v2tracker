@@ -112,6 +112,11 @@ export function buildExperience({ renderer, scene, camera, worldRoot, isRunning,
     nodes.Head, nodes.FaceNeutral, nodes.FaceBlink, nodes.FaceTalk,
   ];
   function handleTap(ray) {
+    // Karte verloren (Szene ausgeblendet): kein Tap (2026-10-28, Build 112).
+    // Der Raycaster prüft visible nicht, Tap-Plane und Figur stehen an der
+    // letzten Pose — ein Tap auf die alte Stelle startete z. B. unsichtbar den
+    // Wiedereinstieg (Pop-Ton sofort, Figur erst beim Wiederfinden).
+    if (isRunning && !isRunning()) return;
     // Aktivier-Phase + Ruhezustand: Tap auf die KARTE (unsichtbare Tap-Plane)
     // startet die Figur bzw. holt sie zurück (Wiedereinstieg).
     if (controller.acceptsCardTap) {
