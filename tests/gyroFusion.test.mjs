@@ -1,6 +1,7 @@
-/* GyroFusion (js/gyroFusion.js): Euler → Quaternion, Sammel-Schwelle, Glitch-
-   Grenze, 250-ms-Frische, Screen-Orientation — Characterization Test (Stand
-   Build 110) mit Attrappen für screen/window und gefälschter Uhr. */
+/* GyroFusion (js/gyroFusion.js): Euler → Quaternion, 250-ms-Frische, Screen-
+   Orientation, enable() ohne/mit Bewegungsabfrage — Characterization Test
+   (Stand Build 110; getDelta seit Build 113 raus) mit Attrappen für
+   screen/window und gefälschter Uhr. */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { pruefeSnapshot } from "./snapshot.mjs";
@@ -8,7 +9,6 @@ import { pruefeSnapshot } from "./snapshot.mjs";
 globalThis.screen = { orientation: { angle: 0 } };
 globalThis.window = { addEventListener() {} };
 const { GyroFusion } = await import("../js/gyroFusion.js");
-const { GYRO } = await import("../js/config.js");
 
 function aufbau() {
   const uhr = { t: 1000 };
@@ -23,7 +23,6 @@ const q4 = (q) => [q.x, q.y, q.z, q.w];
 test("ohne enable/Events: null; unvollständige Events werden ignoriert", () => {
   const { g, ende } = aufbau();
   try {
-    assert.equal(g.getDelta(), null);
     assert.equal(g.getOrientation(), null);
     g.handle({ alpha: null, beta: 1, gamma: 2 });
     assert.equal(g.active, false);
@@ -49,31 +48,37 @@ test("Orientierung aus alpha/beta/gamma, auch im Querformat (Snapshot)", () => {
   } finally { ende(); }
 });
 
-test("getDelta: erster Aufruf null, kleine Deltas sammeln sich, Glitch > deltaMax verwirft und setzt neu, stale nach 250 ms", () => {
+test("Lage: stale nach 250 ms ohne Event, null ohne enable", () => {
   const { g, uhr, ende } = aufbau();
   try {
-    g.handle({ alpha: 0, beta: 0, gamma: 0 });
-    assert.equal(g.getDelta(), null, "erster Aufruf setzt nur die Referenz");
-    // 0,05° je Schritt < deltaDeadZone (0,0012 rad ≈ 0,069°): sammeln
-    g.handle({ alpha: 0.05, beta: 0, gamma: 0 }); assert.equal(g.getDelta(), null);
-    g.handle({ alpha: 0.10, beta: 0, gamma: 0 });
-    const d = g.getDelta();
-    assert.ok(d, "Summe 0,10° > Schwelle → Delta");
-    const ang = 2 * Math.acos(Math.min(1, Math.abs(d.w)));
-    assert.ok(Math.abs(ang - 0.10 * Math.PI / 180) < 1e-9, String(ang));
-    assert.ok(ang >= GYRO.deltaDeadZone);
-    // Glitch: 20° auf einmal > deltaMax 0,2 rad → null, Referenz rückt vor
-    g.handle({ alpha: 20.1, beta: 0, gamma: 0 }); assert.equal(g.getDelta(), null);
-    g.handle({ alpha: 20.3, beta: 0, gamma: 0 }); assert.ok(g.getDelta(), "nach dem Glitch wieder relativ zur neuen Referenz");
-    // stale: > 250 ms ohne Event
+    g.handle({ alpha: 20.3, beta: 0, gamma: 0 });
+    assert.ok(g.getOrientation());
     uhr.t += 251;
-    assert.equal(g.getDelta(), null);
-    assert.equal(g.hasPrev, false);
     assert.equal(g.getOrientation(), null);
     g.handle({ alpha: 20.3, beta: 0, gamma: 0 });
-    assert.equal(g.getDelta(), null, "nach stale wieder erst die Referenz");
     assert.ok(g.getOrientation());
     g.enabled = false;
-    assert.equal(g.getDelta(), null); assert.equal(g.getOrientation(), null);
+    assert.equal(g.getOrientation(), null);
   } finally { ende(); }
+});
+
+test("enable(): ohne `fragen` keine requestPermission (Build 113), mit `fragen` wie früher; Ablehnung → enabled false", async () => {
+  const aufrufe = { permission: 0, listener: 0 };
+  globalThis.DeviceOrientationEvent = function () {};
+  DeviceOrientationEvent.requestPermission = async () => { aufrufe.permission++; return aufrufe.permission === 1 ? "granted" : "denied"; };
+  const altAdd = window.addEventListener;
+  window.addEventListener = (typ) => { if (typ === "deviceorientation") aufrufe.listener++; };
+  try {
+    const g = new GyroFusion();
+    assert.equal(await g.enable(), true);
+    assert.deepEqual(aufrufe, { permission: 0, listener: 1 }, "Standard: Listener ohne Abfrage");
+    assert.equal(g.enabled, true);
+    const g2 = new GyroFusion();
+    assert.equal(await g2.enable({ fragen: true }), true);
+    assert.deepEqual(aufrufe, { permission: 1, listener: 2 });
+    const g3 = new GyroFusion();
+    assert.equal(await g3.enable({ fragen: true }), false, "abgelehnt");
+    assert.equal(g3.enabled, false);
+    assert.deepEqual(aufrufe, { permission: 2, listener: 2 });
+  } finally { window.addEventListener = altAdd; delete globalThis.DeviceOrientationEvent; }
 });

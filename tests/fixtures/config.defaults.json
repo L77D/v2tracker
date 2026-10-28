@@ -93,10 +93,7 @@
   "lerpRotMs": 50
  },
  "GYRO": {
-  "enabled": true,
-  "bridgeMs": 1200,
-  "deltaDeadZone": 0.0012,
-  "deltaMax": 0.2
+  "enabled": true
  },
  "ACTFX": {
   "markerSize": 0.14,

@@ -1,25 +1,31 @@
 /* =============================================================================
    DETAR — GyroFusion: liest die Geräte-Rotation (deviceorientation, ~60 Hz)
-   und liefert pro Frame das ROTATIONS-DELTA der Kamera im Kamera-Frame.
+   und liefert die absolute Lage der Kamera (getOrientation) für den
+   Schwerkraft-Schiedsrichter (js/poseArbiter.js) und ?stats.
 
-   Wozu: Das Handy-Gyroskop ist butterweich und latenzfrei, MindARs visuelle
-   Pose ist verrauscht und ~15–30 Hz. Der PoseStabilizer nutzt das Delta als
-   PREDICTION (echte Handy-Bewegung wird sofort übernommen, das Sehen muss
-   nur noch den langsamen Drift korrigieren → Filter darf viel härter
-   glätten, ohne dass die Figur nachzieht) und als BRÜCKE bei kurzem
-   Tracking-Verlust (Figur klebt gyro-geführt auf der Karte statt zu
-   verschwinden).
+   Bis Build 110 lieferte sie zusätzlich Rotations-DELTAS als Prediction und
+   Verlust-Brücke für den PoseStabilizer (getDelta, Akkumulations-Dead-Band
+   2026-07-14) — mit dem Stabilizer archiviert (archiv/tracker-varianten/),
+   seit Build 113 auch hier raus.
+
+   KEINE ABFRAGE MEHR (2026-10-28, Build 113, Michael): bis Build 112 rief
+   enable() auf iOS DeviceOrientationEvent.requestPermission() — eine zweite
+   Systemabfrage beim Start, die mit der Kamera-Abfrage kollidierte („Ohne
+   Kamera geht's nicht" trotz Erlauben). Jetzt wird nur noch der Listener
+   gesetzt: Android liefert Events frei, iOS ohne Erlaubnis gar keine →
+   getOrientation() bleibt null und der Schiedsrichter nimmt Bildschirm-oben
+   als Referenz (Q_SCREEN_UP). Nur zum Messen am iPhone (?gyrofrage) fragt
+   enable({ fragen: true }) wie früher.
 
    Frames: W3C-Gerätekoordinaten (X rechts, Y Bildschirm-oben, Z aus dem
    Display) entsprechen im Portrait exakt dem three.js-Kamera-Frame der
-   Rückkamera (X rechts, Y hoch, Blick entlang −Z). Für DELTAS genügt die
-   Konjugation mit der Screen-Orientation-Drehung um Z.
+   Rückkamera (X rechts, Y hoch, Blick entlang −Z); die Screen-Orientation-
+   Drehung um Z wird herausgerechnet.
 
-   Fail-safe: keine Permission / keine Events / stale Daten → getDelta()
-   liefert null, alles läuft wie ohne Gyro. Kill-Switch: ?nogyro.
+   Fail-safe: keine Events / stale Daten → getOrientation() liefert null.
+   Kill-Switch: ?nogyro (GYRO.enabled).
    ============================================================================= */
 import * as THREE from "../vendor/three/three.module.js";
-import { GYRO } from "./config.js";
 
 const DEG = Math.PI / 180;
 const _qNew = new THREE.Quaternion();
@@ -45,17 +51,15 @@ export class GyroFusion {
     this.active = false;        // Events kommen an
     this.enabled = false;       // enable() gelaufen + erlaubt
     this.qCur = new THREE.Quaternion();   // Kamera-Orientierung (Welt)
-    this.qPrev = new THREE.Quaternion();
-    this.hasPrev = false;
     this.lastEventMs = 0;
-    this.delta = new THREE.Quaternion();
     this._onEvent = (e) => this.handle(e);
   }
 
-  /* MUSS aus einer User-Geste heraus laufen (iOS-Permission). */
-  async enable() {
+  /* Listener setzen. fragen: true = iOS-Permission anfragen (nur ?gyrofrage;
+     MUSS dann aus der User-Geste heraus laufen). Standard: keine Abfrage. */
+  async enable({ fragen = false } = {}) {
     try {
-      if (typeof DeviceOrientationEvent !== "undefined" &&
+      if (fragen && typeof DeviceOrientationEvent !== "undefined" &&
           typeof DeviceOrientationEvent.requestPermission === "function") {
         const r = await DeviceOrientationEvent.requestPermission();
         if (r !== "granted") return false;
@@ -80,36 +84,6 @@ export class GyroFusion {
     this.qCur.copy(_qNew);
     this.lastEventMs = performance.now();
     this.active = true;
-  }
-
-  /* Kamera-Rotations-Delta seit dem letzten ANGEWENDETEN Delta, im KAMERA-Frame.
-     null = kein (frisches) Gyro-Signal ODER Delta (noch) unter der Schwelle →
-     Aufrufer arbeitet rein visuell.
-
-     AKKUMULATIONS-DEAD-BAND (2026-07-14, Finding 4): Das Dead-Band lebt jetzt
-     HIER statt in applyCameraDelta — und qPrev rückt nur vor, wenn das Delta
-     auch geliefert wird. Deltas unterhalb GYRO.deltaDeadZone summieren sich
-     dadurch auf (Referenz bleibt stehen) und feuern in ~0.07°-Quanten, sobald
-     die Schwelle überschritten ist. Vorher wurde jedes Einzeldelta < Schwelle
-     KOMPLETT verworfen → Schwenks langsamer als ~4°/s (bei 60 Hz Events)
-     bekamen NULL Prediction und liefen als reines Vision-Treppensignal.
-     Sensor-Rauschen um einen Ruhepunkt pendelt (Random Walk um 0) und bleibt
-     wie vorher praktisch immer unter der Schwelle. */
-  getDelta() {
-    if (!this.enabled || !this.active) return null;
-    if (performance.now() - this.lastEventMs > 250) { this.hasPrev = false; return null; }
-    if (!this.hasPrev) {
-      this.qPrev.copy(this.qCur);
-      this.hasPrev = true;
-      return null;
-    }
-    // Δ = qPrev⁻¹ ⊗ qCur (relative Drehung im Geräte-/Kamera-Frame)
-    this.delta.copy(this.qPrev).invert().multiply(this.qCur);
-    const ang = 2 * Math.acos(Math.min(1, Math.abs(this.delta.w)));
-    if (ang < GYRO.deltaDeadZone) return null;   // sammeln — qPrev bleibt stehen
-    this.qPrev.copy(this.qCur);                  // ab hier: Referenz vorrücken
-    if (ang > GYRO.deltaMax) return null;        // Sensor-Glitch: resync + verwerfen
-    return this.delta;
   }
 
   /* Absolute Orientierung Screen-/Kamera-Frame → Erdframe (Z = oben), oder null

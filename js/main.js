@@ -65,6 +65,9 @@ const ctx = {
   attachDevTools,
 };
 let desktop = null;
+// Höchstens so lange auf die Antwort der iOS-Bewegungsabfrage (?gyrofrage)
+// warten, bevor die Kamera trotzdem startet (s. Start-Geste in boot()).
+const GYRO_ANTWORT_MAX_MS = 20000;
 
 /* --------------------------------------------------------------------------
    Splash befüllen + Start-Button freigeben, sobald Tuning + Font geladen sind.
@@ -162,13 +165,24 @@ async function boot() {
     // gleiche Regel wie die Gyro-Permission) — VOR allen awaits.
     sound.init();
     sound.uiTap();
-    // Gyro-Permission MUSS direkt in der User-Geste angefragt werden (iOS) —
-    // deshalb hier, VOR allen awaits. Fail-safe: ohne Gyro läuft alles normal.
+    // Gyro-Lage (nur Referenz „oben" für den Schiedsrichter): Listener setzen,
+    // KEINE iOS-Bewegungsabfrage mehr (2026-10-28, Build 113, Michael) — bis
+    // Build 112 kam hier DeviceOrientationEvent.requestPermission(), parallel
+    // zur Kamera-Abfrage; auf zwei iPhones ohne gespeicherte Erlaubnis endete
+    // das in „Ohne Kamera geht's nicht", obwohl „Zulassen" getippt war. Ohne
+    // Erlaubnis liefert iOS keine Events → Bildschirm-oben (js/poseArbiter.js).
+    // Nur ?gyrofrage (Messen am iPhone mit ?stats) fragt wie früher — dann in
+    // der Geste, VOR allen awaits, und die Kamera wartet auf die Antwort.
+    let gyroAntwort = null;
     if (!DESKTOP_MODE && GYRO.enabled && !params.has("nogyro")) {
       ctx.gyro = new GyroFusion();
-      ctx.gyro.enable(); // bewusst nicht awaiten (Geste nicht verlieren)
+      gyroAntwort = ctx.gyro.enable({ fragen: params.has("gyrofrage") });
     }
     try {
+      // Erst die (optionale) Bewegungsfrage, DANN die Kamera — zwei offene
+      // Systemabfragen zugleich gehen auf iOS schief (s. o.). Ohne Frage löst
+      // enable() sofort auf; Obergrenze gegen ein hängendes Promise.
+      if (gyroAntwort) await Promise.race([gyroAntwort, new Promise((r) => setTimeout(r, GYRO_ANTWORT_MAX_MS))]);
       if (DESKTOP_MODE) await desktop.startDesktop(ctx);
       else await startAR(ctx);
       document.body.classList.add("launched");
@@ -188,6 +202,10 @@ function showStartError(err) {
   const isCam = /permission|notallowed|denied/i.test(String(err?.name) + String(err?.message));
   if (isCam) {
     document.body.classList.add("camera-denied");
+    // Technik-Zeile (2026-10-28): Fehler + Gerät, damit ein Screenshot vom
+    // Testgerät reicht, um abgelehnt / Bewegungsabfrage / In-App-Browser zu trennen
+    const detail = el("permDetail");
+    if (detail) detail.textContent = "Technik: " + String(err?.name) + " · " + String(err?.message ?? "") + " · " + geraetKurz();
     const reload = el("permReload");
     if (reload) reload.onclick = () => location.reload();
     return;
@@ -195,6 +213,18 @@ function showStartError(err) {
   const box = el("errorBox");
   box.textContent = "Start fehlgeschlagen. Bitte Seite neu laden. (" + (err?.message ?? err) + ")";
   box.style.display = "block";
+}
+
+/* Gerät/Browser in einer Zeile: iOS-Version, Browser-Kennung (Safari, Chrome
+   = CriOS, Firefox = FxiOS, Google-App = GSA, sonst „WebView" = App-Browser ohne
+   Safari-Kennung), Engine-Variante, Gyro-Zustand. */
+function geraetKurz() {
+  const ua = navigator.userAgent || "";
+  const ios = ua.match(/OS (\d+)_(\d+)/);
+  const browser = /CriOS/.test(ua) ? "Chrome" : /FxiOS/.test(ua) ? "Firefox" : /EdgiOS/.test(ua) ? "Edge"
+    : /GSA\//.test(ua) ? "Google-App" : /Safari\//.test(ua) ? "Safari" : "WebView";
+  const gyro = !ctx.gyro ? "Gyro aus" : ctx.gyro.active ? "Gyro Events" : ctx.gyro.enabled ? "Gyro keine Events" : "Gyro abgelehnt";
+  return (ios ? "iOS " + ios[1] + "." + ios[2] : (ua.match(/Android [\d.]+/)?.[0] ?? "?")) + " · " + browser + " · " + ENGINE_VARIANT + " · " + gyro;
 }
 
 /* --------------------------------------------------------------------------

@@ -7,7 +7,7 @@ Chrome, gedruckte Karte P04). Erwartung = Verhalten von Build 110.
 
 ## 1. Normaler Ablauf (`?k=000`)
 1. Splash: „Du scannst · Elektroniker*in für Betriebstechnik · bei · Siemens“ als Text (kein Logo). Knopf „Scan starten“ wird erst aktiv, wenn der Font geladen ist. Mit `?tracker=…` steht die Marke oben rechts.
-2. „Scan starten“: Klick-Ton. iOS fragt die Bewegungs-Erlaubnis, dann die Kamera. Splash weg, Kamerabild, weiße Rahmen-Ecken, Panel unten „Halte auf die Karte“ als Laola-Welle, Handy-Icon mit offenem Mund schaut links/rechts.
+2. „Scan starten“: Klick-Ton. NUR die Kamera-Abfrage — keine Frage nach „Bewegung und Ausrichtung“ mehr (seit Build 113; Test mit einem Gerät ohne gespeicherte Erlaubnis, z. B. Safari-Website-Daten für l77d.github.io löschen). Splash weg, Kamerabild, weiße Rahmen-Ecken, Panel unten „Halte auf die Karte“ als Laola-Welle, Handy-Icon mit offenem Mund schaut links/rechts. Bei „Ohne Kamera geht's nicht“ steht unten klein die Technik-Zeile (Fehler, iOS, Browser, Gyro) — Screenshot davon.
 3. Karte ins Bild: Rahmen sofort weg, Ping, vier gelbe Eck-Marker wabern auf den Kartenecken, Panel „Karte gefunden / → Tipp sie an!“, Icon springt links aus dem Panel und hüpft in 3D auf der Kartenmitte mit flachem Schatten.
 4. Tap auf die Karte: Swoosh, Marker ploppen und bleiben still auf den Ecken, Pop-Ton, Figur dreht sich zweimal und ploppt mit Überschwinger auf.
 5. Begrüßung: Anfangston „bi-ip“, Text tippt lautlos (28 ms/Zeichen), `<welle>`-Wort steht still. Blase billboardet zur Kamera (Drehung und Neigung bis 70°).
@@ -45,5 +45,11 @@ Antwort „bewerbung“ schaltet „Zeig mir die Seite“ (Reiter LINK) frei. An
 - `?stats`: Panel oben links (Build-Prüfung „aktuell“/„neu laden!“, Engine-Variante, Design, Karte, Tracker, Flip-Zeile), 📊 blendet aus (bleibt nach Neuladen), „Messung 10 s“ → Kopieren/Log.
 - `?dev`: Zahnrad, Regler wirken sofort (Schrift → Blase neu, Einfahrzeit → CSS), Presets/Export, Replay (Rahmen 600 ms, dann Aktivierung neu). Mit `?tracker=` sitzt die Marke unter dem Dev-Knopf.
 - `?desktop`: Handy-Rahmen mit Format-Wahl, nach 1,2 s simulierter Scan, Karte als Bodenfläche, Maus-Orbit.
-- `?nosimd` → ?stats „nicht-SIMD (?nosimd)“; `?nogyro` → Flip-Zeile passiv; `?tracker=xyz` → Marke „xyz? → 8lerp“.
+- `?nosimd` → ?stats „nicht-SIMD (?nosimd)“; `?nogyro` → Flip-Zeile „(Bildschirm)“; `?gyrofrage` → iOS fragt „Bewegung und Ausrichtung“, danach erst die Kamera, Flip-Zeile „(Gyro)“; `?tracker=xyz` → Marke „xyz? → 8lerp“.
+
+## 7. Pose-Flip ohne Gyro (Build 113)
+- `?k=000&stats`: Flip-Zeile zeigt „roh ok (Bildschirm)“ (iPhone) bzw. „(Gyro)“ (Android ohne Abfrage).
+- Karte auf dem Tisch, Handy schräg 30–60° von oben, auch fern/flach (Fehlerbild aus `docs/8thwall-migration.md` 9 herbeiführen): Figur steht aufrecht, Blasentext lesbar; bei gespiegelter Engine-Pose „GESPIEGELT→korrigiert“. `?dev` Toggle 10 aus → Figur kippt in die Tischebene (Signatur 2θ) = Prior war aktiv.
+- Karte in der Hand, frontal bis schräg (Oberkante weiter weg als Unterkante): aufrecht.
+- Bekannte Grenze, kein Fehler: Karte senkrecht an die Wand halten und von OBEN filmen (Oberkante näher als Unterkante) → Figur kippt; das täte der Gyro-Schiedsrichter genauso.
 - `karten.html`: Kachel je Karte × Fassung × Design mit QR; Häkchen stats/nosimd ändern Links. `tools/kartenpruefung.html`: Karte 000 „keine Fehler · 2 Hinweise“, Seiten am echten Font.

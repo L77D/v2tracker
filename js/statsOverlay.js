@@ -271,13 +271,15 @@ export class StatsOverlay {
     this.capBtn.textContent = this.cap ? `läuft … ${Math.ceil((CAPTURE_MS - (now - this.cap.t0)) / 1000)} s` : "Messung 10 s";
     const gy = !GYRO.enabled ? "DEAKTIVIERT (Toggle)"
       : !this.gyro ? "aus (?nogyro/Desktop)"
-      : !this.gyro.enabled ? "keine Permission"
-      : this.gyro.active ? "AKTIV" : "enabled, keine Events";
+      : !this.gyro.enabled ? "abgelehnt (?gyrofrage)"
+      : this.gyro.active ? "AKTIV" : "keine Events (iOS ohne Abfrage → Bildschirm-oben)";
     const v = this.env?.getVideo?.();
     const cam = v && v.videoWidth ? `${v.videoWidth}×${v.videoHeight}` : "—";
     const pr = this.env?.renderer ? this.env.renderer.getPixelRatio().toFixed(1) : "—";
     const arb = st.arb;
-    const arbState = !STAB.gravityArbiter ? "AUS (Toggle)" : !arb.active ? "kein Gyro" : arb.flipped ? "GESPIEGELT→korrigiert" : "roh ok";
+    // Referenz „oben" in Klammern: Gyro (Erd-oben) oder Bildschirm (Kamera-+Y, Build 113)
+    const quelle = arb.quelle === "gyro" ? " (Gyro)" : arb.quelle === "bildschirm" ? " (Bildschirm)" : "";
+    const arbState = !STAB.gravityArbiter ? "AUS (Toggle)" : !arb.active ? "passiv" : (arb.flipped ? "GESPIEGELT→korrigiert" : "roh ok") + quelle;
     // Engine-Variante (2026-09-09): SIMD oder Nicht-SIMD-Fallback (arSession.js
     // wählt per WebAssembly.validate; Konsole: „8th Wall XR Version: …s"
     // = SIMD, ohne s = nicht-SIMD)
